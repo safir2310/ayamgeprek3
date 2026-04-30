@@ -47,10 +47,10 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { POS } from '@/components/POS'
 import { AdminDashboard } from '@/components/AdminDashboard'
 
-// Mock data
+// Mock data - using product IDs from database
 const mockProducts = [
   {
-    id: '1',
+    id: 'cmok8z92g0008l9tmj547udj5',
     name: 'Ayam Geprek Original',
     price: 15000,
     discountPrice: null,
@@ -61,7 +61,7 @@ const mockProducts = [
     barcode: 'AG001',
   },
   {
-    id: '2',
+    id: 'cmok8z92i000al9tmtv04aoyn',
     name: 'Ayam Geprek Keju',
     price: 18000,
     discountPrice: 15000,
@@ -72,7 +72,7 @@ const mockProducts = [
     barcode: 'AG002',
   },
   {
-    id: '3',
+    id: 'cmok8z92k000cl9tmjo7tdo9y',
     name: 'Nasi Pecel Ayam',
     price: 20000,
     discountPrice: null,
@@ -83,7 +83,7 @@ const mockProducts = [
     barcode: 'NP001',
   },
   {
-    id: '4',
+    id: 'cmok8z92m000el9tmc7bluwiq',
     name: 'Es Teh Manis',
     price: 5000,
     discountPrice: null,
@@ -94,7 +94,7 @@ const mockProducts = [
     barcode: 'ET001',
   },
   {
-    id: '5',
+    id: 'cmok8z92n000gl9tmfb1hhbst',
     name: 'Es Jeruk Peras',
     price: 8000,
     discountPrice: null,
@@ -105,7 +105,7 @@ const mockProducts = [
     barcode: 'EJ001',
   },
   {
-    id: '6',
+    id: 'cmok8z92p000il9tmbhu75gv0',
     name: 'Kopi Susu Gula Aren',
     price: 12000,
     discountPrice: null,
@@ -116,7 +116,7 @@ const mockProducts = [
     barcode: 'KS001',
   },
   {
-    id: '7',
+    id: 'cmok8z92q000kl9tmgxz2cbc5',
     name: 'Keripik Singkong',
     price: 10000,
     discountPrice: null,
@@ -127,7 +127,7 @@ const mockProducts = [
     barcode: 'KS002',
   },
   {
-    id: '8',
+    id: 'cmok8z92r000ml9tmm6p1onbq',
     name: 'Kerupuk Udang',
     price: 12000,
     discountPrice: 10000,
@@ -138,7 +138,7 @@ const mockProducts = [
     barcode: 'KU001',
   },
   {
-    id: '9',
+    id: 'cmok8z92t000ol9tmmsag6wb4',
     name: 'Sambal Ijo Botol',
     price: 25000,
     discountPrice: null,
@@ -149,7 +149,7 @@ const mockProducts = [
     barcode: 'SI001',
   },
   {
-    id: '10',
+    id: 'cmok8z92u000ql9tmoqdxfzz7',
     name: 'Sambal Merah',
     price: 20000,
     discountPrice: null,
@@ -160,7 +160,18 @@ const mockProducts = [
     barcode: 'SM001',
   },
   {
-    id: '11',
+    id: 'cmok8z92v000sl9tm5e4nz4cb',
+    name: 'Bumbu Rendang',
+    price: 8000,
+    discountPrice: null,
+    discountPercent: null,
+    category: 'Bumbu',
+    image: '🥘',
+    stock: 45,
+    barcode: 'BR001',
+  },
+  {
+    id: 'cmok8z92w000ul9tmt4vb8lvu',
     name: 'Minyak Goreng 2L',
     price: 35000,
     discountPrice: 30000,
@@ -391,6 +402,20 @@ export default function HomePage() {
   }
 
   const finalAmount = cartTotal - discountAmount
+
+  // Handle opening checkout modal
+  const handleOpenCheckout = () => {
+    if (user) {
+      setCheckoutData({
+        customerName: user.name || '',
+        customerPhone: user.phone || '',
+        customerAddress: user.address || '',
+        paymentMethod: 'COD',
+        notes: '',
+      })
+    }
+    setIsCheckoutOpen(true)
+  }
 
   if (!mounted) return null
 
@@ -1218,16 +1243,29 @@ export default function HomePage() {
                   <span className="text-xl text-red-600">Rp {finalAmount.toLocaleString()}</span>
                 </div>
               </div>
-              <Button
-                className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600"
-                onClick={() => {
-                  setIsCartOpen(false)
-                  setIsCheckoutOpen(true)
-                }}
-              >
-                <ArrowRight className="h-4 w-4 mr-2" />
-                Checkout Sekarang
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    clearCart()
+                    toast.success('Keranjang dikosongkan')
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Kosongkan
+                </Button>
+                <Button
+                  className="flex-1 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600"
+                  onClick={() => {
+                    setIsCartOpen(false)
+                    handleOpenCheckout()
+                  }}
+                >
+                  <ArrowRight className="h-4 w-4 mr-2" />
+                  Checkout Sekarang
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>

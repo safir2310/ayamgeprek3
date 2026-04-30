@@ -86,10 +86,21 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Create order items
+    // Create order items and update products
+    const validItems: any[] = []
     for (const item of cart) {
       const price = item.discountPrice || item.price
       const discount = item.discountPrice ? item.price - item.discountPrice : 0
+
+      // Check if product exists
+      const product = await db.product.findUnique({
+        where: { id: item.productId },
+      })
+
+      if (!product) {
+        console.warn(`Product ${item.productId} not found, skipping`)
+        continue
+      }
 
       await db.orderItem.create({
         data: {
@@ -101,10 +112,8 @@ export async function POST(request: NextRequest) {
           subtotal: price * item.quantity,
         },
       })
-    }
 
-    // Update product sold count
-    for (const item of cart) {
+      // Update product sold count
       await db.product.update({
         where: { id: item.productId },
         data: {
@@ -112,6 +121,20 @@ export async function POST(request: NextRequest) {
           stock: { decrement: item.quantity },
         },
       })
+
+      validItems.push(item)
+    }
+
+    // Check if there are any valid items
+    if (validItems.length === 0) {
+      // Delete the order if no valid items
+      await db.order.delete({
+        where: { id: order.id },
+      })
+      return NextResponse.json(
+        { error: 'Tidak ada produk valid di keranjang. Silakan tambahkan produk ulang.' },
+        { status: 400 }
+      )
     }
 
     // Update user points

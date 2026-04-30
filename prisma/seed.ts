@@ -1,41 +1,9 @@
 import { PrismaClient } from '@prisma/client'
-import * as bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
 async function main() {
-  // Create admin user
-  const hashedPassword = await bcrypt.hash('admin123', 10)
-  const admin = await prisma.user.upsert({
-    where: { email: 'admin@ayamgeprek.com' },
-    update: {},
-    create: {
-      email: 'admin@ayamgeprek.com',
-      name: 'Admin Toko',
-      phone: '085260812758',
-      password: hashedPassword,
-      role: 'admin',
-      memberLevel: 'Platinum',
-    },
-  })
-
-  // Create regular user
-  const userPassword = await bcrypt.hash('user123', 10)
-  const user = await prisma.user.upsert({
-    where: { email: 'customer@gmail.com' },
-    update: {},
-    create: {
-      email: 'customer@gmail.com',
-      name: 'Pelanggan Setia',
-      phone: '081234567890',
-      password: userPassword,
-      role: 'customer',
-      memberLevel: 'Gold',
-      points: 500,
-    },
-  })
-
-  // Create categories
+  // Create categories first
   const categories = await Promise.all([
     prisma.category.upsert({
       where: { slug: 'makanan' },
@@ -43,6 +11,7 @@ async function main() {
       create: {
         name: 'Makanan',
         slug: 'makanan',
+        description: 'Berbagai menu makanan lezat',
         icon: '🍽️',
         order: 1,
       },
@@ -53,6 +22,7 @@ async function main() {
       create: {
         name: 'Minuman',
         slug: 'minuman',
+        description: 'Minuman segar dan menyegarkan',
         icon: '🥤',
         order: 2,
       },
@@ -63,6 +33,7 @@ async function main() {
       create: {
         name: 'Snack',
         slug: 'snack',
+        description: 'Camilan renyah dan enak',
         icon: '🍿',
         order: 3,
       },
@@ -71,8 +42,9 @@ async function main() {
       where: { slug: 'bumbu' },
       update: {},
       create: {
-        name: 'Bumbu & Sambal',
+        name: 'Bumbu',
         slug: 'bumbu',
+        description: 'Bumbu dapur siap pakai',
         icon: '🌶️',
         order: 4,
       },
@@ -83,197 +55,170 @@ async function main() {
       create: {
         name: 'Kebutuhan Rumah',
         slug: 'kebutuhan-rumah',
+        description: 'Kebutuhan rumah tangga',
         icon: '🏠',
         order: 5,
       },
     }),
   ])
 
-  // Create products
+  // Get category IDs
+  const makananCategory = categories.find(c => c.slug === 'makanan')!
+  const minumanCategory = categories.find(c => c.slug === 'minuman')!
+  const snackCategory = categories.find(c => c.slug === 'snack')!
+  const bumbuCategory = categories.find(c => c.slug === 'bumbu')!
+  const kebutuhanRumahCategory = categories.find(c => c.slug === 'kebutuhan-rumah')!
+
+  // Create or update products
   const products = [
     {
+      id: '1',
       name: 'Ayam Geprek Original',
       slug: 'ayam-geprek-original',
-      description: 'Ayam geprek crispy dengan sambal ijo pedas mantap',
+      description: 'Ayam geprek dengan sambal ijo asli',
       price: 15000,
-      categoryId: categories[0].id,
-      stock: 50,
+      categoryId: makananCategory.id,
+      image: '🍗',
       barcode: 'AG001',
-      featured: true,
+      stock: 50,
     },
     {
+      id: '2',
       name: 'Ayam Geprek Keju',
       slug: 'ayam-geprek-keju',
-      description: 'Ayam geprek dengan topping keju lumer',
+      description: 'Ayam geprek dengan topping keju melimpah',
       price: 18000,
       discountPrice: 15000,
       discountPercent: 17,
-      categoryId: categories[0].id,
-      stock: 30,
+      categoryId: makananCategory.id,
+      image: '🧀',
       barcode: 'AG002',
-      featured: true,
+      stock: 30,
     },
     {
+      id: '3',
       name: 'Nasi Pecel Ayam',
       slug: 'nasi-pecel-ayam',
-      description: 'Nasi pecel dengan ayam goreng dan sayuran segar',
+      description: 'Nasi pecel dengan ayam goreng',
       price: 20000,
-      categoryId: categories[0].id,
-      stock: 40,
+      categoryId: makananCategory.id,
+      image: '🍛',
       barcode: 'NP001',
-      featured: true,
+      stock: 40,
     },
     {
+      id: '4',
       name: 'Es Teh Manis',
       slug: 'es-teh-manis',
-      description: 'Es teh manis segar dingin',
+      description: 'Es teh manis segar',
       price: 5000,
-      categoryId: categories[1].id,
-      stock: 100,
+      categoryId: minumanCategory.id,
+      image: '🧊',
       barcode: 'ET001',
+      stock: 100,
     },
     {
+      id: '5',
       name: 'Es Jeruk Peras',
       slug: 'es-jeruk-peras',
-      description: 'Es jeruk peras asli segar',
+      description: 'Es jeruk peras murni',
       price: 8000,
-      categoryId: categories[1].id,
-      stock: 80,
+      categoryId: minumanCategory.id,
+      image: '🍊',
       barcode: 'EJ001',
+      stock: 80,
     },
     {
+      id: '6',
       name: 'Kopi Susu Gula Aren',
       slug: 'kopi-susu-gula-aren',
       description: 'Kopi susu dengan gula aren asli',
       price: 12000,
-      categoryId: categories[1].id,
-      stock: 60,
+      categoryId: minumanCategory.id,
+      image: '☕',
       barcode: 'KS001',
+      stock: 60,
     },
     {
+      id: '7',
       name: 'Keripik Singkong',
       slug: 'keripik-singkong',
-      description: 'Keripik singkong renyah pedas',
+      description: 'Keripik singkong renyah',
       price: 10000,
-      categoryId: categories[2].id,
-      stock: 50,
+      categoryId: snackCategory.id,
+      image: '🍠',
       barcode: 'KS002',
+      stock: 50,
     },
     {
+      id: '8',
       name: 'Kerupuk Udang',
       slug: 'kerupuk-udang',
-      description: 'Kerupuk udang gurih renyah',
+      description: 'Kerupuk udang gurih',
       price: 12000,
       discountPrice: 10000,
       discountPercent: 17,
-      categoryId: categories[2].id,
-      stock: 40,
+      categoryId: snackCategory.id,
+      image: '🦐',
       barcode: 'KU001',
+      stock: 40,
     },
     {
+      id: '9',
       name: 'Sambal Ijo Botol',
       slug: 'sambal-ijo-botol',
-      description: 'Sambal ijo pedas dalam botol 250ml',
+      description: 'Sambal ijo siap pakai dalam botol',
       price: 25000,
-      categoryId: categories[3].id,
-      stock: 30,
+      categoryId: bumbuCategory.id,
+      image: '🌶️',
       barcode: 'SI001',
-      featured: true,
+      stock: 30,
     },
     {
+      id: '10',
       name: 'Sambal Merah',
       slug: 'sambal-merah',
-      description: 'Sambal merah pedas nampol',
+      description: 'Sambal merah pedas nendang',
       price: 20000,
-      categoryId: categories[3].id,
-      stock: 35,
+      categoryId: bumbuCategory.id,
+      image: '🔴',
       barcode: 'SM001',
+      stock: 35,
     },
     {
-      name: 'Bumbu Rendang',
-      slug: 'bumbu-rendang',
-      description: 'Bumbu rendang instan siap masak',
-      price: 8000,
-      categoryId: categories[3].id,
-      stock: 60,
-      barcode: 'BR001',
-    },
-    {
+      id: '11',
       name: 'Minyak Goreng 2L',
       slug: 'minyak-goreng-2l',
       description: 'Minyak goreng 2 liter',
       price: 35000,
       discountPrice: 30000,
       discountPercent: 14,
-      categoryId: categories[4].id,
-      stock: 25,
+      categoryId: kebutuhanRumahCategory.id,
+      image: '🫗',
       barcode: 'MG001',
-      featured: true,
+      stock: 25,
     },
   ]
 
   for (const product of products) {
     await prisma.product.upsert({
-      where: { slug: product.slug },
-      update: {},
+      where: { barcode: product.barcode },
+      update: {
+        name: product.name,
+        slug: product.slug,
+        description: product.description,
+        price: product.price,
+        discountPrice: product.discountPrice,
+        discountPercent: product.discountPercent,
+        categoryId: product.categoryId,
+        image: product.image,
+        stock: product.stock,
+      },
       create: product,
     })
   }
 
-  // Create vouchers
-  const vouchers = [
-    {
-      code: 'DISKON10',
-      name: 'Diskon 10%',
-      description: 'Diskon 10% untuk semua produk',
-      discountType: 'percentage',
-      discountValue: 10,
-      minPurchase: 50000,
-      startDate: new Date('2024-01-01'),
-      endDate: new Date('2025-12-31'),
-      usageLimit: 1000,
-    },
-    {
-      code: 'HEMAT20K',
-      name: 'Hemat Rp 20.000',
-      description: 'Diskon Rp 20.000 dengan minimum belanja Rp 100.000',
-      discountType: 'fixed',
-      discountValue: 20000,
-      minPurchase: 100000,
-      maxDiscount: 20000,
-      startDate: new Date('2024-01-01'),
-      endDate: new Date('2025-12-31'),
-      usageLimit: 500,
-    },
-    {
-      code: 'NEWUSER',
-      name: 'Diskon New User',
-      description: 'Diskon Rp 15.000 untuk user baru',
-      discountType: 'fixed',
-      discountValue: 15000,
-      minPurchase: 30000,
-      maxDiscount: 15000,
-      startDate: new Date('2024-01-01'),
-      endDate: new Date('2025-12-31'),
-      usageLimit: 100,
-    },
-  ]
-
-  for (const voucher of vouchers) {
-    await prisma.voucher.upsert({
-      where: { code: voucher.code },
-      update: {},
-      create: voucher,
-    })
-  }
-
   console.log('Database seeded successfully!')
-  console.log('Admin credentials:')
-  console.log('Email: admin@ayamgeprek.com')
-  console.log('Password: admin123')
-  console.log('\nUser credentials:')
-  console.log('Email: customer@gmail.com')
-  console.log('Password: user123')
 }
 
 main()
