@@ -1608,7 +1608,7 @@ export default function HomePage() {
                   <img
                     src={qrisData.qrCode}
                     alt="QRIS QR Code"
-                    className="w-64 h-64"
+                    className="w-64 h-64 object-contain"
                   />
                 </div>
               </div>
@@ -1624,13 +1624,19 @@ export default function HomePage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Jumlah:</span>
-                  <span className="font-bold text-red-600 text-xl">Rp {qrisData.amount}</span>
+                  <span className="font-bold text-red-600 text-xl">Rp {Number(qrisData.amount).toLocaleString()}</span>
                 </div>
               </div>
 
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                 <p className="text-sm text-yellow-800">
-                  <span className="font-semibold">⚠️ Batas Waktu:</span> QR Code berlaku selama 30 menit. Silakan scan segera.
+                  <span className="font-semibold">⚠️ Catatan:</span> Scan QR Code di atas menggunakan aplikasi e-wallet atau mobile banking Anda untuk pembayaran QRIS.
+                </p>
+              </div>
+
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <p className="text-sm text-green-800">
+                  <span className="font-semibold">NMID:</span> ID1025429162544
                 </p>
               </div>
 
