@@ -245,6 +245,9 @@ export default function HomePage() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [orders, setOrders] = useState<any[]>([])
   const [qrisData, setQrisData] = useState<any>(null)
+  const [uploadedPaymentProof, setUploadedPaymentProof] = useState<File | null>(null)
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+  const [paymentMethodTab, setPaymentMethodTab] = useState<'upload' | 'manual'>('upload')
 
   const {
     user,
@@ -274,7 +277,6 @@ export default function HomePage() {
   }
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
     checkAuth()
   }, [])
@@ -377,6 +379,50 @@ export default function HomePage() {
       if (!signal || error.name !== 'AbortError') {
         console.error('Failed to fetch orders:', error)
       }
+    }
+  }
+
+  const handlePaymentProofUpload = async (file: File) => {
+    if (!qrisData) return
+
+    setIsProcessingPayment(true)
+    setUploadedPaymentProof(file)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('orderId', qrisData.orderId)
+      formData.append('orderDate', new Date().toISOString())
+
+      const res = await fetch('/api/payment/verify', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        if (data.isPaymentValid && data.orderUpdated) {
+          toast.success('✅ Pembayaran berhasil dikonfirmasi otomatis!')
+          setIsQRISModalOpen(false)
+          fetchOrdersFromApi()
+        } else if (data.isPaymentValid) {
+          toast.success('✅ Tanggal transaksi sesuai, pembayaran dikonfirmasi!')
+          setIsQRISModalOpen(false)
+          fetchOrdersFromApi()
+        } else {
+          toast.warning(
+            `⚠️ Tanggal transaksi tidak sesuai (${data.transactionDate} vs ${data.orderDate})`
+          )
+        }
+      } else {
+        toast.error(data.error || 'Gagal memverifikasi pembayaran')
+      }
+    } catch (error) {
+      console.error('Payment verification error:', error)
+      toast.error('Gagal memverifikasi pembayaran')
+    } finally {
+      setIsProcessingPayment(false)
     }
   }
 
@@ -1643,12 +1689,13 @@ export default function HomePage() {
       </Dialog>
 
       {/* QRIS Payment Modal */}
-      <Dialog 
-        open={isQRISModalOpen} 
+      <Dialog
+        open={isQRISModalOpen}
         onOpenChange={(open) => {
           setIsQRISModalOpen(open)
           if (!open) {
-            stopPollingPayment()
+            setUploadedPaymentProof(null)
+            setIsProcessingPayment(false)
           }
         }}
       >
@@ -1696,28 +1743,95 @@ export default function HomePage() {
                 </p>
               </div>
 
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  className="flex-1 h-9 text-xs"
-                  onClick={() => {
-                    navigator.clipboard.writeText(qrisData.nmId)
-                    toast.success('NMID disalin!')
-                  }}
-                >
-                  Copy NMID
-                </Button>
-                <Button
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 h-9 text-xs"
-                  onClick={() => {
-                    setIsQRISModalOpen(false)
-                    toast.success('Pembayaran dikonfirmasi manual')
-                    fetchOrdersFromApi()
-                  }}
-                >
-                  Sudah Bayar
-                </Button>
-              </div>
+              {/* Payment Confirmation Tabs */}
+              <Tabs defaultValue="upload" value={paymentMethodTab} onValueChange={(v) => setPaymentMethodTab(v as 'upload' | 'manual')} className="w-full">
+                <TabsList className="grid w-full grid-cols-2 h-8">
+                  <TabsTrigger value="upload" className="text-xs">
+                    📤 Upload Bukti
+                  </TabsTrigger>
+                  <TabsTrigger value="manual" className="text-xs">
+                    ✍️ Manual
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="upload" className="space-y-3 mt-3">
+                  <div className="border-2 border-dashed border-gray-300 rounded-md p-4">
+                    <input
+                      type="file"
+                      id="payment-proof"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          handlePaymentProofUpload(file)
+                        }
+                      }}
+                      disabled={isProcessingPayment}
+                    />
+                    <label
+                      htmlFor="payment-proof"
+                      className="flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="text-3xl mb-2">📸</div>
+                      <p className="text-xs text-center text-gray-600 mb-1">
+                        {isProcessingPayment ? 'Sedang memproses...' : 'Upload bukti pembayaran'}
+                      </p>
+                      <p className="text-[10px] text-center text-gray-400">
+                        JPG, PNG (Maks. 5MB)
+                      </p>
+                    </label>
+                  </div>
+
+                  {uploadedPaymentProof && (
+                    <div className="text-center">
+                      <p className="text-xs text-green-600 mb-2">
+                        ✅ File terpilih: {uploadedPaymentProof.name}
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setUploadedPaymentProof(null)}
+                        className="text-xs h-7"
+                      >
+                        Hapus File
+                      </Button>
+                    </div>
+                  )}
+
+                  <p className="text-[10px] text-gray-500 text-center">
+                    Sistem akan otomatis membaca tanggal transaksi dan memverifikasi kecocokan
+                  </p>
+                </TabsContent>
+
+                <TabsContent value="manual" className="space-y-3 mt-3">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      className="flex-1 h-9 text-xs"
+                      onClick={() => {
+                        navigator.clipboard.writeText(qrisData.nmId)
+                        toast.success('NMID disalin!')
+                      }}
+                    >
+                      Copy NMID
+                    </Button>
+                    <Button
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 h-9 text-xs"
+                      onClick={() => {
+                        setIsQRISModalOpen(false)
+                        toast.success('Pembayaran dikonfirmasi manual')
+                        fetchOrdersFromApi()
+                      }}
+                    >
+                      Sudah Bayar
+                    </Button>
+                  </div>
+                  <p className="text-[10px] text-gray-500 text-center">
+                    Konfirmasi manual tanpa upload bukti pembayaran
+                  </p>
+                </TabsContent>
+              </Tabs>
             </div>
           )}
         </DialogContent>
