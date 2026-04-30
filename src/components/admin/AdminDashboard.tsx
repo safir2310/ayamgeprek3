@@ -26,6 +26,10 @@ import {
   ChevronRight,
   CheckCircle,
   AlertCircle,
+  Tag,
+  Gift,
+  Percent,
+  Layers,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -36,6 +40,9 @@ import { ProductManagement } from '@/components/admin/ProductManagement'
 import { OrderManagement } from '@/components/admin/OrderManagement'
 import { CustomerManagement } from '@/components/admin/CustomerManagement'
 import { SalesReports } from '@/components/admin/SalesReports'
+import { CategoryManagement } from '@/components/admin/CategoryManagement'
+import { VoucherManagement } from '@/components/admin/VoucherManagement'
+import { PromoManagement } from '@/components/admin/PromoManagement'
 
 interface DashboardStats {
   totalSales: number;
@@ -153,6 +160,9 @@ const AdminDashboard: React.FC = () => {
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { id: 'pos', icon: ShoppingCart, label: 'POS System' },
     { id: 'products', icon: Package, label: 'Products' },
+    { id: 'categories', icon: Layers, label: 'Categories' },
+    { id: 'vouchers', icon: Tag, label: 'Vouchers' },
+    { id: 'promo', icon: Gift, label: 'Promo' },
     { id: 'orders', icon: ShoppingCart, label: 'Orders' },
     { id: 'customers', icon: Users, label: 'Customers' },
     { id: 'reports', icon: TrendingUp, label: 'Reports' },
@@ -190,14 +200,14 @@ const AdminDashboard: React.FC = () => {
               animate={{ x: 0 }}
               exit={{ x: -300 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="w-64 bg-white shadow-lg fixed h-full z-20"
+              className="w-64 bg-white shadow-lg fixed h-full z-20 flex flex-col"
             >
-              <div className="p-6">
+              <div className="p-6 flex-shrink-0">
                 <h1 className="text-2xl font-bold text-gray-800">Admin Panel</h1>
                 <p className="text-sm text-gray-500 mt-1">Management System</p>
               </div>
               
-              <nav className="mt-6">
+              <nav className="mt-6 flex-1 overflow-y-auto">
                 {sidebarItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = activePage === item.id;
@@ -441,6 +451,36 @@ const AdminDashboard: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
               >
                 <ProductManagement onBack={() => setActivePage('dashboard')} />
+              </motion.div>
+            )}
+
+            {/* Categories Page */}
+            {activePage === 'categories' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <CategoryManagement onBack={() => setActivePage('dashboard')} />
+              </motion.div>
+            )}
+
+            {/* Vouchers Page */}
+            {activePage === 'vouchers' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <VoucherManagement onBack={() => setActivePage('dashboard')} />
+              </motion.div>
+            )}
+
+            {/* Promo Page */}
+            {activePage === 'promo' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <PromoManagement onBack={() => setActivePage('dashboard')} />
               </motion.div>
             )}
 

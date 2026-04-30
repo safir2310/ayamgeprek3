@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Plus, Edit, Trash2, Package, X, Save, Upload, X as XIcon, Image as ImageIcon } from 'lucide-react'
+import { Search, Plus, Edit, Trash2, Package, X, Save, Upload, X as XIcon, Image as ImageIcon, Percent } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,6 +19,9 @@ interface Product {
   description?: string
   image?: string
   createdAt: Date
+  isPromo?: boolean
+  promoPrice?: number
+  discountPercent?: number
 }
 
 export function ProductManagement() {
@@ -36,7 +39,9 @@ export function ProductManagement() {
     stock: '',
     category: 'makanan',
     description: '',
-    image: ''
+    image: '',
+    isPromo: false,
+    promoPrice: ''
   })
 
   const categories = ['all', 'makanan', 'minuman', 'snack', 'lainnya']
@@ -56,7 +61,10 @@ export function ProductManagement() {
         category: 'makanan',
         description: 'Ayam geprek dengan sambal ijo pedas',
         image: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23fee2e2" width="100" height="100"/%3E%3Ctext x="50" y="55" font-size="40" text-anchor="middle"%3E🍗%3C/text%3E%3C/svg%3E',
-        createdAt: new Date()
+        createdAt: new Date(),
+        isPromo: true,
+        promoPrice: 15000,
+        discountPercent: 17
       },
       {
         id: '2',
@@ -66,7 +74,10 @@ export function ProductManagement() {
         category: 'minuman',
         description: 'Es teh manis segar',
         image: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23dbeafe" width="100" height="100"/%3E%3Ctext x="50" y="55" font-size="40" text-anchor="middle"%3E🧃%3C/text%3E%3C/svg%3E',
-        createdAt: new Date()
+        createdAt: new Date(),
+        isPromo: true,
+        promoPrice: 4000,
+        discountPercent: 20
       },
       {
         id: '3',
@@ -77,6 +88,19 @@ export function ProductManagement() {
         description: 'Keripik singkong renyah dengan bumbu gurih',
         image: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23fef3c7" width="100" height="100"/%3E%3Ctext x="50" y="55" font-size="40" text-anchor="middle"%3E🍟%3C/text%3E%3C/svg%3E',
         createdAt: new Date()
+      },
+      {
+        id: '4',
+        name: 'Ayam Geprek Keju',
+        price: 20000,
+        stock: 40,
+        category: 'makanan',
+        description: 'Ayam geprek dengan topping keju',
+        image: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23fef9c3" width="100" height="100"/%3E%3Ctext x="50" y="55" font-size="40" text-anchor="middle"%3E🧀%3C/text%3E%3C/svg%3E',
+        createdAt: new Date(),
+        isPromo: true,
+        promoPrice: 17000,
+        discountPercent: 15
       },
     ])
   }
@@ -97,7 +121,9 @@ export function ProductManagement() {
       stock: '',
       category: 'makanan',
       description: '',
-      image: ''
+      image: '',
+      isPromo: false,
+      promoPrice: ''
     })
     setIsModalOpen(true)
   }
@@ -112,7 +138,9 @@ export function ProductManagement() {
       stock: product.stock.toString(),
       category: product.category,
       description: product.description || '',
-      image: product.image || ''
+      image: product.image || '',
+      isPromo: product.isPromo || false,
+      promoPrice: product.promoPrice?.toString() || ''
     })
     setIsModalOpen(true)
   }
@@ -165,13 +193,20 @@ export function ProductManagement() {
     }
 
     try {
+      const price = parseInt(formData.price)
+      const promoPrice = formData.isPromo && formData.promoPrice ? parseInt(formData.promoPrice) : null
+      const discountPercent = promoPrice ? Math.round(((price - promoPrice) / price) * 100) : 0
+
       const productData = {
         name: formData.name.trim(),
-        price: parseInt(formData.price),
+        price: price,
         stock: parseInt(formData.stock),
         category: formData.category,
         description: formData.description.trim(),
-        image: imagePreview || ''
+        image: imagePreview || '',
+        isPromo: formData.isPromo,
+        promoPrice: promoPrice || undefined,
+        discountPercent: discountPercent || undefined
       }
 
       if (editingProduct) {
@@ -265,7 +300,12 @@ export function ProductManagement() {
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ delay: index * 0.05 }}
             >
-              <Card className="h-full hover:shadow-xl transition-all duration-300">
+              <Card className="h-full hover:shadow-xl transition-all duration-300 relative">
+                {product.isPromo && (
+                  <div className="absolute top-0 right-0 bg-gradient-to-r from-red-600 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg z-10">
+                    PROMO
+                  </div>
+                )}
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="w-20 h-20 bg-gradient-to-br from-red-50 to-orange-50 rounded-lg overflow-hidden flex items-center justify-center">
@@ -283,17 +323,25 @@ export function ProductManagement() {
                         <Package className="h-8 w-8 text-red-600" />
                       )}
                     </div>
-                    <Badge
-                      className={
-                        product.stock > 20
-                          ? 'bg-green-100 text-green-700'
-                          : product.stock > 0
-                          ? 'bg-yellow-100 text-yellow-700'
-                          : 'bg-red-100 text-red-700'
-                      }
-                    >
-                      {product.stock > 20 ? 'Tersedia' : product.stock > 0 ? 'Menipis' : 'Habis'}
-                    </Badge>
+                    <div className="flex flex-col gap-1">
+                      <Badge
+                        className={
+                          product.stock > 20
+                            ? 'bg-green-100 text-green-700'
+                            : product.stock > 0
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : 'bg-red-100 text-red-700'
+                        }
+                      >
+                        {product.stock > 20 ? 'Tersedia' : product.stock > 0 ? 'Menipis' : 'Habis'}
+                      </Badge>
+                      {product.isPromo && (
+                        <Badge className="bg-red-500 text-white">
+                          <Percent className="h-3 w-3 mr-1" />
+                          {product.discountPercent}%
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                   <CardTitle className="text-lg line-clamp-2">{product.name}</CardTitle>
                 </CardHeader>
@@ -303,9 +351,20 @@ export function ProductManagement() {
                   )}
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-2xl font-bold text-red-600">
-                        Rp {product.price.toLocaleString()}
-                      </p>
+                      {product.isPromo && product.promoPrice ? (
+                        <>
+                          <p className="text-sm text-gray-500 line-through">
+                            Rp {product.price.toLocaleString()}
+                          </p>
+                          <p className="text-2xl font-bold text-red-600">
+                            Rp {product.promoPrice.toLocaleString()}
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-2xl font-bold text-red-600">
+                          Rp {product.price.toLocaleString()}
+                        </p>
+                      )}
                       <p className="text-sm text-gray-600">Stok: {product.stock}</p>
                     </div>
                     <Badge className="bg-blue-100 text-blue-700">
@@ -415,6 +474,31 @@ export function ProductManagement() {
                 className="w-full px-2 py-1.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none text-xs h-12"
               />
             </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="isPromo"
+                checked={formData.isPromo}
+                onChange={(e) => setFormData({ ...formData, isPromo: e.target.checked })}
+                className="w-3 h-3 text-red-600 border-gray-300 rounded focus:ring-red-500"
+              />
+              <label htmlFor="isPromo" className="text-xs font-medium text-gray-700">
+                Jadikan Promo
+              </label>
+            </div>
+            {formData.isPromo && (
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-0.5">Harga Promo (Rp)</label>
+                <Input
+                  type="number"
+                  value={formData.promoPrice}
+                  onChange={(e) => setFormData({ ...formData, promoPrice: e.target.value })}
+                  placeholder="12000 (lebih rendah dari harga asli)"
+                  min="0"
+                  className="h-8 text-xs px-2"
+                />
+              </div>
+            )}
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">Gambar Produk</label>
               <div className="space-y-1">
