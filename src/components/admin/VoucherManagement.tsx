@@ -418,62 +418,62 @@ export function VoucherManagement() {
 
       {/* Add/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-sm p-3">
-          <DialogHeader className="pb-2">
-            <DialogTitle className="text-base font-semibold">
-              {editingVoucher ? 'Edit Voucher' : 'Tambah Voucher'}
+        <DialogContent className="max-w-xs p-2">
+          <DialogHeader className="pb-1.5">
+            <DialogTitle className="text-sm font-semibold">
+              {editingVoucher ? 'Edit' : 'Tambah'}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-2">
-            <div className="grid grid-cols-2 gap-2">
+          <form onSubmit={handleSubmit} className="space-y-1.5">
+            <div className="grid grid-cols-2 gap-1.5">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Kode Voucher *</label>
+                <label className="block text-[10px] font-medium text-gray-700 mb-0.5">Kode *</label>
                 <Input
                   value={formData.code}
                   onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                  placeholder="WELCOME10"
+                  placeholder="CODE10"
                   required
-                  className="font-mono h-8 text-xs"
+                  className="font-mono h-7 text-[10px] px-2"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Nama Voucher *</label>
+                <label className="block text-[10px] font-medium text-gray-700 mb-0.5">Nama *</label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Voucher Selamat Datang"
+                  placeholder="Voucher"
                   required
-                  className="h-8 text-xs"
+                  className="h-7 text-[10px] px-2"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Deskripsi</label>
+              <label className="block text-[10px] font-medium text-gray-700 mb-0.5">Deskripsi</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Deskripsi voucher"
-                rows={2}
-                className="w-full px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none text-xs"
+                placeholder="Deskripsi"
+                rows={1}
+                className="w-full px-1.5 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none text-[10px] h-7"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1.5">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Tipe Diskon</label>
+                <label className="block text-[10px] font-medium text-gray-700 mb-0.5">Tipe</label>
                 <select
                   value={formData.discountType}
                   onChange={(e) => setFormData({ ...formData, discountType: e.target.value as 'percentage' | 'fixed' })}
-                  className="w-full px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-xs h-8"
+                  className="w-full px-1.5 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-[10px] h-7"
                 >
-                  <option value="percentage">Persentase (%)</option>
-                  <option value="fixed">Nominal (Rp)</option>
+                  <option value="percentage">%</option>
+                  <option value="fixed">Rp</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  {formData.discountType === 'percentage' ? 'Persentase Diskon (%) *' : 'Nominal Diskon (Rp) *'}
+                <label className="block text-[10px] font-medium text-gray-700 mb-0.5">
+                  {formData.discountType === 'percentage' ? 'Diskon (%) *' : 'Diskon (Rp) *'}
                 </label>
                 <Input
                   type="number"
@@ -482,99 +482,99 @@ export function VoucherManagement() {
                   placeholder="10"
                   required
                   min="0"
-                  className="h-8 text-xs"
+                  className="h-7 text-[10px] px-2"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1.5">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Minimal Order (Rp)</label>
+                <label className="block text-[10px] font-medium text-gray-700 mb-0.5">Min. Order</label>
                 <Input
                   type="number"
                   value={formData.minOrderAmount}
                   onChange={(e) => setFormData({ ...formData, minOrderAmount: e.target.value })}
                   placeholder="50000"
                   min="0"
-                  className="h-8 text-xs"
+                  className="h-7 text-[10px] px-2"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Maksimal Diskon (Rp)</label>
+                <label className="block text-[10px] font-medium text-gray-700 mb-0.5">Max. Diskon</label>
                 <Input
                   type="number"
                   value={formData.maxDiscountAmount}
                   onChange={(e) => setFormData({ ...formData, maxDiscountAmount: e.target.value })}
                   placeholder="50000"
                   min="0"
-                  className="h-8 text-xs"
+                  className="h-7 text-[10px] px-2"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1.5">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Tanggal Mulai *</label>
+                <label className="block text-[10px] font-medium text-gray-700 mb-0.5">Mulai *</label>
                 <Input
                   type="date"
                   value={formData.startDate}
                   onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                   required
-                  className="h-8 text-xs"
+                  className="h-7 text-[10px] px-1.5"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Tanggal Berakhir *</label>
+                <label className="block text-[10px] font-medium text-gray-700 mb-0.5">Berakhir *</label>
                 <Input
                   type="date"
                   value={formData.endDate}
                   onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                   required
-                  className="h-8 text-xs"
+                  className="h-7 text-[10px] px-1.5"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Batas Penggunaan</label>
+              <label className="block text-[10px] font-medium text-gray-700 mb-0.5">Batas Pakai</label>
               <Input
                 type="number"
                 value={formData.usageLimit}
                 onChange={(e) => setFormData({ ...formData, usageLimit: e.target.value })}
-                placeholder="100 (kosongkan untuk tanpa batas)"
+                placeholder="100"
                 min="1"
-                className="h-8 text-xs"
+                className="h-7 text-[10px] px-2"
               />
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <input
                 type="checkbox"
                 id="isActive"
                 checked={formData.isActive}
                 onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                className="w-3.5 h-3.5 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                className="w-3 h-3 text-red-600 border-gray-300 rounded focus:ring-red-500"
               />
-              <label htmlFor="isActive" className="text-xs font-medium text-gray-700">
-                Aktifkan Voucher
+              <label htmlFor="isActive" className="text-[10px] font-medium text-gray-700">
+                Aktif
               </label>
             </div>
 
-            <div className="flex gap-2 pt-2">
+            <div className="flex gap-1.5 pt-1">
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1 h-7 text-xs"
+                className="flex-1 h-6 text-[10px]"
                 onClick={() => setIsModalOpen(false)}
               >
-                <X className="h-3 w-3 mr-1" />
+                <X className="h-2.5 w-2.5 mr-0.5" />
                 Batal
               </Button>
               <Button
                 type="submit"
-                className="flex-1 h-7 text-xs bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
+                className="flex-1 h-6 text-[10px] bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
               >
-                <Save className="h-3 w-3 mr-1" />
+                <Save className="h-2.5 w-2.5 mr-0.5" />
                 Simpan
               </Button>
             </div>
