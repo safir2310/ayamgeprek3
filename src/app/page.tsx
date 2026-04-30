@@ -1699,63 +1699,63 @@ export default function HomePage() {
           }
         }}
       >
-        <DialogContent className="sm:max-w-[320px]">
+        <DialogContent className="sm:max-w-[280px]">
           <DialogHeader>
-            <DialogTitle className="text-base">Pembayaran QRIS</DialogTitle>
+            <DialogTitle className="text-sm">Pembayaran QRIS</DialogTitle>
           </DialogHeader>
           {qrisData && (
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <div className="text-center">
-                <p className="text-gray-600 mb-1.5 text-xs">Scan QR Code untuk membayar</p>
-                <div className="bg-white p-1.5 rounded-md border border-gray-200 inline-block">
+                <p className="text-gray-600 mb-1 text-[10px]">Scan QR untuk bayar</p>
+                <div className="bg-white p-1 rounded border border-gray-200 inline-block">
                   <img
                     src={qrisData.qrCode}
                     alt="QRIS QR Code"
-                    className="w-36 h-36 object-contain"
+                    className="w-32 h-32 object-contain"
                   />
                 </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-md p-2">
+              <div className="bg-blue-50 border border-blue-200 rounded p-1.5">
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-gray-600 text-[10px]">Merchant:</span>
-                  <span className="font-semibold text-[10px]">{qrisData.merchantName}</span>
+                  <span className="text-gray-600 text-[9px]">Merchant:</span>
+                  <span className="font-semibold text-[9px]">{qrisData.merchantName}</span>
                 </div>
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-gray-600 text-[10px]">NMID:</span>
-                  <span className="font-mono text-[10px]">{qrisData.nmId}</span>
+                  <span className="text-gray-600 text-[9px]">NMID:</span>
+                  <span className="font-mono text-[9px]">{qrisData.nmId}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600 text-[10px]">Jumlah:</span>
-                  <span className="font-bold text-red-600 text-sm">Rp {Number(qrisData.amount).toLocaleString()}</span>
+                  <span className="text-gray-600 text-[9px]">Jumlah:</span>
+                  <span className="font-bold text-red-600 text-xs">Rp {Number(qrisData.amount).toLocaleString()}</span>
                 </div>
               </div>
 
-              <div className="bg-yellow-50 border border-yellow-200 rounded-md p-1.5">
-                <p className="text-[10px] text-yellow-800">
-                  <span className="font-semibold">Catatan:</span> Scan QR menggunakan e-wallet/mobile banking.
+              <div className="bg-yellow-50 border border-yellow-200 rounded p-1">
+                <p className="text-[9px] text-yellow-800">
+                  Scan QR di e-wallet/banking
                 </p>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-md p-1.5">
-                <p className="text-[10px] text-blue-800">
-                  <span className="font-semibold">⏱️ Auto-detect:</span> Sistem otomatis cek setiap 3 detik.
+              <div className="bg-blue-50 border border-blue-200 rounded p-1">
+                <p className="text-[9px] text-blue-800">
+                  ⏱️ Auto-detect: cek tiap 3 detik
                 </p>
               </div>
 
               {/* Payment Confirmation Tabs */}
               <Tabs defaultValue="upload" value={paymentMethodTab} onValueChange={(v) => setPaymentMethodTab(v as 'upload' | 'manual')} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 h-7">
-                  <TabsTrigger value="upload" className="text-[10px]">
+                <TabsList className="grid w-full grid-cols-2 h-6">
+                  <TabsTrigger value="upload" className="text-[9px]">
                     📤 Upload
                   </TabsTrigger>
-                  <TabsTrigger value="manual" className="text-[10px]">
+                  <TabsTrigger value="manual" className="text-[9px]">
                     ✍️ Manual
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="upload" className="space-y-2 mt-2">
-                  <div className="border-2 border-dashed border-gray-300 rounded-md p-3">
+                <TabsContent value="upload" className="space-y-1.5 mt-1.5">
+                  <div className="border-2 border-dashed border-gray-300 rounded p-2">
                     <input
                       type="file"
                       id="payment-proof"
@@ -1773,42 +1773,35 @@ export default function HomePage() {
                       htmlFor="payment-proof"
                       className="flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
                     >
-                      <div className="text-2xl mb-1">📸</div>
-                      <p className="text-[10px] text-center text-gray-600 mb-0.5">
-                        {isProcessingPayment ? 'Memproses...' : 'Upload bukti pembayaran'}
-                      </p>
-                      <p className="text-[9px] text-center text-gray-400">
-                        JPG, PNG (Maks. 5MB)
+                      <div className="text-xl mb-0.5">📸</div>
+                      <p className="text-[9px] text-center text-gray-600">
+                        {isProcessingPayment ? 'Memproses...' : 'Upload bukti'}
                       </p>
                     </label>
                   </div>
 
                   {uploadedPaymentProof && (
                     <div className="text-center">
-                      <p className="text-[10px] text-green-600 mb-1">
+                      <p className="text-[9px] text-green-600 mb-0.5">
                         ✅ {uploadedPaymentProof.name}
                       </p>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setUploadedPaymentProof(null)}
-                        className="text-[10px] h-6 px-2"
+                        className="text-[9px] h-5 px-1.5"
                       >
                         Hapus
                       </Button>
                     </div>
                   )}
-
-                  <p className="text-[9px] text-gray-500 text-center">
-                    Sistem otomatis baca tanggal & verifikasi
-                  </p>
                 </TabsContent>
 
-                <TabsContent value="manual" className="space-y-2 mt-2">
-                  <div className="flex gap-1.5">
+                <TabsContent value="manual" className="space-y-1.5 mt-1.5">
+                  <div className="flex gap-1">
                     <Button
                       variant="outline"
-                      className="flex-1 h-7 text-[10px]"
+                      className="flex-1 h-6 text-[9px]"
                       onClick={() => {
                         navigator.clipboard.writeText(qrisData.nmId)
                         toast.success('NMID disalin!')
@@ -1817,7 +1810,7 @@ export default function HomePage() {
                       Copy NMID
                     </Button>
                     <Button
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 h-7 text-[10px]"
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 h-6 text-[9px]"
                       onClick={() => {
                         setIsQRISModalOpen(false)
                         toast.success('Pembayaran dikonfirmasi manual')
@@ -1827,9 +1820,6 @@ export default function HomePage() {
                       Sudah Bayar
                     </Button>
                   </div>
-                  <p className="text-[9px] text-gray-500 text-center">
-                    Konfirmasi manual tanpa upload bukti
-                  </p>
                 </TabsContent>
               </Tabs>
             </div>
