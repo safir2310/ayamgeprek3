@@ -266,6 +266,7 @@ export default function HomePage() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
     checkAuth()
   }, [])
@@ -544,31 +545,95 @@ export default function HomePage() {
         {currentTab === 'home' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             {/* Member Card */}
-            {user && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-6"
-              >
-                <Card className="bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 border-0 shadow-xl">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="text-white">
-                        <p className="text-sm opacity-90">Halo, {user.name || 'Pelanggan'}!</p>
-                        <h2 className="text-2xl font-bold">Level: {user.memberLevel}</h2>
-                      </div>
-                      <div className="text-right text-white">
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 fill-yellow-300" />
-                          <span className="font-bold">{user.points} Poin</span>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6"
+            >
+              <Card className="bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 border-0 shadow-xl overflow-hidden">
+                {/* Decorative pattern */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+
+                <CardContent className="p-5 relative">
+                  {user ? (
+                    <>
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="text-white">
+                          <div className="flex items-center gap-2 mb-1">
+                            <User className="h-4 w-4" />
+                            <p className="text-sm opacity-90">Halo, {user.name || 'Pelanggan'}!</p>
+                          </div>
+                          <h2 className="text-xl font-bold flex items-center gap-2">
+                            Member {user.memberLevel}
+                            <Badge className="bg-yellow-400 text-yellow-900 text-xs font-bold">
+                              {user.memberLevel}
+                            </Badge>
+                          </h2>
                         </div>
-                        <div className="text-sm opacity-90">{user.stampCount} Stamp • {user.starCount} Star</div>
+                        <div className="bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2">
+                          <div className="flex items-center gap-1 text-white">
+                            <Star className="h-5 w-5 fill-yellow-300" />
+                            <span className="font-bold text-lg">{user.points}</span>
+                          </div>
+                          <p className="text-white/80 text-xs text-center">Poin</p>
+                        </div>
                       </div>
+
+                      <div className="grid grid-cols-3 gap-3 mt-4">
+                        <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-center">
+                          <div className="text-2xl mb-1">💳</div>
+                          <div className="text-white font-bold text-lg">{user.points}</div>
+                          <div className="text-white/80 text-xs">Total Poin</div>
+                        </div>
+                        <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-center">
+                          <div className="text-2xl mb-1">🎯</div>
+                          <div className="text-white font-bold text-lg">{user.stampCount}</div>
+                          <div className="text-white/80 text-xs">Stamp</div>
+                        </div>
+                        <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-center">
+                          <div className="text-2xl mb-1">⭐</div>
+                          <div className="text-white font-bold text-lg">{user.starCount}</div>
+                          <div className="text-white/80 text-xs">Star</div>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 pt-4 border-t border-white/20">
+                        <div className="flex items-center justify-between text-white/90 text-sm">
+                          <div className="flex items-center gap-2">
+                            <Tag className="h-4 w-4" />
+                            <span>ID Member: {user.id.slice(0, 8).toUpperCase()}</span>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-white hover:bg-white/20"
+                            onClick={() => setCurrentTab('account')}
+                          >
+                            Lihat Detail
+                            <ArrowRight className="h-4 w-4 ml-1" />
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-center py-4">
+                      <div className="text-5xl mb-3">👤</div>
+                      <h3 className="text-xl font-bold text-white mb-2">Bergabung Menjadi Member</h3>
+                      <p className="text-white/90 text-sm mb-4">
+                        Dapatkan poin, stamp, dan star untuk setiap pembelian!
+                      </p>
+                      <Button
+                        className="bg-white text-red-600 hover:bg-gray-100 font-bold"
+                        onClick={() => setIsAuthModalOpen(true)}
+                      >
+                        Daftar / Login Sekarang
+                      </Button>
                     </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
 
             {/* Promo Banner */}
             <motion.div
