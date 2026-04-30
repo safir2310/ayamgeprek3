@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useStore } from '@/store/useStore'
+import Barcode from 'react-barcode'
 import {
   Search,
   ShoppingCart,
@@ -599,21 +600,45 @@ export default function HomePage() {
                       </div>
 
                       <div className="mt-4 pt-4 border-t border-white/20">
-                        <div className="flex items-center justify-between text-white/90 text-sm">
+                        <div className="flex items-center justify-between text-white/90 text-sm mb-3">
                           <div className="flex items-center gap-2">
                             <Tag className="h-4 w-4" />
                             <span>ID Member: {user.id.slice(0, 8).toUpperCase()}</span>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-white hover:bg-white/20"
-                            onClick={() => setCurrentTab('account')}
-                          >
-                            Lihat Detail
-                            <ArrowRight className="h-4 w-4 ml-1" />
-                          </Button>
+                          <Badge className="bg-white/20 text-white text-xs">
+                            {user.memberLevel}
+                          </Badge>
                         </div>
+
+                        {/* Barcode Section */}
+                        <div className="bg-white rounded-lg p-3 mb-3">
+                          <div className="flex justify-center mb-2">
+                            <Barcode
+                              value={user.phone || user.id}
+                              width={2}
+                              height={50}
+                              displayValue={false}
+                              background="white"
+                              lineColor="#1F2937"
+                            />
+                          </div>
+                          <p className="text-center text-gray-800 font-bold text-sm tracking-wider">
+                            {user.phone || user.id}
+                          </p>
+                          <p className="text-center text-gray-500 text-xs mt-1">
+                            Scan untuk member points
+                          </p>
+                        </div>
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full text-white hover:bg-white/20"
+                          onClick={() => setCurrentTab('account')}
+                        >
+                          Lihat Detail Member
+                          <ArrowRight className="h-4 w-4 ml-1" />
+                        </Button>
                       </div>
                     </>
                   ) : (
