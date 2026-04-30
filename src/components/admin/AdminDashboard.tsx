@@ -30,6 +30,7 @@ import {
   Gift,
   Percent,
   Layers,
+  CheckSquare,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -43,6 +44,7 @@ import { SalesReports } from '@/components/admin/SalesReports'
 import { CategoryManagement } from '@/components/admin/CategoryManagement'
 import { VoucherManagement } from '@/components/admin/VoucherManagement'
 import { PromoManagement } from '@/components/admin/PromoManagement'
+import { PaymentConfirmation } from '@/components/admin/PaymentConfirmation'
 
 interface DashboardStats {
   totalSales: number;
@@ -163,7 +165,8 @@ const AdminDashboard: React.FC = () => {
     { id: 'categories', icon: Layers, label: 'Categories' },
     { id: 'vouchers', icon: Tag, label: 'Vouchers' },
     { id: 'promo', icon: Gift, label: 'Promo' },
-    { id: 'orders', icon: ShoppingCart, label: 'Orders' },
+    { id: 'orders', icon: ShoppingBag, label: 'Orders' },
+    { id: 'payments', icon: CheckSquare, label: 'Payment Confirmation' },
     { id: 'customers', icon: Users, label: 'Customers' },
     { id: 'reports', icon: TrendingUp, label: 'Reports' },
     { id: 'database', icon: Database, label: 'Database' },
@@ -491,6 +494,16 @@ const AdminDashboard: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
               >
                 <OrderManagement onBack={() => setActivePage('dashboard')} />
+              </motion.div>
+            )}
+
+            {/* Payments Page */}
+            {activePage === 'payments' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <PaymentConfirmation />
               </motion.div>
             )}
 
