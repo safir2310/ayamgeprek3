@@ -22,6 +22,9 @@ import {
   DollarSign,
   ShoppingCart,
   ArrowUp,
+  Menu,
+  X,
+  ChevronRight,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -61,6 +64,8 @@ export function AdminDashboard({ onBack }: { onBack?: () => void }) {
   const [isSyncing, setIsSyncing] = useState(false)
   const [syncData, setSyncData] = useState<DatabaseSyncData | null>(null)
   const [lastSyncTime, setLastSyncTime] = useState<string | null>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [activePage, setActivePage] = useState('dashboard')
   const [stats, setStats] = useState<StatCard[]>([
     {
       title: 'Total Pendapatan',
@@ -204,6 +209,51 @@ export function AdminDashboard({ onBack }: { onBack?: () => void }) {
     handleSync()
   }, [])
 
+  const navigationItems = [
+    {
+      id: 'dashboard',
+      title: 'Dashboard',
+      icon: LayoutDashboard,
+      color: 'text-red-600',
+    },
+    {
+      id: 'pos',
+      title: 'Point of Sale',
+      icon: Store,
+      color: 'text-orange-600',
+    },
+    {
+      id: 'products',
+      title: 'Kelola Produk',
+      icon: Package,
+      color: 'text-blue-600',
+    },
+    {
+      id: 'orders',
+      title: 'Daftar Pesanan',
+      icon: ShoppingBag,
+      color: 'text-green-600',
+    },
+    {
+      id: 'customers',
+      title: 'Pelanggan',
+      icon: Users,
+      color: 'text-purple-600',
+    },
+    {
+      id: 'reports',
+      title: 'Laporan',
+      icon: BarChart3,
+      color: 'text-pink-600',
+    },
+    {
+      id: 'database',
+      title: 'Database',
+      icon: Database,
+      color: 'text-indigo-600',
+    },
+  ]
+
   if (showPOS) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -237,22 +287,32 @@ export function AdminDashboard({ onBack }: { onBack?: () => void }) {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <header className="bg-gradient-to-r from-red-600 to-orange-500 text-white px-6 py-4 shadow-lg">
+      <header className="bg-gradient-to-r from-red-600 to-orange-500 text-white px-4 md:px-6 py-4 shadow-lg sticky top-0 z-40">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
+            {/* Mobile Menu Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden text-white hover:bg-white/20"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+            >
+              {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+
             {onBack && (
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20"
+                className="hidden md:flex text-white hover:bg-white/20"
                 onClick={onBack}
               >
                 <ArrowRight className="h-5 w-5 rotate-180" />
               </Button>
             )}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-md">
-                <svg viewBox="0 0 100 100" className="w-8 h-8">
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-white rounded-xl flex items-center justify-center shadow-md">
+                <svg viewBox="0 0 100 100" className="w-6 h-6 md:w-8 md:h-8">
                   <defs>
                     <linearGradient id="logoGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="#DC2626" stopOpacity={1} />
@@ -309,25 +369,167 @@ export function AdminDashboard({ onBack }: { onBack?: () => void }) {
                 </svg>
               </div>
               <div>
-                <h1 className="text-lg font-bold">ADMIN DASHBOARD</h1>
-                <p className="text-xs text-white/80">Ayam Geprek Sambal Ijo</p>
+                <h1 className="text-base md:text-lg font-bold">ADMIN DASHBOARD</h1>
+                <p className="text-[10px] md:text-xs text-white/80 hidden sm:block">Ayam Geprek Sambal Ijo</p>
               </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className="text-right text-sm">
+            <div className="text-right text-sm hidden sm:block">
               <p className="font-semibold">{user?.name || 'Admin'}</p>
               <p className="text-xs text-white/80">{new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
             </div>
-            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-white/20 rounded-full flex items-center justify-center">
               👤
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 container mx-auto px-6 py-8">
+      {/* Main Layout */}
+      <div className="flex-1 flex">
+        {/* Sidebar - Desktop */}
+        <aside className="hidden md:flex md:flex-col md:w-64 bg-white shadow-lg h-[calc(100vh-64px)] sticky top-16">
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+            {navigationItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setActivePage(item.id)
+                  if (item.id === 'pos') {
+                    setShowPOS(true)
+                  }
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group ${
+                  activePage === item.id
+                    ? 'bg-gradient-to-r from-red-50 to-orange-50 text-red-600 shadow-md'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                }`}
+              >
+                <item.icon className={`h-5 w-5 ${item.color}`} />
+                <span className="font-medium flex-1 text-left">{item.title}</span>
+                {activePage === item.id && <ChevronRight className="h-4 w-4 text-red-600" />}
+              </button>
+            ))}
+          </nav>
+
+          {/* User Info at Bottom */}
+          <div className="p-4 border-t">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white font-bold">
+                {user?.name?.charAt(0) || 'A'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-900 truncate">{user?.name || 'Admin'}</p>
+                <p className="text-xs text-gray-500 truncate">Administrator</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-gray-500 hover:text-red-600 hover:bg-red-50"
+                onClick={onBack}
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </aside>
+
+        {/* Mobile Sidebar Overlay */}
+        <AnimatePresence>
+          {sidebarOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSidebarOpen(false)}
+                className="fixed inset-0 bg-black/50 z-40 md:hidden"
+              />
+              <motion.aside
+                initial={{ x: '-100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '-100%' }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="fixed inset-y-0 left-0 w-72 bg-white shadow-xl z-50 md:hidden"
+              >
+                <div className="p-4 bg-gradient-to-r from-red-600 to-orange-500 text-white">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-md">
+                      <svg viewBox="0 0 100 100" className="w-8 h-8">
+                        <defs>
+                          <linearGradient id="logoGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#DC2626" stopOpacity={1} />
+                            <stop offset="100%" stopColor="#F97316" stopOpacity={1} />
+                          </linearGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="44" fill="url(#logoGrad3)" />
+                        <ellipse cx="50" cy="52" rx="20" ry="18" fill="#FCD34D" stroke="#B45309" strokeWidth="1.5" />
+                        <circle cx="50" cy="42" r="11" fill="#FCD34D" stroke="#B45309" strokeWidth="1.5" />
+                        <ellipse cx="46" cy="40" rx="3" ry="3.5" fill="#FFF" />
+                        <ellipse cx="54" cy="40" rx="3" ry="3.5" fill="#FFF" />
+                        <circle cx="46" cy="40" r="1.5" fill="#1F2937" />
+                        <circle cx="54" cy="40" r="1.5" fill="#1F2937" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold">Ayam Geprek</h2>
+                      <p className="text-xs text-white/80">Sambal Ijo</p>
+                    </div>
+                  </div>
+                </div>
+
+                <nav className="flex-1 p-4 space-y-1 overflow-y-auto h-[calc(100vh-140px)]">
+                  {navigationItems.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        setActivePage(item.id)
+                        if (item.id === 'pos') {
+                          setShowPOS(true)
+                        }
+                        setSidebarOpen(false)
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group ${
+                        activePage === item.id
+                          ? 'bg-gradient-to-r from-red-50 to-orange-50 text-red-600 shadow-md'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                    >
+                      <item.icon className={`h-5 w-5 ${item.color}`} />
+                      <span className="font-medium flex-1 text-left">{item.title}</span>
+                      {activePage === item.id && <ChevronRight className="h-4 w-4 text-red-600" />}
+                    </button>
+                  ))}
+                </nav>
+
+                {/* User Info at Bottom */}
+                <div className="p-4 border-t bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white font-bold">
+                      {user?.name?.charAt(0) || 'A'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 truncate">{user?.name || 'Admin'}</p>
+                      <p className="text-xs text-gray-500 truncate">Administrator</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-gray-500 hover:text-red-600 hover:bg-red-50"
+                      onClick={onBack}
+                    >
+                      <LogOut className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </motion.aside>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Main Content */}
+        <main className="flex-1 container mx-auto px-4 md:px-6 py-8 overflow-y-auto">
         {/* Welcome Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -605,11 +807,12 @@ export function AdminDashboard({ onBack }: { onBack?: () => void }) {
             </Card>
           </motion.div>
         </div>
-      </main>
+        </main>
+        </div>
 
       {/* Footer */}
       <footer className="bg-white border-t py-4">
-        <div className="container mx-auto px-6 text-center text-sm text-gray-600">
+        <div className="container mx-auto px-4 md:px-6 text-center text-sm text-gray-600">
           <p>© 2024 Ayam Geprek Sambal Ijo. Admin Dashboard v1.0</p>
         </div>
       </footer>
