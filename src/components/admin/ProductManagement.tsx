@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Plus, Edit, Trash2, Package, X, Save, Image as ImageIcon } from 'lucide-react'
+import { Search, Plus, Edit, Trash2, Package, X, Save, Upload, X as XIcon, Image as ImageIcon } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,6 +27,9 @@ export function ProductManagement() {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -52,7 +55,7 @@ export function ProductManagement() {
         stock: 50,
         category: 'makanan',
         description: 'Ayam geprek dengan sambal ijo pedas',
-        image: '🍗',
+        image: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23fee2e2" width="100" height="100"/%3E%3Ctext x="50" y="55" font-size="40" text-anchor="middle"%3E🍗%3C/text%3E%3C/svg%3E',
         createdAt: new Date()
       },
       {
@@ -62,7 +65,17 @@ export function ProductManagement() {
         stock: 100,
         category: 'minuman',
         description: 'Es teh manis segar',
-        image: '🧃',
+        image: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23dbeafe" width="100" height="100"/%3E%3Ctext x="50" y="55" font-size="40" text-anchor="middle"%3E🧃%3C/text%3E%3C/svg%3E',
+        createdAt: new Date()
+      },
+      {
+        id: '3',
+        name: 'Keripik Singkong',
+        price: 8000,
+        stock: 35,
+        category: 'snack',
+        description: 'Keripik singkong renyah dengan bumbu gurih',
+        image: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23fef3c7" width="100" height="100"/%3E%3Ctext x="50" y="55" font-size="40" text-anchor="middle"%3E🍟%3C/text%3E%3C/svg%3E',
         createdAt: new Date()
       },
     ])
@@ -76,6 +89,8 @@ export function ProductManagement() {
 
   const handleAdd = () => {
     setEditingProduct(null)
+    setImagePreview(null)
+    setSelectedFile(null)
     setFormData({
       name: '',
       price: '',
@@ -89,6 +104,8 @@ export function ProductManagement() {
 
   const handleEdit = (product: Product) => {
     setEditingProduct(product)
+    setImagePreview(product.image || null)
+    setSelectedFile(null)
     setFormData({
       name: product.name,
       price: product.price.toString(),
@@ -112,6 +129,33 @@ export function ProductManagement() {
     }
   }
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error('Ukuran gambar maksimal 2MB')
+        return
+      }
+      
+      setSelectedFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string)
+        setFormData({ ...formData, image: reader.result as string })
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleRemoveImage = () => {
+    setImagePreview(null)
+    setSelectedFile(null)
+    setFormData({ ...formData, image: '' })
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -127,7 +171,7 @@ export function ProductManagement() {
         stock: parseInt(formData.stock),
         category: formData.category,
         description: formData.description.trim(),
-        image: formData.image.trim()
+        image: imagePreview || ''
       }
 
       if (editingProduct) {
@@ -152,6 +196,8 @@ export function ProductManagement() {
       }
 
       setIsModalOpen(false)
+      setImagePreview(null)
+      setSelectedFile(null)
     } catch (error) {
       toast.error('Gagal menyimpan produk')
     }
@@ -222,8 +268,20 @@ export function ProductManagement() {
               <Card className="h-full hover:shadow-xl transition-all duration-300">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
-                    <div className="w-16 h-16 bg-gradient-to-br from-red-50 to-orange-50 rounded-lg flex items-center justify-center text-4xl">
-                      {product.image || <Package className="h-8 w-8 text-red-600" />}
+                    <div className="w-20 h-20 bg-gradient-to-br from-red-50 to-orange-50 rounded-lg overflow-hidden flex items-center justify-center">
+                      {product.image ? (
+                        product.image.startsWith('data:') ? (
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-4xl">{product.image}</span>
+                        )
+                      ) : (
+                        <Package className="h-8 w-8 text-red-600" />
+                      )}
                     </div>
                     <Badge
                       className={
@@ -290,13 +348,13 @@ export function ProductManagement() {
 
       {/* Add/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl">
+        <DialogContent className="max-w-sm p-4">
+          <DialogHeader className="pb-3">
+            <DialogTitle className="text-lg">
               {editingProduct ? 'Edit Produk' : 'Tambah Produk Baru'}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Nama Produk *</label>
               <Input
@@ -304,9 +362,10 @@ export function ProductManagement() {
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Masukkan nama produk"
                 required
+                className="h-9 text-sm"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Harga (Rp) *</label>
                 <Input
@@ -316,6 +375,7 @@ export function ProductManagement() {
                   placeholder="0"
                   required
                   min="0"
+                  className="h-9 text-sm"
                 />
               </div>
               <div>
@@ -327,6 +387,7 @@ export function ProductManagement() {
                   placeholder="0"
                   required
                   min="0"
+                  className="h-9 text-sm"
                 />
               </div>
             </div>
@@ -335,7 +396,7 @@ export function ProductManagement() {
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm h-9"
                 required
               >
                 <option value="makanan">Makanan</option>
@@ -350,60 +411,65 @@ export function ProductManagement() {
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Masukkan deskripsi produk"
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                rows={2}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none text-sm"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Emoji/Icon</label>
-              <div className="flex gap-2">
-                <Input
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  placeholder="🍗"
-                  className="flex-1"
+              <label className="block text-sm font-medium text-gray-700 mb-2">Gambar Produk</label>
+              <div className="space-y-2">
+                {imagePreview ? (
+                  <div className="relative w-full h-32 rounded-lg overflow-hidden border-2 border-gray-200">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                    >
+                      <XIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-red-500 hover:bg-red-50 transition-colors"
+                  >
+                    <Upload className="h-6 w-6 text-gray-400 mb-1" />
+                    <p className="text-xs text-gray-600">Klik untuk upload</p>
+                    <p className="text-xs text-gray-400">Maks 2MB</p>
+                  </div>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setFormData({ ...formData, image: '🍗' })}
-                >
-                  🍗
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setFormData({ ...formData, image: '🧃' })}
-                >
-                  🧃
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setFormData({ ...formData, image: '🍟' })}
-                >
-                  🍟
-                </Button>
+                {selectedFile && (
+                  <p className="text-xs text-gray-500">File: {selectedFile.name}</p>
+                )}
               </div>
             </div>
-            <div className="flex gap-3 pt-4">
+            <div className="flex gap-3 pt-2">
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1"
+                className="flex-1 h-9 text-sm"
                 onClick={() => setIsModalOpen(false)}
               >
-                <X className="h-4 w-4 mr-2" />
+                <X className="h-3 w-3 mr-1" />
                 Batal
               </Button>
               <Button
                 type="submit"
-                className="flex-1 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
+                className="flex-1 h-9 text-sm bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
               >
-                <Save className="h-4 w-4 mr-2" />
+                <Save className="h-3 w-3 mr-1" />
                 Simpan
               </Button>
             </div>
