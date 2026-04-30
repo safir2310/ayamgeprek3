@@ -97,10 +97,12 @@ Only return the JSON, no additional text. The date format should be ISO format (
         // Update order to paid status
         const { db } = await import('@/lib/db')
 
-        // Update order status
+        // Update order status and save payment proof
         await db.order.update({
           where: { orderNumber: orderId },
           data: {
+            paymentProof: dataUrl, // Save base64 image
+            transactionDate: extractedData.transactionDate, // Save transaction date
             paymentStatus: 'paid',
             orderStatus: 'confirmed',
           },

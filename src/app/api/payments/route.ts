@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
             product: true,
           },
         },
-        customer: true,
+        user: true,
       },
       orderBy: {
         createdAt: 'desc',
@@ -28,8 +28,8 @@ export async function GET(req: NextRequest) {
     const payments = orders.map((order) => ({
       id: order.id,
       orderNumber: order.orderNumber,
-      customerName: order.customer?.name || order.customerName || 'Unknown',
-      customerPhone: order.customer?.phone || order.customerPhone || '-',
+      customerName: order.user?.name || order.customerName || 'Unknown',
+      customerPhone: order.user?.phone || order.customerPhone || '-',
       amount: order.finalAmount,
       paymentMethod: order.paymentMethod,
       paymentProof: order.paymentProof || undefined,
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
       items: order.items.map((item) => ({
         name: item.product.name,
         quantity: item.quantity,
-        price: item.product.price,
+        price: item.price,
       })),
     }))
 

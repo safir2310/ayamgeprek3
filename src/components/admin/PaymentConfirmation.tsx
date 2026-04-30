@@ -47,46 +47,7 @@ export function PaymentConfirmation() {
         const data = await res.json()
         setPayments(data.payments || [])
       } else {
-        // Fallback to mock data
-        setPayments([
-          {
-            id: '1',
-            orderNumber: 'ORD1704067200001',
-            customerName: 'Budi Santoso',
-            customerPhone: '081234567890',
-            amount: 65000,
-            paymentMethod: 'QRIS',
-            paymentProof: 'base64_mock_image_data',
-            paymentStatus: 'pending',
-            orderStatus: 'pending',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            items: [
-              { name: 'Ayam Geprek Keju', quantity: 2, price: 15000 },
-              { name: 'Es Teh Manis', quantity: 2, price: 5000 },
-              { name: 'Sambal Ijo Botol', quantity: 1, price: 25000 },
-            ],
-            transactionDate: new Date().toISOString(),
-          },
-          {
-            id: '2',
-            orderNumber: 'ORD1704067200002',
-            customerName: 'Siti Aminah',
-            customerPhone: '081298765432',
-            amount: 30000,
-            paymentMethod: 'QRIS',
-            paymentProof: 'base64_mock_image_data_2',
-            paymentStatus: 'pending',
-            orderStatus: 'pending',
-            createdAt: new Date(Date.now() - 3600000).toISOString(),
-            updatedAt: new Date(Date.now() - 3600000).toISOString(),
-            items: [
-              { name: 'Nasi Pecel Ayam', quantity: 1, price: 20000 },
-              { name: 'Kopi Susu Gula Aren', quantity: 1, price: 12000 },
-            ],
-            transactionDate: new Date(Date.now() - 3600000).toISOString(),
-          },
-        ])
+        toast.error('Gagal memuat data pembayaran')
       }
     } catch (error) {
       console.error('Error loading payments:', error)

@@ -97,13 +97,15 @@ model Order {
   discountAmount  Int         @default(0)
   finalAmount     Int
   paymentMethod   String      // QRIS, COD, Cash
-  paymentStatus   String      @default("pending") // pending, paid, failed
-  orderStatus     String      @default("pending") // pending, processing, shipped, completed, cancelled
+  paymentStatus   String      @default("pending") // pending, paid, verified, rejected, failed
+  orderStatus     String      @default("pending") // pending, processing, shipped, completed, cancelled, confirmed
   voucherCode     String?
   pointsEarned    Int         @default(0)
   pointsUsed      Int         @default(0)
   notes           String?
   qrCode          String?
+  paymentProof    String?     // Base64 image for payment proof
+  transactionDate DateTime?   // Date from payment proof
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 

@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     // Find the order
     const order = await db.order.findUnique({
       where: { id: paymentId },
-      include: { customer: true },
+      include: { user: true },
     })
 
     if (!order) {
@@ -39,14 +39,14 @@ export async function POST(req: NextRequest) {
         paymentStatus: status,
         orderStatus: status === 'verified' ? 'confirmed' : 'cancelled',
       },
-      include: { customer: true },
+      include: { user: true },
     })
 
-    // If payment is verified, update customer points
-    if (status === 'verified' && order.customerId) {
+    // If payment is verified, update user points
+    if (status === 'verified' && order.userId) {
       const pointsToAdd = Math.floor(order.finalAmount / 100) // 1 point per 100 IDR
-      await db.customer.update({
-        where: { id: order.customerId },
+      await db.user.update({
+        where: { id: order.userId },
         data: {
           points: {
             increment: pointsToAdd,
