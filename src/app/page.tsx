@@ -240,8 +240,11 @@ export default function HomePage() {
   const [isOrderDetailOpen, setIsOrderDetailOpen] = useState(false)
   const [isBarcodeModalOpen, setIsBarcodeModalOpen] = useState(false)
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false)
+  const [isQRISModalOpen, setIsQRISModalOpen] = useState(false)
   const [showFloatingBarcode, setShowFloatingBarcode] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
+  const [orders, setOrders] = useState<any[]>([])
+  const [qrisData, setQrisData] = useState<any>(null)
   const [selectedVoucher, setSelectedVoucher] = useState('')
   const [authData, setAuthData] = useState({ email: '', password: '', name: '', phone: '', address: '' })
   const [checkoutData, setCheckoutData] = useState({
@@ -327,8 +330,53 @@ export default function HomePage() {
       await fetch('/api/auth/me', { method: 'DELETE' })
       logout()
       toast.success('Logout berhasil')
+      setOrders([])
     } catch (error) {
       logout()
+      setOrders([])
+    }
+  }
+
+  const generateQRIS = async (amount: number, orderId: string) => {
+    try {
+      const res = await fetch('/api/qrcode/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, orderId }),
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        setQrisData(data)
+        setIsQRISModalOpen(true)
+      } else {
+        toast.error('Gagal generate QR Code')
+      }
+    } catch (error) {
+      console.error('QRIS generation error:', error)
+      toast.error('Gagal generate QR Code')
+    }
+  }
+
+  async function fetchOrdersFromApi(signal?: AbortSignal) {
+    if (!user || !token) return
+
+    try {
+      const res = await fetch('/api/orders', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        signal,
+      })
+
+      if (res.ok && (!signal || !signal.aborted)) {
+        const data = await res.json()
+        setOrders(data.orders || [])
+      }
+    } catch (error: any) {
+      if (!signal || error.name !== 'AbortError') {
+        console.error('Failed to fetch orders:', error)
+      }
     }
   }
 
@@ -364,11 +412,21 @@ export default function HomePage() {
       if (response.ok) {
         clearCart()
         setIsCheckoutOpen(false)
-        toast.success(`Order ${data.order.orderNumber} berhasil dibuat!`)
-        if (data.order.paymentMethod === 'QRIS' && data.order.qrCode) {
-          toast.info(`Scan QR Code untuk pembayaran`)
+        const orderData = data.order
+        toast.success(`Order ${orderData.orderNumber} berhasil dibuat!`)
+
+        if (checkoutData.paymentMethod === 'QRIS') {
+          // Generate QRIS QR code
+          await generateQRIS(orderData.finalAmount, orderData.orderNumber)
         }
+
         setCurrentTab('orders')
+        // Refresh orders after checkout
+        setTimeout(() => {
+          if (user && token) {
+            fetchOrdersFromApi()
+          }
+        }, 500)
       } else {
         toast.error(data.error || 'Terjadi kesalahan saat checkout')
       }
@@ -416,6 +474,21 @@ export default function HomePage() {
     }
     setIsCheckoutOpen(true)
   }
+
+  // Fetch orders when user changes or tab changes to orders
+  useEffect(() => {
+    if (user && currentTab === 'orders') {
+      const controller = new AbortController()
+      const signal = controller.signal
+
+      // Wrap in setTimeout to avoid synchronous setState
+      setTimeout(() => fetchOrdersFromApi(signal), 0)
+
+      return () => {
+        controller.abort()
+      }
+    }
+  }, [user, currentTab])
 
   if (!mounted) return null
 
@@ -991,14 +1064,25 @@ export default function HomePage() {
         {currentTab === 'orders' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <h2 className="text-2xl font-bold mb-4 text-gray-800">Riwayat Pesanan</h2>
-            {mockOrders.length === 0 ? (
+            {!user ? (
+              <Card className="p-8 text-center">
+                <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                <p className="text-gray-500 mb-4">Silakan login untuk melihat riwayat pesanan</p>
+                <Button
+                  className="bg-gradient-to-r from-red-500 to-orange-500"
+                  onClick={() => setIsAuthModalOpen(true)}
+                >
+                  Login Sekarang
+                </Button>
+              </Card>
+            ) : orders.length === 0 ? (
               <Card className="p-8 text-center">
                 <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
                 <p className="text-gray-500">Belum ada pesanan</p>
               </Card>
             ) : (
               <div className="space-y-4">
-                {mockOrders.map((order) => (
+                {orders.map((order) => (
                   <Card key={order.id} className="hover:shadow-lg transition-shadow cursor-pointer">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between mb-3">
@@ -1012,6 +1096,8 @@ export default function HomePage() {
                               ? 'bg-green-600'
                               : order.orderStatus === 'shipped'
                               ? 'bg-blue-600'
+                              : order.paymentStatus === 'paid'
+                              ? 'bg-green-600'
                               : 'bg-yellow-600'
                           }
                         >
@@ -1019,6 +1105,8 @@ export default function HomePage() {
                             ? 'Selesai'
                             : order.orderStatus === 'shipped'
                             ? 'Dikirim'
+                            : order.paymentStatus === 'paid'
+                            ? 'Sudah Bayar'
                             : 'Diproses'}
                         </Badge>
                       </div>
@@ -1040,16 +1128,27 @@ export default function HomePage() {
                         <span className="text-gray-600">{order.items.length} item</span>
                         <span className="font-bold text-red-600">Rp {order.finalAmount.toLocaleString()}</span>
                       </div>
-                      <Button
-                        variant="outline"
-                        className="w-full mt-3"
-                        onClick={() => {
-                          setSelectedOrder(order)
-                          setIsOrderDetailOpen(true)
-                        }}
-                      >
-                        Lihat Detail
-                      </Button>
+                      <div className="flex gap-2 mt-3">
+                        <Button
+                          variant="outline"
+                          className="flex-1"
+                          onClick={() => {
+                            setSelectedOrder(order)
+                            setIsOrderDetailOpen(true)
+                          }}
+                        >
+                          Lihat Detail
+                        </Button>
+                        {order.paymentMethod === 'QRIS' && order.paymentStatus === 'pending' && (
+                          <Button
+                            className="flex-1 bg-blue-600 hover:bg-blue-700"
+                            onClick={() => generateQRIS(order.finalAmount, order.orderNumber)}
+                          >
+                            <QrCode className="h-4 w-4 mr-1" />
+                            Bayar QRIS
+                          </Button>
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
@@ -1449,6 +1548,8 @@ export default function HomePage() {
                         ? 'bg-green-600'
                         : selectedOrder.orderStatus === 'shipped'
                         ? 'bg-blue-600'
+                        : selectedOrder.paymentStatus === 'paid'
+                        ? 'bg-green-600'
                         : 'bg-yellow-600'
                     }
                   >
@@ -1456,6 +1557,8 @@ export default function HomePage() {
                       ? 'Selesai'
                       : selectedOrder.orderStatus === 'shipped'
                       ? 'Dikirim'
+                      : selectedOrder.paymentStatus === 'paid'
+                      ? 'Sudah Bayar'
                       : 'Diproses'}
                   </Badge>
                 </div>
@@ -1487,6 +1590,73 @@ export default function HomePage() {
                 </div>
               </div>
             </ScrollArea>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* QRIS Payment Modal */}
+      <Dialog open={isQRISModalOpen} onOpenChange={setIsQRISModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Pembayaran QRIS</DialogTitle>
+          </DialogHeader>
+          {qrisData && (
+            <div className="space-y-4">
+              <div className="text-center">
+                <p className="text-gray-600 mb-2">Scan QR Code untuk membayar</p>
+                <div className="bg-white p-4 rounded-lg border-2 border-gray-200 inline-block">
+                  <img
+                    src={qrisData.qrCode}
+                    alt="QRIS QR Code"
+                    className="w-64 h-64"
+                  />
+                </div>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-gray-600">Merchant:</span>
+                  <span className="font-semibold">{qrisData.merchantName}</span>
+                </div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-gray-600">NMID:</span>
+                  <span className="font-mono text-sm">{qrisData.nmId}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Jumlah:</span>
+                  <span className="font-bold text-red-600 text-xl">Rp {qrisData.amount}</span>
+                </div>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-sm text-yellow-800">
+                  <span className="font-semibold">⚠️ Batas Waktu:</span> QR Code berlaku selama 30 menit. Silakan scan segera.
+                </p>
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    navigator.clipboard.writeText(qrisData.nmId)
+                    toast.success('NMID disalin!')
+                  }}
+                >
+                  Copy NMID
+                </Button>
+                <Button
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                  onClick={() => {
+                    setIsQRISModalOpen(false)
+                    toast.success('Pembayaran berhasil dikonfirmasi')
+                    fetchOrdersFromApi()
+                  }}
+                >
+                  Sudah Bayar
+                </Button>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>
