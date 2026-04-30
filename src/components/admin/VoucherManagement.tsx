@@ -418,60 +418,61 @@ export function VoucherManagement() {
 
       {/* Add/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-md p-4">
-          <DialogHeader className="pb-3">
-            <DialogTitle className="text-lg font-semibold">
-              {editingVoucher ? 'Edit Voucher' : 'Tambah Voucher Baru'}
+        <DialogContent className="max-w-sm p-3">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-base font-semibold">
+              {editingVoucher ? 'Edit Voucher' : 'Tambah Voucher'}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
+          <form onSubmit={handleSubmit} className="space-y-2">
+            <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Kode Voucher *</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Kode Voucher *</label>
                 <Input
                   value={formData.code}
                   onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                   placeholder="WELCOME10"
                   required
-                  className="font-mono"
+                  className="font-mono h-8 text-xs"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nama Voucher *</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Nama Voucher *</label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Voucher Selamat Datang"
                   required
+                  className="h-8 text-xs"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Deskripsi</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Deskripsi voucher"
                 rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none text-sm"
+                className="w-full px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none text-xs"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tipe Diskon</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Tipe Diskon</label>
                 <select
                   value={formData.discountType}
                   onChange={(e) => setFormData({ ...formData, discountType: e.target.value as 'percentage' | 'fixed' })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="w-full px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-xs h-8"
                 >
                   <option value="percentage">Persentase (%)</option>
                   <option value="fixed">Nominal (Rp)</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
                   {formData.discountType === 'percentage' ? 'Persentase Diskon (%) *' : 'Nominal Diskon (Rp) *'}
                 </label>
                 <Input
@@ -481,93 +482,99 @@ export function VoucherManagement() {
                   placeholder="10"
                   required
                   min="0"
+                  className="h-8 text-xs"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Minimal Order (Rp)</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Minimal Order (Rp)</label>
                 <Input
                   type="number"
                   value={formData.minOrderAmount}
                   onChange={(e) => setFormData({ ...formData, minOrderAmount: e.target.value })}
                   placeholder="50000"
                   min="0"
+                  className="h-8 text-xs"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Maksimal Diskon (Rp)</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Maksimal Diskon (Rp)</label>
                 <Input
                   type="number"
                   value={formData.maxDiscountAmount}
                   onChange={(e) => setFormData({ ...formData, maxDiscountAmount: e.target.value })}
                   placeholder="50000"
                   min="0"
+                  className="h-8 text-xs"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai *</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Tanggal Mulai *</label>
                 <Input
                   type="date"
                   value={formData.startDate}
                   onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                   required
+                  className="h-8 text-xs"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal Berakhir *</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Tanggal Berakhir *</label>
                 <Input
                   type="date"
                   value={formData.endDate}
                   onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                   required
+                  className="h-8 text-xs"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Batas Penggunaan</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Batas Penggunaan</label>
               <Input
                 type="number"
                 value={formData.usageLimit}
                 onChange={(e) => setFormData({ ...formData, usageLimit: e.target.value })}
                 placeholder="100 (kosongkan untuk tanpa batas)"
                 min="1"
+                className="h-8 text-xs"
               />
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <input
                 type="checkbox"
                 id="isActive"
                 checked={formData.isActive}
                 onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                className="w-3.5 h-3.5 text-red-600 border-gray-300 rounded focus:ring-red-500"
               />
-              <label htmlFor="isActive" className="text-sm font-medium text-gray-700">
+              <label htmlFor="isActive" className="text-xs font-medium text-gray-700">
                 Aktifkan Voucher
               </label>
             </div>
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-2 pt-2">
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1"
+                className="flex-1 h-7 text-xs"
                 onClick={() => setIsModalOpen(false)}
               >
-                <X className="h-4 w-4 mr-2" />
+                <X className="h-3 w-3 mr-1" />
                 Batal
               </Button>
               <Button
                 type="submit"
-                className="flex-1 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
+                className="flex-1 h-7 text-xs bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
               >
-                <Save className="h-4 w-4 mr-2" />
+                <Save className="h-3 w-3 mr-1" />
                 Simpan
               </Button>
             </div>
