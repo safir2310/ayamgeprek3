@@ -44,6 +44,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { POS } from '@/components/POS'
+import { AdminDashboard } from '@/components/AdminDashboard'
 
 // Mock data
 const mockProducts = [
@@ -235,7 +236,7 @@ export default function HomePage() {
     paymentMethod: 'COD',
     notes: '',
   })
-  const [showPOS, setShowPOS] = useState(false)
+  const [showAdminDashboard, setShowAdminDashboard] = useState(false)
 
   const {
     user,
@@ -252,11 +253,6 @@ export default function HomePage() {
     setCurrentTab,
   } = useStore()
 
-  useEffect(() => {
-    setMounted(true)
-    checkAuth()
-  }, [])
-
   const checkAuth = async () => {
     try {
       const res = await fetch('/api/auth/me')
@@ -268,6 +264,11 @@ export default function HomePage() {
       console.error('Auth check failed:', error)
     }
   }
+
+  useEffect(() => {
+    setMounted(true)
+    checkAuth()
+  }, [])
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -388,8 +389,8 @@ export default function HomePage() {
 
   if (!mounted) return null
 
-  if (showPOS) {
-    return <POS onBack={() => setShowPOS(false)} />
+  if (showAdminDashboard) {
+    return <AdminDashboard onBack={() => setShowAdminDashboard(false)} />
   }
 
   return (
@@ -414,7 +415,7 @@ export default function HomePage() {
                   variant="ghost"
                   size="icon"
                   className="text-white hover:bg-white/20"
-                  onClick={() => setShowPOS(!showPOS)}
+                  onClick={() => setShowAdminDashboard(true)}
                 >
                   <Store className="h-6 w-6" />
                 </Button>
