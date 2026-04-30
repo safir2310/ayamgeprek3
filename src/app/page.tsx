@@ -493,7 +493,7 @@ export default function HomePage() {
                 <h1 className="text-sm font-bold text-white tracking-wide">AYAM GEPREK SAMBAL IJO</h1>
                 <div className="flex items-center gap-1 text-white/90 text-xs">
                   <MapPin className="h-3 w-3" />
-                  <span>Jl. Merdeka No. 123, Jakarta</span>
+                  <span>Jl. Medan - Banda Aceh, Simpang Camat, Gampong Tijue, 24151</span>
                 </div>
               </div>
             </div>
