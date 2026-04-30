@@ -400,10 +400,26 @@ export default function HomePage() {
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-md">
-                <svg viewBox="0 0 24 24" className="w-5 h-5 text-red-600" fill="currentColor">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.73 1.05-1.42 1.78-3.14 2.06-4.97.16.56.22 1.15.22 1.75 0 3.58-2.28 6.69-5.53 7.63.96.52 2.06.83 3.24.83.58 0 1.13-.06 1.65-.17-.95 2.22-3.13 3.79-5.66 3.79-1.57 0-3.06-.53-4.27-1.49l1.17-.95c.69-.57 1.63-.65 2.42-.22.67.37 1.44.54 2.22.51zM8.5 9.5l1.5 1.5 1.5-1.5-1.5-1.5-1.5 1.5z"/>
-                  <path d="M19 13c0 2.92-1.56 5.47-3.9 6.87 1.05-1.25 1.45-2.93 1.01-4.55-.35-1.28-1.35-2.23-2.59-2.53-.91-.22-1.88-.09-2.67.36L10 13.65V11c0-1.1-.9-2-2-2V6.34C6.27 7.2 5 9.46 5 12c0 3.31 2.69 6 6 6h2c.35 0 .69-.03 1.02-.09-1.15-.89-1.93-2.23-2.11-3.73-.02-.15-.02-.31-.02-.46l.01-.24c.01-.15.03-.3.06-.44l.79-3.17c.08-.31-.12-.61-.42-.67-.07-.02-.15-.02-.22 0L10.03 11c-.18.05-.36.13-.31.31l.8 3.2c.01.05.01.1 0 .15l-.01.24c0 .15.01.31.02.46.19 1.58.99 3.01 2.2 3.97-.34.06-.69.09-1.04.09-2.48 0-4.5-2.02-4.5-4.5 0-1.63.89-3.05 2.2-3.83L9.23 6.2c.08-.33-.13-.65-.46-.73-.07-.02-.15-.02-.22 0L7.3 6.1c-.18.05-.36.14-.31.32l1.18 4.74c.18.72.62 1.35 1.23 1.8-.59.73-1.03 1.63-1.18 2.63-.03.21-.03.43 0 .64.09.6.29 1.18.63 1.69.1.63.23 1.25.38 1.82z" opacity="0.3"/>
+              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
+                <svg viewBox="0 0 100 100" className="w-8 h-8">
+                  <defs>
+                    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#DC2626" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#F97316" stopOpacity={1} />
+                    </linearGradient>
+                  </defs>
+                  <circle cx="50" cy="50" r="45" fill="url(#logoGrad)" />
+                  <path d="M50 25 L35 40 L40 30 Z M50 25 L65 40 L60 30 Z M45 40 L35 35 L38 32 Z M55 40 L65 35 L62 32 Z" fill="#FFF" opacity="0.9" />
+                  <path d="M30 50 Q25 45 28 40 Q35 42 32 50 Z" fill="#FFD700" opacity="0.8" />
+                  <path d="M70 50 Q75 45 72 40 Q65 42 68 50 Z" fill="#FFD700" opacity="0.8" />
+                  <ellipse cx="50" cy="55" rx="15" ry="20" fill="#FFF" opacity="0.95" />
+                  <circle cx="50" cy="50" r="8" fill="#DC2626" opacity="0.2" />
+                  <circle cx="46" cy="48" r="2" fill="#DC2626" />
+                  <circle cx="54" cy="48" r="2" fill="#DC2626" />
+                  <path d="M50 53 L47 56 L53 56 Z" fill="#F97316" />
+                  <circle cx="50" cy="75" r="3" fill="#FFD700" opacity="0.6" />
+                  <circle cx="40" cy="72" r="2" fill="#FFD700" opacity="0.5" />
+                  <circle cx="60" cy="72" r="2" fill="#FFD700" opacity="0.5" />
                 </svg>
               </div>
               <h1 className="text-sm font-bold text-white tracking-wide">AYAM GEPREK SAMBAL IJO</h1>
