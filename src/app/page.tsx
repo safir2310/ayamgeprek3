@@ -227,6 +227,7 @@ export default function HomePage() {
   const [isLogin, setIsLogin] = useState(true)
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
   const [isOrderDetailOpen, setIsOrderDetailOpen] = useState(false)
+  const [isBarcodeModalOpen, setIsBarcodeModalOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [selectedVoucher, setSelectedVoucher] = useState('')
   const [authData, setAuthData] = useState({ email: '', password: '', name: '', phone: '', address: '' })
@@ -610,25 +611,15 @@ export default function HomePage() {
                           </Badge>
                         </div>
 
-                        {/* Barcode Section */}
-                        <div className="bg-white rounded-lg p-3 mb-3">
-                          <div className="flex justify-center mb-2">
-                            <Barcode
-                              value={user.phone || user.id}
-                              width={2}
-                              height={50}
-                              displayValue={false}
-                              background="white"
-                              lineColor="#1F2937"
-                            />
-                          </div>
-                          <p className="text-center text-gray-800 font-bold text-sm tracking-wider">
-                            {user.phone || user.id}
-                          </p>
-                          <p className="text-center text-gray-500 text-xs mt-1">
-                            Scan untuk member points
-                          </p>
-                        </div>
+                        {/* Barcode Button */}
+                        <Button
+                          variant="outline"
+                          className="w-full bg-white/10 hover:bg-white/20 border-white/30 text-white mb-3"
+                          onClick={() => setIsBarcodeModalOpen(true)}
+                        >
+                          <QrCode className="h-4 w-4 mr-2" />
+                          Tampilkan Barcode Member
+                        </Button>
 
                         <Button
                           variant="ghost"
@@ -1464,6 +1455,78 @@ export default function HomePage() {
               </form>
             </TabsContent>
           </Tabs>
+        </DialogContent>
+      </Dialog>
+
+      {/* Barcode Modal */}
+      <Dialog open={isBarcodeModalOpen} onOpenChange={setIsBarcodeModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-2xl font-bold bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent">
+              Barcode Member
+            </DialogTitle>
+          </DialogHeader>
+          {user && (
+            <div className="space-y-6">
+              <Card className="bg-gradient-to-br from-red-50 to-orange-50 border-2 border-orange-200">
+                <CardContent className="p-6">
+                  <div className="text-center mb-4">
+                    <div className="inline-flex items-center gap-2 bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-semibold">
+                      <User className="h-4 w-4" />
+                      {user.name || 'Pelanggan'}
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-xl p-4 shadow-inner">
+                    <div className="flex justify-center mb-4">
+                      <Barcode
+                        value={user.phone || user.id}
+                        width={3}
+                        height={80}
+                        displayValue={false}
+                        background="white"
+                        lineColor="#1F2937"
+                      />
+                    </div>
+                    <div className="text-center space-y-1">
+                      <p className="text-2xl font-bold text-gray-800 tracking-widest">
+                        {user.phone || user.id}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        ID Member: {user.id.slice(0, 8).toUpperCase()}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-center gap-4 mt-4 pt-4 border-t border-orange-200">
+                    <div className="text-center">
+                      <div className="text-2xl">💳</div>
+                      <div className="text-sm font-semibold text-gray-800">{user.points}</div>
+                      <div className="text-xs text-gray-500">Poin</div>
+                    </div>
+                    <div className="w-px h-10 bg-orange-200"></div>
+                    <div className="text-center">
+                      <div className="text-2xl">🎯</div>
+                      <div className="text-sm font-semibold text-gray-800">{user.stampCount}</div>
+                      <div className="text-xs text-gray-500">Stamp</div>
+                    </div>
+                    <div className="w-px h-10 bg-orange-200"></div>
+                    <div className="text-center">
+                      <div className="text-2xl">⭐</div>
+                      <div className="text-sm font-semibold text-gray-800">{user.starCount}</div>
+                      <div className="text-xs text-gray-500">Star</div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 p-3 bg-orange-100 rounded-lg text-center">
+                    <p className="text-sm font-semibold text-orange-800">
+                      Scan barcode ini saat checkout untuk mendapatkan poin
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
