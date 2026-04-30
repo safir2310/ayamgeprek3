@@ -228,6 +228,7 @@ export default function HomePage() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
   const [isOrderDetailOpen, setIsOrderDetailOpen] = useState(false)
   const [isBarcodeModalOpen, setIsBarcodeModalOpen] = useState(false)
+  const [showFloatingBarcode, setShowFloatingBarcode] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [selectedVoucher, setSelectedVoucher] = useState('')
   const [authData, setAuthData] = useState({ email: '', password: '', name: '', phone: '', address: '' })
@@ -1529,6 +1530,110 @@ export default function HomePage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Floating Barcode Widget */}
+      {user && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed bottom-20 right-4 z-50"
+        >
+          <AnimatePresence>
+            {showFloatingBarcode && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                transition={{ duration: 0.2 }}
+                className="mb-3"
+              >
+                <Card className="bg-white border-2 border-orange-300 shadow-xl overflow-hidden">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center">
+                          <User className="h-4 w-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-sm text-gray-800">{user.name || 'Pelanggan'}</p>
+                          <p className="text-xs text-gray-500">{user.memberLevel}</p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => setShowFloatingBarcode(false)}
+                      >
+                        <XCircle className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-lg p-3">
+                      <div className="flex justify-center mb-2">
+                        <Barcode
+                          value={user.phone || user.id}
+                          width={1.5}
+                          height={40}
+                          displayValue={false}
+                          background="transparent"
+                          lineColor="#1F2937"
+                        />
+                      </div>
+                      <p className="text-center text-xs font-bold text-gray-800 tracking-wider">
+                        {user.phone || user.id}
+                      </p>
+                    </div>
+                    <div className="mt-3 grid grid-cols-3 gap-2">
+                      <div className="text-center">
+                        <div className="text-lg">💳</div>
+                        <div className="text-xs font-semibold text-gray-800">{user.points}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg">🎯</div>
+                        <div className="text-xs font-semibold text-gray-800">{user.stampCount}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg">⭐</div>
+                        <div className="text-xs font-semibold text-gray-800">{user.starCount}</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              onClick={() => setShowFloatingBarcode(!showFloatingBarcode)}
+              className="h-14 w-14 rounded-full bg-gradient-to-r from-red-500 to-orange-500 shadow-lg shadow-orange-500/50 hover:shadow-orange-500/75 border-2 border-white"
+            >
+              <AnimatePresence mode="wait">
+                {showFloatingBarcode ? (
+                  <motion.div
+                    key="close"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <XCircle className="h-6 w-6 text-white" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="barcode"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <QrCode className="h-6 w-6 text-white" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </Button>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   )
 }
