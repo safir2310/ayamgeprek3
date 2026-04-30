@@ -6,11 +6,14 @@ import { useStore } from '@/store/useStore'
 import {
   LayoutDashboard,
   ShoppingBag,
+  ShoppingCart,
   Package,
   Users,
   CreditCard,
   TrendingUp,
   ArrowRight,
+  ArrowUp,
+  ArrowDown,
   LogOut,
   Store,
   BarChart3,
@@ -18,10 +21,11 @@ import {
   Database,
   Clock,
   DollarSign,
-  ArrowUp,
   Menu,
   X,
   ChevronRight,
+  CheckCircle,
+  AlertCircle,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
