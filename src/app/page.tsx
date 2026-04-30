@@ -407,19 +407,82 @@ export default function HomePage() {
                       <stop offset="0%" stopColor="#DC2626" stopOpacity={1} />
                       <stop offset="100%" stopColor="#F97316" stopOpacity={1} />
                     </linearGradient>
+                    <linearGradient id="chickenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#FCD34D" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#F59E0B" stopOpacity={1} />
+                    </linearGradient>
+                    <linearGradient id="flameGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#EF4444" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#DC2626" stopOpacity={1} />
+                    </linearGradient>
+                    <filter id="glow">
+                      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                      <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                      </feMerge>
+                    </filter>
                   </defs>
-                  <circle cx="50" cy="50" r="45" fill="url(#logoGrad)" />
-                  <path d="M50 25 L35 40 L40 30 Z M50 25 L65 40 L60 30 Z M45 40 L35 35 L38 32 Z M55 40 L65 35 L62 32 Z" fill="#FFF" opacity="0.9" />
-                  <path d="M30 50 Q25 45 28 40 Q35 42 32 50 Z" fill="#FFD700" opacity="0.8" />
-                  <path d="M70 50 Q75 45 72 40 Q65 42 68 50 Z" fill="#FFD700" opacity="0.8" />
-                  <ellipse cx="50" cy="55" rx="15" ry="20" fill="#FFF" opacity="0.95" />
-                  <circle cx="50" cy="50" r="8" fill="#DC2626" opacity="0.2" />
-                  <circle cx="46" cy="48" r="2" fill="#DC2626" />
-                  <circle cx="54" cy="48" r="2" fill="#DC2626" />
-                  <path d="M50 53 L47 56 L53 56 Z" fill="#F97316" />
-                  <circle cx="50" cy="75" r="3" fill="#FFD700" opacity="0.6" />
-                  <circle cx="40" cy="72" r="2" fill="#FFD700" opacity="0.5" />
-                  <circle cx="60" cy="72" r="2" fill="#FFD700" opacity="0.5" />
+                  <circle cx="50" cy="50" r="46" fill="url(#logoGrad)" filter="url(#glow)" opacity="0.15" />
+                  <circle cx="50" cy="50" r="44" fill="url(#logoGrad)" />
+                  
+                  {/* Spicy flames background */}
+                  <path d="M25 55 Q20 45 28 35 Q35 40 32 55 Z" fill="#F97316" opacity="0.3" />
+                  <path d="M75 55 Q80 45 72 35 Q65 40 68 55 Z" fill="#F97316" opacity="0.3" />
+                  
+                  {/* Spicy droplets */}
+                  <circle cx="22" cy="62" r="4" fill="#DC2626" opacity="0.4" />
+                  <circle cx="78" cy="62" r="4" fill="#DC2626" opacity="0.4" />
+                  
+                  {/* Sambal chili peppers */}
+                  <ellipse cx="15" cy="70" rx="6" ry="12" fill="#DC2626" transform="rotate(-30 15 70)" />
+                  <ellipse cx="85" cy="70" rx="6" ry="12" fill="#DC2626" transform="rotate(30 85 70)" />
+                  <ellipse cx="20" cy="75" rx="4" ry="10" fill="#EF4444" transform="rotate(-45 20 75)" />
+                  <ellipse cx="80" cy="75" rx="4" ry="10" fill="#EF4444" transform="rotate(45 80 75)" />
+                  
+                  {/* Chicken body - main */}
+                  <ellipse cx="50" cy="52" rx="20" ry="18" fill="url(#chickenGrad)" stroke="#B45309" strokeWidth="1.5" />
+                  
+                  {/* Crispy effect */}
+                  <ellipse cx="50" cy="52" rx="18" ry="16" fill="none" stroke="#FCD34D" strokeWidth="2" strokeDasharray="3 3" opacity="0.3" />
+                  
+                  {/* Head */}
+                  <circle cx="50" cy="42" r="11" fill="url(#chickenGrad)" stroke="#B45309" strokeWidth="1.5" />
+                  
+                  {/* Comb */}
+                  <path d="M50 31 Q45 25 48 28 Q50 26 52 28 Q55 25 50 31 Z" fill="#DC2626" />
+                  <path d="M45 28 L40 26 L47 29 Z" fill="#F97316" opacity="0.8" />
+                  <path d="M55 28 L60 26 L53 29 Z" fill="#F97316" opacity="0.8" />
+                  
+                  {/* Eyes */}
+                  <ellipse cx="46" cy="40" rx="3" ry="3.5" fill="#FFF" />
+                  <ellipse cx="54" cy="40" rx="3" ry="3.5" fill="#FFF" />
+                  <circle cx="46" cy="40" r="1.5" fill="#1F2937" />
+                  <circle cx="54" cy="40" r="1.5" fill="#1F2937" />
+                  
+                  {/* Beak */}
+                  <path d="M50 44 L47 48 L53 48 Z" fill="#F97316" stroke="#B45309" strokeWidth="0.5" />
+                  <path d="M48 48 L50 46 L52 48 Z" fill="#FBBF24" opacity="0.5" />
+                  
+                  {/* Wattle */}
+                  <ellipse cx="50" cy="51" rx="3" ry="4" fill="#EF4444" opacity="0.8" />
+                  
+                  {/* Wings */}
+                  <path d="M30 48 Q25 42 28 50 Q32 48 30 48 Z" fill="url(#chickenGrad)" stroke="#B45309" strokeWidth="1" />
+                  <path d="M70 48 Q75 42 72 50 Q68 48 70 48 Z" fill="url(#chickenGrad)" stroke="#B45309" strokeWidth="1" />
+                  
+                  {/* Feet */}
+                  <path d="M42 68 L40 75 L44 75 L42 68 Z" fill="#F97316" />
+                  <path d="M58 68 L56 75 L60 75 L58 68 Z" fill="#F97316" />
+                  
+                  {/* Spicy accent glow */}
+                  <circle cx="50" cy="52" r="25" fill="url(#flameGrad)" opacity="0.08" />
+                  
+                  {/* Small spice particles */}
+                  <circle cx="35" cy="35" r="2" fill="#FCD34D" opacity="0.6" />
+                  <circle cx="65" cy="35" r="2" fill="#FCD34D" opacity="0.6" />
+                  <circle cx="42" cy="30" r="1.5" fill="#F97316" opacity="0.5" />
+                  <circle cx="58" cy="30" r="1.5" fill="#F97316" opacity="0.5" />
                 </svg>
               </div>
               <h1 className="text-sm font-bold text-white tracking-wide">AYAM GEPREK SAMBAL IJO</h1>
