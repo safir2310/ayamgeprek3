@@ -247,7 +247,7 @@ export default function HomePage() {
   const [qrisData, setQrisData] = useState<any>(null)
   const [uploadedPaymentProof, setUploadedPaymentProof] = useState<File | null>(null)
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
-  const [paymentMethodTab, setPaymentMethodTab] = useState<'upload' | 'manual'>('upload')
+  const [isPaymentUploadModalOpen, setIsPaymentUploadModalOpen] = useState(false)
 
   const {
     user,
@@ -403,16 +403,18 @@ export default function HomePage() {
 
       if (res.ok) {
         if (data.isPaymentValid && data.orderUpdated) {
-          toast.success('✅ Pembayaran berhasil dikonfirmasi otomatis!')
+          toast.success('✅ Pembayaran berhasil dikonfirmasi!')
+          setIsPaymentUploadModalOpen(false)
           setIsQRISModalOpen(false)
           fetchOrdersFromApi()
         } else if (data.isPaymentValid) {
-          toast.success('✅ Tanggal transaksi sesuai, pembayaran dikonfirmasi!')
+          toast.success('✅ Tanggal transaksi sesuai!')
+          setIsPaymentUploadModalOpen(false)
           setIsQRISModalOpen(false)
           fetchOrdersFromApi()
         } else {
           toast.warning(
-            `⚠️ Tanggal transaksi tidak sesuai (${data.transactionDate} vs ${data.orderDate})`
+            `⚠️ Tanggal tidak sesuai (${data.transactionDate} vs ${data.orderDate})`
           )
         }
       } else {
@@ -1743,87 +1745,110 @@ export default function HomePage() {
                 </p>
               </div>
 
-              {/* Payment Confirmation Tabs */}
-              <Tabs defaultValue="upload" value={paymentMethodTab} onValueChange={(v) => setPaymentMethodTab(v as 'upload' | 'manual')} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 h-6">
-                  <TabsTrigger value="upload" className="text-[9px]">
-                    📤 Upload
-                  </TabsTrigger>
-                  <TabsTrigger value="manual" className="text-[9px]">
-                    ✍️ Manual
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="upload" className="space-y-1.5 mt-1.5">
-                  <div className="border-2 border-dashed border-gray-300 rounded p-2">
-                    <input
-                      type="file"
-                      id="payment-proof"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (file) {
-                          handlePaymentProofUpload(file)
-                        }
-                      }}
-                      disabled={isProcessingPayment}
-                    />
-                    <label
-                      htmlFor="payment-proof"
-                      className="flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="text-xl mb-0.5">📸</div>
-                      <p className="text-[9px] text-center text-gray-600">
-                        {isProcessingPayment ? 'Memproses...' : 'Upload bukti'}
-                      </p>
-                    </label>
-                  </div>
-
-                  {uploadedPaymentProof && (
-                    <div className="text-center">
-                      <p className="text-[9px] text-green-600 mb-0.5">
-                        ✅ {uploadedPaymentProof.name}
-                      </p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setUploadedPaymentProof(null)}
-                        className="text-[9px] h-5 px-1.5"
-                      >
-                        Hapus
-                      </Button>
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="manual" className="space-y-1.5 mt-1.5">
-                  <div className="flex gap-1">
-                    <Button
-                      variant="outline"
-                      className="flex-1 h-6 text-[9px]"
-                      onClick={() => {
-                        navigator.clipboard.writeText(qrisData.nmId)
-                        toast.success('NMID disalin!')
-                      }}
-                    >
-                      Copy NMID
-                    </Button>
-                    <Button
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 h-6 text-[9px]"
-                      onClick={() => {
-                        setIsQRISModalOpen(false)
-                        toast.success('Pembayaran dikonfirmasi manual')
-                        fetchOrdersFromApi()
-                      }}
-                    >
-                      Sudah Bayar
-                    </Button>
-                  </div>
-                </TabsContent>
-              </Tabs>
+              {/* Buttons */}
+              <div className="flex gap-1 mt-2">
+                <Button
+                  variant="outline"
+                  className="flex-1 h-6 text-[9px]"
+                  onClick={() => {
+                    navigator.clipboard.writeText(qrisData.nmId)
+                    toast.success('NMID disalin!')
+                  }}
+                >
+                  Copy NMID
+                </Button>
+                <Button
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 h-6 text-[9px]"
+                  onClick={() => setIsPaymentUploadModalOpen(true)}
+                >
+                  Sudah Bayar
+                </Button>
+              </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Payment Upload Modal */}
+      <Dialog open={isPaymentUploadModalOpen} onOpenChange={setIsPaymentUploadModalOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-sm">Upload Bukti Pembayaran</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="border-2 border-dashed border-gray-300 rounded-md p-4">
+              <input
+                type="file"
+                id="payment-proof-upload"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) {
+                    handlePaymentProofUpload(file)
+                  }
+                }}
+                disabled={isProcessingPayment}
+              />
+              <label
+                htmlFor="payment-proof-upload"
+                className="flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
+              >
+                <div className="text-3xl mb-2">📸</div>
+                <p className="text-xs text-center text-gray-600 mb-1">
+                  {isProcessingPayment ? 'Sedang memproses...' : 'Upload bukti pembayaran'}
+                </p>
+                <p className="text-[10px] text-center text-gray-400">
+                  JPG, PNG (Maks. 5MB)
+                </p>
+              </label>
+            </div>
+
+            {uploadedPaymentProof && !isProcessingPayment && (
+              <div className="text-center">
+                <p className="text-xs text-green-600 mb-2">
+                  ✅ File terpilih: {uploadedPaymentProof.name}
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setUploadedPaymentProof(null)}
+                  className="text-xs h-7"
+                >
+                  Ganti File
+                </Button>
+              </div>
+            )}
+
+            <p className="text-[10px] text-gray-500 text-center">
+              Sistem akan otomatis membaca tanggal transaksi dan memverifikasi kecocokan
+            </p>
+
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1 h-8 text-xs"
+                onClick={() => {
+                  setIsPaymentUploadModalOpen(false)
+                  setUploadedPaymentProof(null)
+                }}
+              >
+                Batal
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1 h-8 text-xs"
+                onClick={() => {
+                  setIsPaymentUploadModalOpen(false)
+                  setIsQRISModalOpen(false)
+                  toast.success('Pembayaran dikonfirmasi manual')
+                  fetchOrdersFromApi()
+                }}
+              >
+                Konfirmasi Manual
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
