@@ -42,10 +42,6 @@ export function OrderManagement() {
 
   const statusOptions = ['all', 'pending', 'processing', 'shipped', 'completed', 'cancelled']
 
-  useEffect(() => {
-    loadOrders()
-  }, [])
-
   const loadOrders = () => {
     // Mock orders - will be replaced with API call
     setOrders([
@@ -85,6 +81,10 @@ export function OrderManagement() {
       },
     ])
   }
+
+  useEffect(() => {
+    loadOrders()
+  }, [])
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch =

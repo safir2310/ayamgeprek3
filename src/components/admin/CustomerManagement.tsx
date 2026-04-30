@@ -38,10 +38,6 @@ export function CustomerManagement() {
     isMember: false,
   })
 
-  useEffect(() => {
-    loadCustomers()
-  }, [])
-
   const loadCustomers = () => {
     // Mock customers - will be replaced with API call
     setCustomers([
@@ -85,6 +81,10 @@ export function CustomerManagement() {
       },
     ])
   }
+
+  useEffect(() => {
+    loadCustomers()
+  }, [])
 
   const filteredCustomers = customers.filter(customer => {
     const matchesSearch =

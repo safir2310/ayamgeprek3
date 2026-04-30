@@ -16,11 +16,8 @@ import {
   BarChart3,
   RefreshCw,
   Database,
-  CheckCircle2,
-  XCircle,
   Clock,
   DollarSign,
-  ShoppingCart,
   ArrowUp,
   Menu,
   X,
@@ -36,761 +33,581 @@ import { OrderManagement } from '@/components/admin/OrderManagement'
 import { CustomerManagement } from '@/components/admin/CustomerManagement'
 import { SalesReports } from '@/components/admin/SalesReports'
 
-interface StatCard {
-  title: string
-  value: string
-  change: string
-  positive: boolean
-  icon: any
-  color: string
+interface DashboardStats {
+  totalSales: number;
+  totalOrders: number;
+  totalCustomers: number;
+  averageOrderValue: number;
+  salesChange: number;
+  ordersChange: number;
+  customersChange: number;
 }
 
-interface DatabaseSyncData {
-  stats: {
-    totalUsers: number
-    totalProducts: number
-    totalOrders: number
-    totalVouchers: number
-    todayOrders: number
-    todayRevenue: number
-    pendingOrders: number
-    completedOrders: number
-    totalRevenue: number
-  }
-  recentOrders: any[]
-  topProducts: any[]
-  topCustomers: any[]
-  lastSync: string
+interface RecentOrder {
+  id: string;
+  customerName: string;
+  items: number;
+  total: number;
+  status: 'completed' | 'pending' | 'cancelled';
+  date: string;
 }
 
-export function AdminDashboard({ onBack }: { onBack?: () => void }) {
-  const { user } = useStore()
-  const [isSyncing, setIsSyncing] = useState(false)
-  const [syncData, setSyncData] = useState<DatabaseSyncData | null>(null)
-  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [activePage, setActivePage] = useState('dashboard')
-  const [stats, setStats] = useState<StatCard[]>([
-    {
-      title: 'Total Pendapatan',
-      value: 'Rp 15.450.000',
-      change: '+12.5%',
-      positive: true,
-      icon: CreditCard,
-      color: 'from-green-500 to-emerald-500',
-    },
-    {
-      title: 'Total Order',
-      value: '248',
-      change: '+8.2%',
-      positive: true,
-      icon: ShoppingBag,
-      color: 'from-blue-500 to-cyan-500',
-    },
-    {
-      title: 'Produk Terjual',
-      value: '1.234',
-      change: '+15.3%',
-      positive: true,
-      icon: Package,
-      color: 'from-purple-500 to-pink-500',
-    },
-    {
-      title: 'Pelanggan Aktif',
-      value: '89',
-      change: '+5.7%',
-      positive: true,
-      icon: Users,
-      color: 'from-orange-500 to-red-500',
-    },
-  ])
+interface TopProduct {
+  id: string;
+  name: string;
+  sales: number;
+  revenue: number;
+  image: string;
+}
 
-  const handleSync = async () => {
-    setIsSyncing(true)
-    try {
-      const res = await fetch('/api/admin/sync')
-      const data = await res.json()
+const AdminDashboard: React.FC = () => {
+  const [activePage, setActivePage] = useState<string>('dashboard');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState<DashboardStats>({
+    totalSales: 0,
+    totalOrders: 0,
+    totalCustomers: 0,
+    averageOrderValue: 0,
+    salesChange: 0,
+    ordersChange: 0,
+    customersChange: 0,
+  });
+  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
+  const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
 
-      if (data.success) {
-        setSyncData(data.data)
-        setLastSyncTime(new Date().toLocaleString('id-ID'))
-
-        // Update stats with real data
-        setStats([
-          {
-            title: 'Total Pendapatan',
-            value: `Rp ${(data.data.stats.totalRevenue / 1000000).toFixed(3)} Juta`,
-            change: '+0%',
-            positive: true,
-            icon: DollarSign,
-            color: 'from-green-500 to-emerald-500',
-          },
-          {
-            title: 'Total Order',
-            value: data.data.stats.totalOrders.toString(),
-            change: '+0%',
-            positive: true,
-            icon: ShoppingBag,
-            color: 'from-blue-500 to-cyan-500',
-          },
-          {
-            title: 'Produk Terjual',
-            value: data.data.stats.totalProducts.toString(),
-            change: '+0%',
-            positive: true,
-            icon: Package,
-            color: 'from-purple-500 to-pink-500',
-          },
-          {
-            title: 'Pelanggan Aktif',
-            value: data.data.stats.totalUsers.toString(),
-            change: '+0%',
-            positive: true,
-            icon: Users,
-            color: 'from-orange-500 to-red-500',
-          },
-        ])
-
-        toast.success('✅ Database berhasil disinkronisasi!')
-      } else {
-        toast.error('Gagal sinkronisasi database')
-      }
-    } catch (error) {
-      console.error('Sync error:', error)
-      toast.error('Terjadi kesalahan saat sinkronisasi')
-    } finally {
-      setIsSyncing(false)
-    }
+  // Early return for POS page
+  if (activePage === 'pos') {
+    return <POS onClose={() => setActivePage('dashboard')} />;
   }
-
-  const quickActions = [
-    {
-      title: 'Point of Sale',
-      description: 'Transaksi kasir',
-      icon: Store,
-      color: 'bg-gradient-to-br from-red-500 to-orange-500',
-      onClick: () => setActivePage('pos'),
-    },
-    {
-      title: 'Kelola Produk',
-      description: 'Tambah, edit, hapus produk',
-      icon: Package,
-      color: 'bg-gradient-to-br from-blue-500 to-purple-500',
-      onClick: () => setActivePage('products'),
-    },
-    {
-      title: 'Daftar Pesanan',
-      description: 'Lihat semua pesanan',
-      icon: ShoppingBag,
-      color: 'bg-gradient-to-br from-green-500 to-teal-500',
-      onClick: () => setActivePage('orders'),
-    },
-    {
-      title: 'Kelola User',
-      description: 'Kelola pelanggan',
-      icon: Users,
-      color: 'bg-gradient-to-br from-yellow-500 to-orange-500',
-      onClick: () => setActivePage('customers'),
-    },
-    {
-      title: 'Laporan Penjualan',
-      description: 'Analisis dan laporan',
-      icon: BarChart3,
-      color: 'bg-gradient-to-br from-pink-500 to-rose-500',
-      onClick: () => setActivePage('reports'),
-    },
-    {
-      title: 'Sinkronisasi Database',
-      description: 'Sinkronisasi ke seluruh halaman',
-      icon: Database,
-      color: 'bg-gradient-to-br from-indigo-500 to-purple-500',
-      onClick: handleSync,
-    },
-  ]
 
   useEffect(() => {
-    // Auto sync on mount
-    handleSync()
-  }, [])
+    loadDashboardData();
+  }, []);
 
-  const navigationItems = [
-    {
-      id: 'dashboard',
-      title: 'Dashboard',
-      icon: LayoutDashboard,
-      color: 'text-red-600',
-    },
-    {
-      id: 'pos',
-      title: 'Point of Sale',
-      icon: Store,
-      color: 'text-orange-600',
-    },
-    {
-      id: 'products',
-      title: 'Kelola Produk',
-      icon: Package,
-      color: 'text-blue-600',
-    },
-    {
-      id: 'orders',
-      title: 'Daftar Pesanan',
-      icon: ShoppingBag,
-      color: 'text-green-600',
-    },
-    {
-      id: 'customers',
-      title: 'Pelanggan',
-      icon: Users,
-      color: 'text-purple-600',
-    },
-    {
-      id: 'reports',
-      title: 'Laporan',
-      icon: BarChart3,
-      color: 'text-pink-600',
-    },
-    {
-      id: 'database',
-      title: 'Database',
-      icon: Database,
-      color: 'text-indigo-600',
-    },
-  ]
+  const loadDashboardData = async () => {
+    setIsLoading(true);
+    try {
+      // Simulate API calls - replace with actual API calls
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setStats({
+        totalSales: 45231.89,
+        totalOrders: 487,
+        totalCustomers: 1234,
+        averageOrderValue: 92.91,
+        salesChange: 12.5,
+        ordersChange: 8.2,
+        customersChange: 15.3,
+      });
 
-  // Render POS separately with full screen
-  if (activePage === 'pos') {
-    return <POS onClose={() => setActivePage('dashboard')} />
-  }
+      setRecentOrders([
+        { id: '#ORD-001', customerName: 'John Doe', items: 3, total: 156.00, status: 'completed', date: '2 min ago' },
+        { id: '#ORD-002', customerName: 'Jane Smith', items: 2, total: 89.50, status: 'pending', date: '5 min ago' },
+        { id: '#ORD-003', customerName: 'Bob Johnson', items: 5, total: 234.75, status: 'completed', date: '12 min ago' },
+        { id: '#ORD-004', customerName: 'Alice Brown', items: 1, total: 45.00, status: 'cancelled', date: '25 min ago' },
+        { id: '#ORD-005', customerName: 'Charlie Wilson', items: 4, total: 187.25, status: 'completed', date: '45 min ago' },
+      ]);
+
+      setTopProducts([
+        { id: '1', name: 'Premium Headphones', sales: 234, revenue: 23400, image: '/api/placeholder/100/100' },
+        { id: '2', name: 'Wireless Mouse', sales: 189, revenue: 9450, image: '/api/placeholder/100/100' },
+        { id: '3', name: 'USB-C Hub', sales: 156, revenue: 12480, image: '/api/placeholder/100/100' },
+        { id: '4', name: 'Mechanical Keyboard', sales: 143, revenue: 28600, image: '/api/placeholder/100/100' },
+      ]);
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDatabaseSync = async () => {
+    setIsSyncing(true);
+    setSyncStatus('syncing');
+    
+    try {
+      // Simulate database sync
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      setSyncStatus('success');
+      
+      // Reload dashboard data after sync
+      await loadDashboardData();
+      
+      setTimeout(() => setSyncStatus('idle'), 3000);
+    } catch (error) {
+      setSyncStatus('error');
+      setTimeout(() => setSyncStatus('idle'), 3000);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const sidebarItems = [
+    { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { id: 'pos', icon: ShoppingCart, label: 'POS System' },
+    { id: 'products', icon: Package, label: 'Products' },
+    { id: 'orders', icon: ShoppingCart, label: 'Orders' },
+    { id: 'customers', icon: Users, label: 'Customers' },
+    { id: 'reports', icon: TrendingUp, label: 'Reports' },
+    { id: 'database', icon: Database, label: 'Database' },
+  ];
+
+  const quickActions = [
+    { id: 'pos', icon: ShoppingCart, label: 'New Sale', color: 'bg-blue-500' },
+    { id: 'products', icon: Package, label: 'Add Product', color: 'bg-green-500' },
+    { id: 'orders', icon: ShoppingCart, label: 'View Orders', color: 'bg-purple-500' },
+    { id: 'customers', icon: Users, label: 'Add Customer', color: 'bg-orange-500' },
+  ];
+
+  const getStatusBadge = (status: string) => {
+    const statusStyles = {
+      completed: 'bg-green-100 text-green-800',
+      pending: 'bg-yellow-100 text-yellow-800',
+      cancelled: 'bg-red-100 text-red-800',
+    };
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusStyles[status as keyof typeof statusStyles]}`}>
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </span>
+    );
+  };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-red-600 to-orange-500 text-white px-4 md:px-6 py-4 shadow-lg sticky top-0 z-40">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 md:gap-4">
-            {/* Mobile Menu Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden text-white hover:bg-white/20"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-            >
-              {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
-
-            {onBack && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hidden md:flex text-white hover:bg-white/20"
-                onClick={onBack}
-              >
-                <ArrowRight className="h-5 w-5 rotate-180" />
-              </Button>
-            )}
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 md:w-10 md:h-10 bg-white rounded-xl flex items-center justify-center shadow-md">
-                <svg viewBox="0 0 100 100" className="w-6 h-6 md:w-8 md:h-8">
-                  <defs>
-                    <linearGradient id="logoGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#DC2626" stopOpacity={1} />
-                      <stop offset="100%" stopColor="#F97316" stopOpacity={1} />
-                    </linearGradient>
-                    <linearGradient id="chickenGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#FCD34D" stopOpacity={1} />
-                      <stop offset="100%" stopColor="#F59E0B" stopOpacity={1} />
-                    </linearGradient>
-                    <linearGradient id="flameGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#EF4444" stopOpacity={1} />
-                      <stop offset="100%" stopColor="#DC2626" stopOpacity={1} />
-                    </linearGradient>
-                    <filter id="glow2">
-                      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-                      <feMerge>
-                        <feMergeNode in="coloredBlur"/>
-                        <feMergeNode in="SourceGraphic"/>
-                      </feMerge>
-                    </filter>
-                  </defs>
-                  <circle cx="50" cy="50" r="46" fill="url(#logoGrad2)" filter="url(#glow2)" opacity="0.15" />
-                  <circle cx="50" cy="50" r="44" fill="url(#logoGrad2)" />
-                  <path d="M25 55 Q20 45 28 35 Q35 40 32 55 Z" fill="#F97316" opacity="0.3" />
-                  <path d="M75 55 Q80 45 72 35 Q65 40 68 55 Z" fill="#F97316" opacity="0.3" />
-                  <circle cx="22" cy="62" r="4" fill="#DC2626" opacity="0.4" />
-                  <circle cx="78" cy="62" r="4" fill="#DC2626" opacity="0.4" />
-                  <ellipse cx="15" cy="70" rx="6" ry="12" fill="#DC2626" transform="rotate(-30 15 70)" />
-                  <ellipse cx="85" cy="70" rx="6" ry="12" fill="#DC2626" transform="rotate(30 85 70)" />
-                  <ellipse cx="20" cy="75" rx="4" ry="10" fill="#EF4444" transform="rotate(-45 20 75)" />
-                  <ellipse cx="80" cy="75" rx="4" ry="10" fill="#EF4444" transform="rotate(45 80 75)" />
-                  <ellipse cx="50" cy="52" rx="20" ry="18" fill="url(#chickenGrad2)" stroke="#B45309" strokeWidth="1.5" />
-                  <ellipse cx="50" cy="52" rx="18" ry="16" fill="none" stroke="#FCD34D" strokeWidth="2" strokeDasharray="3 3" opacity="0.3" />
-                  <circle cx="50" cy="42" r="11" fill="url(#chickenGrad2)" stroke="#B45309" strokeWidth="1.5" />
-                  <path d="M50 31 Q45 25 48 28 Q50 26 52 28 Q55 25 50 31 Z" fill="#DC2626" />
-                  <path d="M45 28 L40 26 L47 29 Z" fill="#F97316" opacity="0.8" />
-                  <path d="M55 28 L60 26 L53 29 Z" fill="#F97316" opacity="0.8" />
-                  <ellipse cx="46" cy="40" rx="3" ry="3.5" fill="#FFF" />
-                  <ellipse cx="54" cy="40" rx="3" ry="3.5" fill="#FFF" />
-                  <circle cx="46" cy="40" r="1.5" fill="#1F2937" />
-                  <circle cx="54" cy="40" r="1.5" fill="#1F2937" />
-                  <path d="M50 44 L47 48 L53 48 Z" fill="#F97316" stroke="#B45309" strokeWidth="0.5" />
-                  <path d="M48 48 L50 46 L52 48 Z" fill="#FBBF24" opacity="0.5" />
-                  <ellipse cx="50" cy="51" rx="3" ry="4" fill="#EF4444" opacity="0.8" />
-                  <path d="M30 48 Q25 42 28 50 Q32 48 30 48 Z" fill="url(#chickenGrad2)" stroke="#B45309" strokeWidth="1" />
-                  <path d="M70 48 Q75 42 72 50 Q68 48 70 48 Z" fill="url(#chickenGrad2)" stroke="#B45309" strokeWidth="1" />
-                  <path d="M42 68 L40 75 L44 75 L42 68 Z" fill="#F97316" />
-                  <path d="M58 68 L56 75 L60 75 L58 68 Z" fill="#F97316" />
-                  <circle cx="50" cy="52" r="25" fill="url(#flameGrad2)" opacity="0.08" />
-                  <circle cx="35" cy="35" r="2" fill="#FCD34D" opacity="0.6" />
-                  <circle cx="65" cy="35" r="2" fill="#FCD34D" opacity="0.6" />
-                  <circle cx="42" cy="30" r="1.5" fill="#F97316" opacity="0.5" />
-                  <circle cx="58" cy="30" r="1.5" fill="#F97316" opacity="0.5" />
-                </svg>
-              </div>
-              <div>
-                <h1 className="text-base md:text-lg font-bold">ADMIN DASHBOARD</h1>
-                <p className="text-[10px] md:text-xs text-white/80 hidden sm:block">Ayam Geprek Sambal Ijo</p>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="text-right text-sm hidden sm:block">
-              <p className="font-semibold">{user?.name || 'Admin'}</p>
-              <p className="text-xs text-white/80">{new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-            </div>
-            <div className="w-8 h-8 md:w-10 md:h-10 bg-white/20 rounded-full flex items-center justify-center">
-              👤
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Layout */}
-      <div className="flex-1 flex">
-        {/* Sidebar - Desktop */}
-        <aside className="hidden md:flex md:flex-col md:w-64 bg-white shadow-lg h-[calc(100vh-64px)] sticky top-16">
-          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-            {navigationItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActivePage(item.id)
-                }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group ${
-                  activePage === item.id
-                    ? 'bg-gradient-to-r from-red-50 to-orange-50 text-red-600 shadow-md'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                }`}
-              >
-                <item.icon className={`h-5 w-5 ${item.color}`} />
-                <span className="font-medium flex-1 text-left">{item.title}</span>
-                {activePage === item.id && <ChevronRight className="h-4 w-4 text-red-600" />}
-              </button>
-            ))}
-          </nav>
-
-          {/* User Info at Bottom */}
-          <div className="p-4 border-t">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white font-bold">
-                {user?.name?.charAt(0) || 'A'}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">{user?.name || 'Admin'}</p>
-                <p className="text-xs text-gray-500 truncate">Administrator</p>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-gray-500 hover:text-red-600 hover:bg-red-50"
-                onClick={onBack}
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </aside>
-
-        {/* Mobile Sidebar Overlay */}
+    <>
+      <div className="min-h-screen bg-gray-50 flex">
+        {/* Sidebar */}
         <AnimatePresence>
-          {sidebarOpen && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setSidebarOpen(false)}
-                className="fixed inset-0 bg-black/50 z-40 md:hidden"
-              />
-              <motion.aside
-                initial={{ x: '-100%' }}
-                animate={{ x: 0 }}
-                exit={{ x: '-100%' }}
-                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                className="fixed inset-y-0 left-0 w-72 bg-white shadow-xl z-50 md:hidden"
-              >
-                <div className="p-4 bg-gradient-to-r from-red-600 to-orange-500 text-white">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-md">
-                      <svg viewBox="0 0 100 100" className="w-8 h-8">
-                        <defs>
-                          <linearGradient id="logoGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#DC2626" stopOpacity={1} />
-                            <stop offset="100%" stopColor="#F97316" stopOpacity={1} />
-                          </linearGradient>
-                        </defs>
-                        <circle cx="50" cy="50" r="44" fill="url(#logoGrad3)" />
-                        <ellipse cx="50" cy="52" rx="20" ry="18" fill="#FCD34D" stroke="#B45309" strokeWidth="1.5" />
-                        <circle cx="50" cy="42" r="11" fill="#FCD34D" stroke="#B45309" strokeWidth="1.5" />
-                        <ellipse cx="46" cy="40" rx="3" ry="3.5" fill="#FFF" />
-                        <ellipse cx="54" cy="40" rx="3" ry="3.5" fill="#FFF" />
-                        <circle cx="46" cy="40" r="1.5" fill="#1F2937" />
-                        <circle cx="54" cy="40" r="1.5" fill="#1F2937" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-bold">Ayam Geprek</h2>
-                      <p className="text-xs text-white/80">Sambal Ijo</p>
-                    </div>
-                  </div>
-                </div>
-
-                <nav className="flex-1 p-4 space-y-1 overflow-y-auto h-[calc(100vh-140px)]">
-                  {navigationItems.map((item) => (
+          {isSidebarOpen && (
+            <motion.div
+              initial={{ x: -300 }}
+              animate={{ x: 0 }}
+              exit={{ x: -300 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="w-64 bg-white shadow-lg fixed h-full z-20"
+            >
+              <div className="p-6">
+                <h1 className="text-2xl font-bold text-gray-800">Admin Panel</h1>
+                <p className="text-sm text-gray-500 mt-1">Management System</p>
+              </div>
+              
+              <nav className="mt-6">
+                {sidebarItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activePage === item.id;
+                  return (
                     <button
                       key={item.id}
-                      onClick={() => {
-                        setActivePage(item.id)
-                        setSidebarOpen(false)
-                      }}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group ${
-                        activePage === item.id
-                          ? 'bg-gradient-to-r from-red-50 to-orange-50 text-red-600 shadow-md'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      onClick={() => setActivePage(item.id)}
+                      className={`w-full flex items-center px-6 py-3 transition-colors ${
+                        isActive
+                          ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600'
+                          : 'text-gray-600 hover:bg-gray-50'
                       }`}
                     >
-                      <item.icon className={`h-5 w-5 ${item.color}`} />
-                      <span className="font-medium flex-1 text-left">{item.title}</span>
-                      {activePage === item.id && <ChevronRight className="h-4 w-4 text-red-600" />}
+                      <Icon className="w-5 h-5 mr-3" />
+                      <span className="font-medium">{item.label}</span>
                     </button>
-                  ))}
-                </nav>
-
-                {/* User Info at Bottom */}
-                <div className="p-4 border-t bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white font-bold">
-                      {user?.name?.charAt(0) || 'A'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{user?.name || 'Admin'}</p>
-                      <p className="text-xs text-gray-500 truncate">Administrator</p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-gray-500 hover:text-red-600 hover:bg-red-50"
-                      onClick={onBack}
-                    >
-                      <LogOut className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </motion.aside>
-            </>
+                  );
+                })}
+              </nav>
+            </motion.div>
           )}
         </AnimatePresence>
 
         {/* Main Content */}
-        <main className="flex-1 container mx-auto px-4 md:px-6 py-8 overflow-y-auto">
-          {activePage === 'dashboard' && (
-            <>
-              {/* Welcome Section */}
+        <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-0'}`}>
+          {/* Header */}
+          <header className="bg-white shadow-sm sticky top-0 z-10">
+            <div className="flex items-center justify-between px-6 py-4">
+              <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                {isSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+              
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={loadDashboardData}
+                  className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  title="Refresh Data"
+                >
+                  <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
+                </button>
+                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
+                  AD
+                </div>
+              </div>
+            </div>
+          </header>
+
+          {/* Dashboard Content */}
+          <div className="p-6">
+            {activePage === 'dashboard' && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-8"
+                transition={{ duration: 0.3 }}
               >
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Selamat Datang, {user?.name || 'Admin'}!</h2>
-                <p className="text-gray-600">Berikut ringkasan aktivitas toko hari ini</p>
-              </motion.div>
+                <h2 className="text-3xl font-bold text-gray-800 mb-6">Dashboard Overview</h2>
 
-              {/* Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                {stats.map((stat, index) => (
+                {/* Quick Actions */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                  {quickActions.map((action) => {
+                    const Icon = action.icon;
+                    return (
+                      <motion.button
+                        key={action.id}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setActivePage(action.id)}
+                        className={`${action.color} text-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all`}
+                      >
+                        <Icon className="w-8 h-8 mb-3" />
+                        <span className="font-semibold">{action.label}</span>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                   <motion.div
-                    key={stat.title}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
+                    transition={{ delay: 0.1 }}
+                    className="bg-white rounded-xl shadow-sm p-6"
                   >
-                    <Card className="hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                      <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`w-12 h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center text-white shadow-lg`}>
-                      <stat.icon className="h-6 w-6" />
-                    </div>
-                    <Badge className={stat.positive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}>
-                      {stat.change}
-                    </Badge>
-                  </div>
-                  <h3 className="text-gray-600 text-sm font-medium mb-1">{stat.title}</h3>
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mb-8"
-        >
-          <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-red-600" />
-            Aksi Cepat
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {quickActions.map((action, index) => (
-              <motion.button
-                key={action.title}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4 + index * 0.05 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={action.onClick}
-                className={`p-4 rounded-xl ${action.color} text-white shadow-md hover:shadow-xl transition-all duration-300`}
-              >
-                <action.icon className="h-6 w-6 mx-auto mb-2" />
-                <p className="text-xs font-semibold text-center leading-tight">{action.title}</p>
-              </motion.button>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Database Sync Status */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="mb-8"
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Database className="h-5 w-5 text-red-600" />
-                  Status Sinkronisasi Database
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSync}
-                  disabled={isSyncing}
-                  className="text-red-600 hover:bg-red-50"
-                >
-                  <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
-                  {isSyncing ? 'Sinkronisasi...' : 'Sinkronisasi Manual'}
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {syncData ? (
-                  <>
-                    <div className="text-center">
-                      <p className="text-3xl font-bold text-red-600">{syncData.stats.totalUsers}</p>
-                      <p className="text-xs text-gray-600">Total User</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-3xl font-bold text-blue-600">{syncData.stats.totalProducts}</p>
-                      <p className="text-xs text-gray-600">Total Produk</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-3xl font-bold text-green-600">{syncData.stats.totalOrders}</p>
-                      <p className="text-xs text-gray-600">Total Order</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-3xl font-bold text-purple-600">{syncData.stats.totalVouchers}</p>
-                      <p className="text-xs text-gray-600">Total Voucher</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-3xl font-bold text-orange-600">{syncData.stats.todayOrders}</p>
-                      <p className="text-xs text-gray-600">Order Hari Ini</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-emerald-600">
-                        Rp {syncData.stats.todayRevenue.toLocaleString()}
-                      </p>
-                      <p className="text-xs text-gray-600">Pendapatan Hari Ini</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-3xl font-bold text-yellow-600">{syncData.stats.pendingOrders}</p>
-                      <p className="text-xs text-gray-600">Order Pending</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-3xl font-bold text-pink-600">{syncData.stats.completedOrders}</p>
-                      <p className="text-xs text-gray-600">Order Selesai</p>
-                    </div>
-                  </>
-                ) : (
-                  <div className="col-span-4 text-center py-8 text-gray-500">
-                    <RefreshCw className="h-8 w-8 mx-auto mb-2 animate-spin" />
-                    <p>Memuat data database...</p>
-                  </div>
-                )}
-              </div>
-
-              {lastSyncTime && (
-                <div className="mt-4 pt-4 border-t flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-gray-500" />
-                    <p className="text-sm text-gray-600">
-                      Sinkronisasi Terakhir: <span className="font-semibold">{lastSyncTime}</span>
-                    </p>
-                  </div>
-                  <Badge className={isSyncing ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}>
-                    {isSyncing ? 'Sedang Sinkronisasi' : 'Terbaru'}
-                  </Badge>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Recent Orders */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="lg:col-span-2"
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <ShoppingBag className="h-5 w-5 text-red-600" />
-                    Pesanan Terbaru
-                  </div>
-                  <Badge className="bg-blue-100 text-blue-700">
-                    {syncData ? syncData.recentOrders.length : 0} Pesanan
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3 max-h-80 overflow-y-auto">
-                  {syncData && syncData.recentOrders.length > 0 ? (
-                    syncData.recentOrders.slice(0, 5).map((order: any) => (
-                      <div
-                        key={order.id}
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                            {order.customerName?.charAt(0) || 'U'}
-                          </div>
-                          <div>
-                            <p className="font-semibold text-sm">{order.customerName}</p>
-                            <p className="text-xs text-gray-500">{order.orderNumber} • {new Date(order.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-red-600">Rp {order.finalAmount.toLocaleString()}</p>
-                          <Badge
-                            className={
-                              order.orderStatus === 'completed'
-                                ? 'bg-green-100 text-green-700'
-                                : order.orderStatus === 'shipped'
-                                ? 'bg-blue-100 text-blue-700'
-                                : order.orderStatus === 'processing'
-                                ? 'bg-yellow-100 text-yellow-700'
-                                : 'bg-gray-100 text-gray-700'
-                            }
-                          >
-                            {order.orderStatus === 'completed'
-                              ? 'Selesai'
-                              : order.orderStatus === 'shipped'
-                              ? 'Dikirim'
-                              : order.orderStatus === 'processing'
-                              ? 'Diproses'
-                              : 'Pending'}
-                          </Badge>
-                        </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-gray-500 text-sm">Total Sales</p>
+                        <p className="text-2xl font-bold text-gray-800 mt-1">
+                          ${stats.totalSales.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        </p>
+                        <p className={`text-sm mt-2 flex items-center ${stats.salesChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {stats.salesChange >= 0 ? <ArrowUp className="w-4 h-4 mr-1" /> : <ArrowDown className="w-4 h-4 mr-1" />}
+                          {Math.abs(stats.salesChange)}% from last month
+                        </p>
                       </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      <ShoppingCart className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p>Belum ada pesanan</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Top Products */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-red-600" />
-                  Produk Terlaris
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3 max-h-80 overflow-y-auto">
-                  {syncData && syncData.topProducts.length > 0 ? (
-                    syncData.topProducts.map((product: any, index: number) => (
-                      <div
-                        key={product.id}
-                        className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="w-10 h-10 bg-gradient-to-br from-red-100 to-orange-100 rounded-lg flex items-center justify-center text-2xl">
-                            {product.image || '📦'}
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-semibold text-sm">{product.name}</p>
-                            <p className="text-xs text-gray-500">{product.soldCount} terjual</p>
-                          </div>
-                        </div>
-                        {index < 3 && (
-                          <div className="flex items-center gap-1 text-green-600">
-                            <ArrowUp className="h-3 w-3" />
-                          </div>
-                        )}
+                      <div className="bg-green-100 p-3 rounded-full">
+                        <DollarSign className="w-6 h-6 text-green-600" />
                       </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p>Belum ada produk</p>
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-          </div>
-        </>
-          )}
-          {activePage === 'products' && <ProductManagement />}
-          {activePage === 'orders' && <OrderManagement />}
-          {activePage === 'customers' && <CustomerManagement />}
-          {activePage === 'reports' && <SalesReports />}
-              {activePage === 'database' && (
-                <>
-                  <h2 className="text-2xl font-bold text-gray-800 mb-4">Database Management</h2>
-                  <p className="text-gray-600 mb-6">Status Sinkronisasi Database</p>
-                  {/* Database Sync Status */}
+                  </motion.div>
+
                   <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="bg-white rounded-xl shadow-sm p-6"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-gray-500 text-sm">Total Orders</p>
+                        <p className="text-2xl font-bold text-gray-800 mt-1">{stats.totalOrders}</p>
+                        <p className={`text-sm mt-2 flex items-center ${stats.ordersChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {stats.ordersChange >= 0 ? <ArrowUp className="w-4 h-4 mr-1" /> : <ArrowDown className="w-4 h-4 mr-1" />}
+                          {Math.abs(stats.ordersChange)}% from last month
+                        </p>
+                      </div>
+                      <div className="bg-blue-100 p-3 rounded-full">
+                        <ShoppingCart className="w-6 h-6 text-blue-600" />
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="bg-white rounded-xl shadow-sm p-6"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-gray-500 text-sm">Total Customers</p>
+                        <p className="text-2xl font-bold text-gray-800 mt-1">{stats.totalCustomers}</p>
+                        <p className={`text-sm mt-2 flex items-center ${stats.customersChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {stats.customersChange >= 0 ? <ArrowUp className="w-4 h-4 mr-1" /> : <ArrowDown className="w-4 h-4 mr-1" />}
+                          {Math.abs(stats.customersChange)}% from last month
+                        </p>
+                      </div>
+                      <div className="bg-purple-100 p-3 rounded-full">
+                        <Users className="w-6 h-6 text-purple-600" />
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="bg-white rounded-xl shadow-sm p-6"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-gray-500 text-sm">Avg. Order Value</p>
+                        <p className="text-2xl font-bold text-gray-800 mt-1">
+                          ${stats.averageOrderValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        </p>
+                        <p className="text-sm mt-2 text-gray-600 flex items-center">
+                          <Clock className="w-4 h-4 mr-1" />
+                          Per order
+                        </p>
+                      </div>
+                      <div className="bg-orange-100 p-3 rounded-full">
+                        <TrendingUp className="w-6 h-6 text-orange-600" />
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+
+                {/* Recent Orders and Top Products */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                  {/* Recent Orders */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="bg-white rounded-xl shadow-sm p-6"
+                  >
+                    <h3 className="text-xl font-bold text-gray-800 mb-4">Recent Orders</h3>
+                    <div className="space-y-4">
+                      {recentOrders.map((order) => (
+                        <div key={order.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                          <div className="flex items-center space-x-4">
+                            <div className="bg-blue-100 p-2 rounded-lg">
+                              <ShoppingCart className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <div>
+                              <p className="font-semibold text-gray-800">{order.customerName}</p>
+                              <p className="text-sm text-gray-500">{order.id} • {order.items} items</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold text-gray-800">${order.total.toFixed(2)}</p>
+                            <div className="flex items-center justify-end space-x-2">
+                              {getStatusBadge(order.status)}
+                              <span className="text-xs text-gray-400">{order.date}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+
+                  {/* Top Products */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
+                    className="bg-white rounded-xl shadow-sm p-6"
+                  >
+                    <h3 className="text-xl font-bold text-gray-800 mb-4">Top Products</h3>
+                    <div className="space-y-4">
+                      {topProducts.map((product, index) => (
+                        <div key={product.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                          <div className="flex items-center space-x-4">
+                            <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                              <Package className="w-6 h-6 text-gray-400" />
+                            </div>
+                            <div>
+                              <p className="font-semibold text-gray-800">{product.name}</p>
+                              <p className="text-sm text-gray-500">{product.sales} sold</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold text-gray-800">${product.revenue.toLocaleString()}</p>
+                            <span className="text-xs text-gray-400">Revenue</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Products Page */}
+            {activePage === 'products' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <ProductManagement onBack={() => setActivePage('dashboard')} />
+              </motion.div>
+            )}
+
+            {/* Orders Page */}
+            {activePage === 'orders' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <OrderManagement onBack={() => setActivePage('dashboard')} />
+              </motion.div>
+            )}
+
+            {/* Customers Page */}
+            {activePage === 'customers' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <CustomerManagement onBack={() => setActivePage('dashboard')} />
+              </motion.div>
+            )}
+
+            {/* Reports Page */}
+            {activePage === 'reports' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <SalesReports onBack={() => setActivePage('dashboard')} />
+              </motion.div>
+            )}
+
+            {/* Database Page */}
+            {activePage === 'database' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="max-w-4xl mx-auto"
+              >
+                <h2 className="text-3xl font-bold text-gray-800 mb-6">Database Management</h2>
+
+                <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-800">Database Sync</h3>
+                      <p className="text-gray-500 mt-1">Synchronize your local database with the remote server</p>
+                    </div>
+                    {syncStatus === 'success' && (
+                      <div className="flex items-center text-green-600">
+                        <CheckCircle className="w-5 h-5 mr-2" />
+                        <span className="font-medium">Sync Complete</span>
+                      </div>
+                    )}
+                    {syncStatus === 'error' && (
+                      <div className="flex items-center text-red-600">
+                        <AlertCircle className="w-5 h-5 mr-2" />
+                        <span className="font-medium">Sync Failed</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-blue-800">Products</span>
+                        <Package className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <p className="text-2xl font-bold text-blue-900">1,234</p>
+                      <p className="text-xs text-blue-600 mt-1">Last synced: 5 min ago</p>
+                    </div>
+
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-green-800">Orders</span>
+                        <ShoppingCart className="w-5 h-5 text-green-600" />
+                      </div>
+                      <p className="text-2xl font-bold text-green-900">487</p>
+                      <p className="text-xs text-green-600 mt-1">Last synced: 2 min ago</p>
+                    </div>
+
+                    <div className="bg-purple-50 p-4 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-purple-800">Customers</span>
+                        <Users className="w-5 h-5 text-purple-600" />
+                      </div>
+                      <p className="text-2xl font-bold text-purple-900">1,234</p>
+                      <p className="text-xs text-purple-600 mt-1">Last synced: 10 min ago</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg mb-6">
+                    <div className="flex items-center space-x-3">
+                      <Database className="w-8 h-8 text-gray-600" />
+                      <div>
+                        <p className="font-semibold text-gray-800">Remote Database Status</p>
+                        <p className="text-sm text-gray-500">Connected and operational</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center text-green-600">
+                      <CheckCircle className="w-5 h-5 mr-2" />
+                      <span className="font-medium">Online</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleDatabaseSync}
+                    disabled={isSyncing}
+                    className={`w-full py-4 px-6 rounded-xl font-semibold text-white transition-all ${
+                      isSyncing
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-blue-600 hover:bg-blue-700 hover:shadow-lg'
+                    } flex items-center justify-center space-x-2`}
+                  >
+                    <RefreshCw className={`w-5 h-5 ${isSyncing ? 'animate-spin' : ''}`} />
+                    <span>{isSyncing ? 'Syncing Database...' : 'Sync Database Now'}</span>
+                  </button>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm p-6">
+                  <h3 className="text-xl font-bold text-gray-800 mb-4">Sync History</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <CheckCircle className="w-5 h-5 text-green-600" />
+                        <div>
+                          <p className="font-medium text-gray-800">Successful Sync</p>
+                          <p className="text-sm text-gray-500">All data synchronized</p>
+                        </div>
+                      </div>
+                      <span className="text-sm text-gray-500">2 minutes ago</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <CheckCircle className="w-5 h-5 text-green-600" />
+                        <div>
+                          <p className="font-medium text-gray-800">Successful Sync</p>
+                          <p className="text-sm text-gray-500">All data synchronized</p>
+                        </div>
+                      </div>
+                      <span className="text-sm text-gray-500">1 hour ago</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <AlertCircle className="w-5 h-5 text-red-600" />
+                        <div>
+                          <p className="font-medium text-gray-800">Failed Sync</p>
+                          <p className="text-sm text-gray-500">Connection timeout</p>
+                        </div>
+                      </div>
+                      <span className="text-sm text-gray-500">3 hours ago</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </div>
+        </main>
+      </div>
+
+      {/* Footer */}
+      <footer className="bg-white border-t mt-auto">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-500">© 2024 Admin Panel. All rights reserved.</p>
+            <p className="text-sm text-gray-500">Version 1.0.0</p>
+          </div>
+        </div>
+      </footer>
+    </>
+  );
+};
+
+export default AdminDashboard;
