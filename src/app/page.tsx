@@ -228,6 +228,7 @@ export default function HomePage() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
   const [isOrderDetailOpen, setIsOrderDetailOpen] = useState(false)
   const [isBarcodeModalOpen, setIsBarcodeModalOpen] = useState(false)
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false)
   const [showFloatingBarcode, setShowFloatingBarcode] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [selectedVoucher, setSelectedVoucher] = useState('')
@@ -491,10 +492,13 @@ export default function HomePage() {
               </div>
               <div>
                 <h1 className="text-sm font-bold text-white tracking-wide">AYAM GEPREK SAMBAL IJO</h1>
-                <div className="flex items-center gap-1 text-white/90 text-xs">
+                <button
+                  onClick={() => setIsAddressModalOpen(true)}
+                  className="flex items-center gap-1 text-white/90 text-xs hover:text-white transition-colors cursor-pointer"
+                >
                   <MapPin className="h-3 w-3" />
-                  <span>Jl. Medan - Banda Aceh, Simpang Camat, Gampong Tijue, 24151</span>
-                </div>
+                  <span className="truncate max-w-[180px]">Jl. Medan - Banda Aceh, Simpang Camat, Gampong Tijue, 24151</span>
+                </button>
               </div>
             </div>
 
@@ -1622,6 +1626,81 @@ export default function HomePage() {
               </Card>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Store Address Modal */}
+      <Dialog open={isAddressModalOpen} onOpenChange={setIsAddressModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-2xl font-bold bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent flex items-center justify-center gap-2">
+              <MapPin className="h-6 w-6 text-red-600" />
+              Alamat Toko
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Card className="bg-gradient-to-br from-red-50 to-orange-50 border-2 border-orange-200">
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white flex-shrink-0">
+                      <Store className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-lg text-gray-800 mb-1">Ayam Geprek Sambal Ijo</h3>
+                      <p className="text-sm text-gray-600">Warung Ayam Geprek Sambal Ijo</p>
+                    </div>
+                  </div>
+
+                  <Separator className="bg-orange-200" />
+
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <MapPin className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs text-gray-500 font-semibold mb-1">Alamat Lengkap</p>
+                        <p className="text-gray-800 font-medium">Jl. Medan - Banda Aceh</p>
+                        <p className="text-gray-800 font-medium">Simpang Camat</p>
+                        <p className="text-gray-800 font-medium">Gampong Tijue, 24151</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <Phone className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs text-gray-500 font-semibold mb-1">Telepon / WhatsApp</p>
+                        <p className="text-gray-800 font-medium">085260812758</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <Clock className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs text-gray-500 font-semibold mb-1">Jam Operasional</p>
+                        <p className="text-gray-800 font-medium">Senin - Jumat: 09:00 - 21:00</p>
+                        <p className="text-gray-800 font-medium">Sabtu - Minggu: 10:00 - 22:00</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator className="bg-orange-200" />
+
+                  <div className="p-3 bg-white rounded-lg border border-orange-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <p className="text-sm font-semibold text-gray-800">Layanan Tersedia</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="outline" className="bg-white">🍗 Dine-in</Badge>
+                      <Badge variant="outline" className="bg-white">🏠 Delivery</Badge>
+                      <Badge variant="outline" className="bg-white">📦 Takeaway</Badge>
+                      <Badge variant="outline" className="bg-white">💳 QRIS</Badge>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
