@@ -245,7 +245,111 @@ export default function HomePage() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [orders, setOrders] = useState<any[]>([])
   const [qrisData, setQrisData] = useState<any>(null)
-  const [selectedVoucher, setSelectedVoucher] = useState('')
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
+
+  const {
+    user,
+    token,
+    setUser,
+    setToken,
+    logout,
+    cart,
+    addToCart,
+    updateCartQuantity,
+    removeFromCart,
+    clearCart,
+    currentTab,
+    setCurrentTab,
+  } = useStore()
+
+  const checkAuth = async () => {
+    try {
+      const res = await fetch('/api/auth/me')
+      if (res.ok) {
+        const data = await res.json()
+        setUser(data.user)
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error)
+    }
+  }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true)
+    checkAuth()
+  }, [])
+
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register'
+      const body = isLogin
+        ? { email: authData.email, password: authData.password }
+        : {
+            email: authData.email,
+            password: authData.password,
+            name: authData.name,
+            phone: authData.phone,
+            address: authData.address,
+          }
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setUser(data.user)
+        setToken(data.token)
+        setIsAuthModalOpen(false)
+        toast.success(isLogin ? 'Login berhasil!' : 'Registrasi berhasil!')
+        setAuthData({ email: '', password: '', name: '', phone: '', address: '' })
+      } else {
+        toast.error(data.error || 'Terjadi kesalahan')
+      }
+    } catch (error) {
+      toast.error('Terjadi kesalahan koneksi')
+    }
+  }
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/me', { method: 'DELETE' })
+      logout()
+      toast.success('Logout berhasil')
+      setOrders([])
+      stopPollingPayment()
+    } catch (error) {
+      logout()
+      setOrders([])
+      stopPollingPayment()
+    }
+  }
+
+  const generateQRIS = async (amount: number, orderId: string) => {
+    try {
+      const res = await fetch('/api/qrcode/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, orderId }),
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        setQrisData(data)
+        setIsQRISModalOpen(true)
+      } else {
+        toast.error('Gagal generate QR Code')
+      }
+    } catch (error) {
+      console.error('QRIS generation error:', error)
+      toast.error('Gagal generate QR Code')
+    }
+  }
   const [authData, setAuthData] = useState({ email: '', password: '', name: '', phone: '', address: '' })
   const [checkoutData, setCheckoutData] = useState({
     customerName: '',
@@ -379,6 +483,87 @@ export default function HomePage() {
       }
     }
   }
+
+  const startPollingPayment = () => {
+    if (pollingInterval) return // Sudah polling
+
+    const interval = setInterval(async () => {
+      if (!qrisData || !qrisData.orderId) return
+
+      try {
+        const res = await fetch('/api/orders')
+        if (res.ok) {
+          const data = await res.json()
+          const updatedOrder = data.orders?.find((o: any) => o.orderNumber === qrisData.orderId)
+
+          if (updatedOrder && updatedOrder.paymentStatus === 'paid') {
+            // Pembayaran berhasil
+            clearInterval(interval)
+            setPollingInterval(null)
+            setIsQRISModalOpen(false)
+            toast.success('✅ Pembayaran berhasil dikonfirmasi otomatis!')
+            fetchOrdersFromApi()
+          } else if (updatedOrder && updatedOrder.paymentStatus === 'failed') {
+            // Pembayaran gagal
+            clearInterval(interval)
+            setPollingInterval(null)
+            setIsQRISModalOpen(false)
+            toast.error('❌ Pembayaran gagal')
+            fetchOrdersFromApi()
+          }
+        }
+      } catch (error) {
+        console.error('Polling error:', error)
+      }
+    }, 3000) // Check setiap 3 detik
+
+    setPollingInterval(interval)
+  }
+
+  const stopPollingPayment = () => {
+    if (pollingInterval) {
+      clearInterval(pollingInterval)
+      setPollingInterval(null)
+    }
+  }
+
+  const simulatePayment = async () => {
+    if (!qrisData || !qrisData.orderId) return
+
+    try {
+      const res = await fetch('/api/payment/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: qrisData.orderId }),
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        toast.success('✅ Simulasi pembayaran berhasil!')
+        setIsQRISModalOpen(false)
+        stopPollingPayment()
+        fetchOrdersFromApi()
+      } else {
+        toast.error('Gagal mensimulasikan pembayaran')
+      }
+    } catch (error) {
+      console.error('Simulate payment error:', error)
+      toast.error('Gagal mensimulasikan pembayaran')
+    }
+  }
+
+  // Start/stop polling ketika QRIS modal terbuka/tutup
+  useEffect(() => {
+    if (isQRISModalOpen && qrisData) {
+      startPollingPayment()
+    } else {
+      stopPollingPayment()
+    }
+
+    return () => {
+      stopPollingPayment()
+    }
+  }, [isQRISModalOpen, qrisData])
 
   const handleCheckout = async () => {
     if (!user) {
@@ -1595,7 +1780,15 @@ export default function HomePage() {
       </Dialog>
 
       {/* QRIS Payment Modal */}
-      <Dialog open={isQRISModalOpen} onOpenChange={setIsQRISModalOpen}>
+      <Dialog 
+        open={isQRISModalOpen} 
+        onOpenChange={(open) => {
+          setIsQRISModalOpen(open)
+          if (!open) {
+            stopPollingPayment()
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle className="text-lg">Pembayaran QRIS</DialogTitle>
@@ -1634,6 +1827,12 @@ export default function HomePage() {
                 </p>
               </div>
 
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-2">
+                <p className="text-xs text-blue-800">
+                  <span className="font-semibold">⏱️ Auto-detect:</span> Sistem akan otomatis mendeteksi pembayaran setiap 3 detik.
+                </p>
+              </div>
+
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -1646,10 +1845,17 @@ export default function HomePage() {
                   Copy NMID
                 </Button>
                 <Button
+                  variant="outline"
+                  className="flex-1 h-9 text-xs bg-green-50 hover:bg-green-100 border-green-600"
+                  onClick={simulatePayment}
+                >
+                  🧪 Simulasi Bayar
+                </Button>
+                <Button
                   className="flex-1 bg-blue-600 hover:bg-blue-700 h-9 text-xs"
                   onClick={() => {
                     setIsQRISModalOpen(false)
-                    toast.success('Pembayaran berhasil dikonfirmasi')
+                    toast.success('Pembayaran dikonfirmasi manual')
                     fetchOrdersFromApi()
                   }}
                 >
