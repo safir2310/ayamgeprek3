@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 
@@ -160,6 +160,7 @@ export function UserChatDialog({ isOpen, onClose, userId, userName }: {
       <DialogContent className={`p-0 gap-0 right-0 top-auto translate-y-0 transition-all ${
         isMinimized ? 'max-h-12' : 'max-h-[600px]'
       }`}>
+        <DialogTitle className="sr-only">Chat dengan Admin</DialogTitle>
         {/* Header */}
         <div className="bg-gradient-to-r from-red-600 to-orange-500 p-4 flex items-center justify-between">
           <div className="flex items-center gap-3 text-white">
