@@ -31,6 +31,7 @@ import {
   QrCode,
   ArrowRight,
   Percent,
+  MessageCircle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -46,6 +47,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { POS } from '@/components/admin/POS'
 import AdminDashboard from '@/components/admin/AdminDashboard'
+import { UserChatDialog } from '@/components/UserChatDialog'
 
 // Mock data - using product IDs from database
 const mockProducts = [
@@ -248,6 +250,7 @@ export default function HomePage() {
   const [uploadedPaymentProof, setUploadedPaymentProof] = useState<File | null>(null)
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
   const [isPaymentUploadModalOpen, setIsPaymentUploadModalOpen] = useState(false)
+  const [isChatOpen, setIsChatOpen] = useState(false)
 
   const {
     user,
@@ -719,6 +722,14 @@ export default function HomePage() {
                     {cartCount}
                   </Badge>
                 )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/20 h-8 w-8"
+                onClick={() => user ? setIsChatOpen(true) : setIsAuthModalOpen(true)}
+              >
+                <MessageCircle className="h-4 w-4" />
               </Button>
               <Button
                 variant="ghost"
@@ -1335,6 +1346,16 @@ export default function HomePage() {
           </motion.div>
         )}
       </main>
+
+      {/* Chat Dialog */}
+      {user && (
+        <UserChatDialog
+          isOpen={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
+          userId={user.id}
+          userName={user.name}
+        />
+      )}
 
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-40">

@@ -31,6 +31,7 @@ import {
   Percent,
   Layers,
   CheckSquare,
+  MessageCircle,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -45,6 +46,7 @@ import { CategoryManagement } from '@/components/admin/CategoryManagement'
 import { VoucherManagement } from '@/components/admin/VoucherManagement'
 import { PromoManagement } from '@/components/admin/PromoManagement'
 import { PaymentConfirmation } from '@/components/admin/PaymentConfirmation'
+import { ChatManagement } from '@/components/admin/ChatManagement'
 
 interface DashboardStats {
   totalSales: number;
@@ -168,6 +170,7 @@ const AdminDashboard: React.FC = () => {
     { id: 'orders', icon: ShoppingBag, label: 'Orders' },
     { id: 'payments', icon: CheckSquare, label: 'Payment Confirmation' },
     { id: 'customers', icon: Users, label: 'Customers' },
+    { id: 'chat', icon: MessageCircle, label: 'Chat' },
     { id: 'reports', icon: TrendingUp, label: 'Reports' },
     { id: 'database', icon: Database, label: 'Database' },
   ];
@@ -514,6 +517,16 @@ const AdminDashboard: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
               >
                 <CustomerManagement onBack={() => setActivePage('dashboard')} />
+              </motion.div>
+            )}
+
+            {/* Chat Page */}
+            {activePage === 'chat' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <ChatManagement />
               </motion.div>
             )}
 
