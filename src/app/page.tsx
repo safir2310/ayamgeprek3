@@ -710,16 +710,6 @@ export default function HomePage() {
                           </Badge>
                         </div>
 
-                        {/* Barcode Button */}
-                        <Button
-                          variant="outline"
-                          className="w-full bg-white/10 hover:bg-white/20 border-white/30 text-white mb-3"
-                          onClick={() => setIsBarcodeModalOpen(true)}
-                        >
-                          <QrCode className="h-4 w-4 mr-2" />
-                          Tampilkan Barcode Member
-                        </Button>
-
                         <Button
                           variant="ghost"
                           size="sm"
