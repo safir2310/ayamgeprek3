@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useStore } from '@/store/useStore'
 import {
   LayoutDashboard,
@@ -14,10 +14,19 @@ import {
   LogOut,
   Store,
   BarChart3,
+  RefreshCw,
+  Database,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  DollarSign,
+  ShoppingCart,
+  ArrowUp,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { toast } from 'sonner'
 
 interface StatCard {
   title: string
@@ -28,9 +37,30 @@ interface StatCard {
   color: string
 }
 
+interface DatabaseSyncData {
+  stats: {
+    totalUsers: number
+    totalProducts: number
+    totalOrders: number
+    totalVouchers: number
+    todayOrders: number
+    todayRevenue: number
+    pendingOrders: number
+    completedOrders: number
+    totalRevenue: number
+  }
+  recentOrders: any[]
+  topProducts: any[]
+  topCustomers: any[]
+  lastSync: string
+}
+
 export function AdminDashboard({ onBack }: { onBack?: () => void }) {
   const { user } = useStore()
   const [showPOS, setShowPOS] = useState(false)
+  const [isSyncing, setIsSyncing] = useState(false)
+  const [syncData, setSyncData] = useState<DatabaseSyncData | null>(null)
+  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null)
   const [stats, setStats] = useState<StatCard[]>([
     {
       title: 'Total Pendapatan',
@@ -103,21 +133,76 @@ export function AdminDashboard({ onBack }: { onBack?: () => void }) {
       onClick: () => {},
     },
     {
-      title: 'Pengaturan',
-      description: 'Konfigurasi sistem',
-      icon: LayoutDashboard,
-      color: 'bg-gradient-to-br from-gray-500 to-gray-600',
-      onClick: () => {},
+      title: 'Sinkronisasi Database',
+      description: 'Sinkronisasi ke seluruh halaman',
+      icon: Database,
+      color: 'bg-gradient-to-br from-indigo-500 to-purple-500',
+      onClick: handleSync,
     },
   ]
 
-  const recentOrders = [
-    { id: 'ORD001', customer: 'Budi Santoso', total: 65000, status: 'completed', time: '10:30' },
-    { id: 'ORD002', customer: 'Siti Aminah', total: 32000, status: 'shipped', time: '11:45' },
-    { id: 'ORD003', customer: 'Ahmad Rizki', total: 89000, status: 'processing', time: '13:20' },
-    { id: 'ORD004', customer: 'Dewi Sartika', total: 45000, status: 'completed', time: '14:15' },
-    { id: 'ORD005', customer: 'Eko Prasetyo', total: 125000, status: 'pending', time: '15:00' },
-  ]
+  const handleSync = async () => {
+    setIsSyncing(true)
+    try {
+      const res = await fetch('/api/admin/sync')
+      const data = await res.json()
+
+      if (data.success) {
+        setSyncData(data.data)
+        setLastSyncTime(new Date().toLocaleString('id-ID'))
+
+        // Update stats with real data
+        setStats([
+          {
+            title: 'Total Pendapatan',
+            value: `Rp ${(data.data.stats.totalRevenue / 1000000).toFixed(3)} Juta`,
+            change: '+0%',
+            positive: true,
+            icon: DollarSign,
+            color: 'from-green-500 to-emerald-500',
+          },
+          {
+            title: 'Total Order',
+            value: data.data.stats.totalOrders.toString(),
+            change: '+0%',
+            positive: true,
+            icon: ShoppingBag,
+            color: 'from-blue-500 to-cyan-500',
+          },
+          {
+            title: 'Produk Terjual',
+            value: data.data.stats.totalProducts.toString(),
+            change: '+0%',
+            positive: true,
+            icon: Package,
+            color: 'from-purple-500 to-pink-500',
+          },
+          {
+            title: 'Pelanggan Aktif',
+            value: data.data.stats.totalUsers.toString(),
+            change: '+0%',
+            positive: true,
+            icon: Users,
+            color: 'from-orange-500 to-red-500',
+          },
+        ])
+
+        toast.success('✅ Database berhasil disinkronisasi!')
+      } else {
+        toast.error('Gagal sinkronisasi database')
+      }
+    } catch (error) {
+      console.error('Sync error:', error)
+      toast.error('Terjadi kesalahan saat sinkronisasi')
+    } finally {
+      setIsSyncing(false)
+    }
+  }
+
+  useEffect(() => {
+    // Auto sync on mount
+    handleSync()
+  }, [])
 
   if (showPOS) {
     return (
@@ -310,12 +395,102 @@ export function AdminDashboard({ onBack }: { onBack?: () => void }) {
           </div>
         </motion.div>
 
+        {/* Database Sync Status */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mb-8"
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Database className="h-5 w-5 text-red-600" />
+                  Status Sinkronisasi Database
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSync}
+                  disabled={isSyncing}
+                  className="text-red-600 hover:bg-red-50"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+                  {isSyncing ? 'Sinkronisasi...' : 'Sinkronisasi Manual'}
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {syncData ? (
+                  <>
+                    <div className="text-center">
+                      <p className="text-3xl font-bold text-red-600">{syncData.stats.totalUsers}</p>
+                      <p className="text-xs text-gray-600">Total User</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-3xl font-bold text-blue-600">{syncData.stats.totalProducts}</p>
+                      <p className="text-xs text-gray-600">Total Produk</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-3xl font-bold text-green-600">{syncData.stats.totalOrders}</p>
+                      <p className="text-xs text-gray-600">Total Order</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-3xl font-bold text-purple-600">{syncData.stats.totalVouchers}</p>
+                      <p className="text-xs text-gray-600">Total Voucher</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-3xl font-bold text-orange-600">{syncData.stats.todayOrders}</p>
+                      <p className="text-xs text-gray-600">Order Hari Ini</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-emerald-600">
+                        Rp {syncData.stats.todayRevenue.toLocaleString()}
+                      </p>
+                      <p className="text-xs text-gray-600">Pendapatan Hari Ini</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-3xl font-bold text-yellow-600">{syncData.stats.pendingOrders}</p>
+                      <p className="text-xs text-gray-600">Order Pending</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-3xl font-bold text-pink-600">{syncData.stats.completedOrders}</p>
+                      <p className="text-xs text-gray-600">Order Selesai</p>
+                    </div>
+                  </>
+                ) : (
+                  <div className="col-span-4 text-center py-8 text-gray-500">
+                    <RefreshCw className="h-8 w-8 mx-auto mb-2 animate-spin" />
+                    <p>Memuat data database...</p>
+                  </div>
+                )}
+              </div>
+
+              {lastSyncTime && (
+                <div className="mt-4 pt-4 border-t flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-gray-500" />
+                    <p className="text-sm text-gray-600">
+                      Sinkronisasi Terakhir: <span className="font-semibold">{lastSyncTime}</span>
+                    </p>
+                  </div>
+                  <Badge className={isSyncing ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}>
+                    {isSyncing ? 'Sedang Sinkronisasi' : 'Terbaru'}
+                  </Badge>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Orders */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
+            transition={{ delay: 0.6 }}
             className="lg:col-span-2"
           >
             <Card>
@@ -325,51 +500,58 @@ export function AdminDashboard({ onBack }: { onBack?: () => void }) {
                     <ShoppingBag className="h-5 w-5 text-red-600" />
                     Pesanan Terbaru
                   </div>
-                  <Button variant="ghost" size="sm" className="text-red-600">
-                    Lihat Semua
-                  </Button>
+                  <Badge className="bg-blue-100 text-blue-700">
+                    {syncData ? syncData.recentOrders.length : 0} Pesanan
+                  </Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {recentOrders.map((order) => (
-                    <div
-                      key={order.id}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                          {order.customer.charAt(0)}
+                <div className="space-y-3 max-h-80 overflow-y-auto">
+                  {syncData && syncData.recentOrders.length > 0 ? (
+                    syncData.recentOrders.slice(0, 5).map((order: any) => (
+                      <div
+                        key={order.id}
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                            {order.customerName?.charAt(0) || 'U'}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-sm">{order.customerName}</p>
+                            <p className="text-xs text-gray-500">{order.orderNumber} • {new Date(order.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-semibold text-sm">{order.customer}</p>
-                          <p className="text-xs text-gray-500">{order.id} • {order.time}</p>
+                        <div className="text-right">
+                          <p className="font-bold text-red-600">Rp {order.finalAmount.toLocaleString()}</p>
+                          <Badge
+                            className={
+                              order.orderStatus === 'completed'
+                                ? 'bg-green-100 text-green-700'
+                                : order.orderStatus === 'shipped'
+                                ? 'bg-blue-100 text-blue-700'
+                                : order.orderStatus === 'processing'
+                                ? 'bg-yellow-100 text-yellow-700'
+                                : 'bg-gray-100 text-gray-700'
+                            }
+                          >
+                            {order.orderStatus === 'completed'
+                              ? 'Selesai'
+                              : order.orderStatus === 'shipped'
+                              ? 'Dikirim'
+                              : order.orderStatus === 'processing'
+                              ? 'Diproses'
+                              : 'Pending'}
+                          </Badge>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-red-600">Rp {order.total.toLocaleString()}</p>
-                        <Badge
-                          className={
-                            order.status === 'completed'
-                              ? 'bg-green-100 text-green-700'
-                              : order.status === 'shipped'
-                              ? 'bg-blue-100 text-blue-700'
-                              : order.status === 'processing'
-                              ? 'bg-yellow-100 text-yellow-700'
-                              : 'bg-gray-100 text-gray-700'
-                          }
-                        >
-                          {order.status === 'completed'
-                            ? 'Selesai'
-                            : order.status === 'shipped'
-                            ? 'Dikirim'
-                            : order.status === 'processing'
-                            ? 'Diproses'
-                            : 'Pending'}
-                        </Badge>
-                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <ShoppingCart className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p>Belum ada pesanan</p>
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -379,7 +561,7 @@ export function AdminDashboard({ onBack }: { onBack?: () => void }) {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 0.7 }}
           >
             <Card>
               <CardHeader>
@@ -389,28 +571,35 @@ export function AdminDashboard({ onBack }: { onBack?: () => void }) {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {[
-                    { name: 'Ayam Geprek Original', sales: 156, icon: '🍗' },
-                    { name: 'Es Teh Manis', sales: 132, icon: '🧊' },
-                    { name: 'Ayam Geprek Keju', sales: 98, icon: '🧀' },
-                    { name: 'Sambal Ijo Botol', sales: 87, icon: '🌶️' },
-                    { name: 'Kopi Susu Gula Aren', sales: 76, icon: '☕' },
-                  ].map((product, index) => (
-                    <div
-                      key={product.name}
-                      className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors"
-                    >
-                      <div className="w-10 h-10 bg-gradient-to-br from-red-100 to-orange-100 rounded-lg flex items-center justify-center text-2xl">
-                        {product.icon}
+                <div className="space-y-3 max-h-80 overflow-y-auto">
+                  {syncData && syncData.topProducts.length > 0 ? (
+                    syncData.topProducts.map((product: any, index: number) => (
+                      <div
+                        key={product.id}
+                        className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="w-10 h-10 bg-gradient-to-br from-red-100 to-orange-100 rounded-lg flex items-center justify-center text-2xl">
+                            {product.image || '📦'}
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-semibold text-sm">{product.name}</p>
+                            <p className="text-xs text-gray-500">{product.soldCount} terjual</p>
+                          </div>
+                        </div>
+                        {index < 3 && (
+                          <div className="flex items-center gap-1 text-green-600">
+                            <ArrowUp className="h-3 w-3" />
+                          </div>
+                        )}
                       </div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-sm">{product.name}</p>
-                        <p className="text-xs text-gray-500">{product.sales} terjual</p>
-                      </div>
-                      <TrendingUp className="h-4 w-4 text-green-600" />
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p>Belum ada produk</p>
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>
