@@ -401,12 +401,12 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-red-50 via-orange-50 to-white">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-gradient-to-r from-red-600 to-orange-500 shadow-lg">
-        <div className="container mx-auto px-4 py-3">
+      <header className="sticky top-0 z-50 bg-gradient-to-r from-red-600 to-orange-500 shadow-md">
+        <div className="container mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
-                <svg viewBox="0 0 100 100" className="w-8 h-8">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-md">
+                <svg viewBox="0 0 100 100" className="w-6 h-6">
                   <defs>
                     <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="#DC2626" stopOpacity={1} />
@@ -491,37 +491,37 @@ export default function HomePage() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-sm font-bold text-white tracking-wide">AYAM GEPREK SAMBAL IJO</h1>
+                <h1 className="text-xs font-bold text-white tracking-wide">AYAM GEPREK SAMBAL IJO</h1>
                 <button
                   onClick={() => setIsAddressModalOpen(true)}
-                  className="flex items-center gap-1 text-white/90 text-xs hover:text-white transition-colors cursor-pointer"
+                  className="flex items-center gap-1 text-white/90 text-[10px] hover:text-white transition-colors cursor-pointer"
                 >
-                  <MapPin className="h-3 w-3" />
-                  <span className="truncate max-w-[180px]">Jl. Medan - Banda Aceh, Simpang Camat, Gampong Tijue, 24151</span>
+                  <MapPin className="h-2.5 w-2.5" />
+                  <span className="truncate max-w-[150px]">Jl. Medan - Banda Aceh, Simpang Camat, Gampong Tijue, 24151</span>
                 </button>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               {user?.role === 'admin' && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-white hover:bg-white/20"
+                  className="text-white hover:bg-white/20 h-8 w-8"
                   onClick={() => setShowAdminDashboard(true)}
                 >
-                  <Store className="h-6 w-6" />
+                  <Store className="h-4 w-4" />
                 </Button>
               )}
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20 relative"
+                className="text-white hover:bg-white/20 relative h-8 w-8"
                 onClick={() => setIsCartOpen(true)}
               >
-                <ShoppingCart className="h-6 w-6" />
+                <ShoppingCart className="h-4 w-4" />
                 {cartCount > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center bg-yellow-400 text-red-900 text-xs font-bold">
+                  <Badge className="absolute -top-0.5 -right-0.5 h-4 w-4 flex items-center justify-center bg-yellow-400 text-red-900 text-[9px] font-bold">
                     {cartCount}
                   </Badge>
                 )}
@@ -529,22 +529,22 @@ export default function HomePage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20"
+                className="text-white hover:bg-white/20 h-8 w-8"
                 onClick={() => (user ? handleLogout() : setIsAuthModalOpen(true))}
               >
-                <User className="h-6 w-6" />
+                <User className="h-4 w-4" />
               </Button>
             </div>
           </div>
 
           {/* Search Bar */}
-          <div className="mt-3">
+          <div className="mt-2">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
               <Input
                 type="text"
                 placeholder="Cari produk..."
-                className="pl-10 bg-white/90 border-0 focus:ring-2 focus:ring-orange-300"
+                className="pl-9 h-8 text-xs bg-white/90 border-0 focus:ring-1 focus:ring-orange-300"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
