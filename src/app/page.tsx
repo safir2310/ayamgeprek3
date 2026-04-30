@@ -356,7 +356,7 @@ export default function HomePage() {
     notes: '',
   })
   const [showAdminDashboard, setShowAdminDashboard] = useState(false)
-  const [selectedVoucher, setSelectedVoucher] = useState<string | null>(null)
+  const [selectedVoucher, setSelectedVoucher] = useState<string>('')
 
   async function fetchOrdersFromApi(signal?: AbortSignal) {
     if (!user || !token) return
