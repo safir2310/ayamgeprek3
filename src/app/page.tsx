@@ -380,30 +380,6 @@ export default function HomePage() {
     }
   }
 
-  const simulatePayment = async () => {
-    if (!qrisData || !qrisData.orderId) return
-
-    try {
-      const res = await fetch('/api/payment/simulate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId: qrisData.orderId }),
-      })
-
-      if (res.ok) {
-        const data = await res.json()
-        toast.success('✅ Simulasi pembayaran berhasil!')
-        setIsQRISModalOpen(false)
-        fetchOrdersFromApi()
-      } else {
-        toast.error('Gagal mensimulasikan pembayaran')
-      }
-    } catch (error) {
-      console.error('Simulate payment error:', error)
-      toast.error('Gagal mensimulasikan pembayaran')
-    }
-  }
-
   // Start/stop polling ketika QRIS modal terbuka/tutup
   useEffect(() => {
     if (!isQRISModalOpen || !qrisData) {
@@ -1730,13 +1706,6 @@ export default function HomePage() {
                   }}
                 >
                   Copy NMID
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1 h-9 text-xs bg-green-50 hover:bg-green-100 border-green-600"
-                  onClick={simulatePayment}
-                >
-                  🧪 Simulasi Bayar
                 </Button>
                 <Button
                   className="flex-1 bg-blue-600 hover:bg-blue-700 h-9 text-xs"
