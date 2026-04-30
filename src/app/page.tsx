@@ -45,7 +45,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { POS } from '@/components/admin/POS'
-import { AdminDashboard } from '@/components/admin/AdminDashboard'
+import AdminDashboard from '@/components/admin/AdminDashboard'
 
 // Mock data - using product IDs from database
 const mockProducts = [
