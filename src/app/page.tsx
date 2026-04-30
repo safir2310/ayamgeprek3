@@ -265,6 +265,7 @@ export default function HomePage() {
     clearCart,
     currentTab,
     setCurrentTab,
+    _hasHydrated,
   } = useStore()
 
   const checkAuth = async () => {
@@ -280,8 +281,13 @@ export default function HomePage() {
   }
 
   useEffect(() => {
-    setMounted(true)
-    checkAuth()
+    try {
+      setMounted(true)
+      checkAuth()
+    } catch (error) {
+      console.error('Error during mount:', error)
+      setMounted(true) // Ensure mounted is set even on error
+    }
   }, [])
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -589,7 +595,16 @@ export default function HomePage() {
     }
   }, [user, currentTab])
 
-  if (!mounted) return null
+  if (!mounted || !_hasHydrated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-orange-50 to-white">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent mb-4"></div>
+          <p className="text-gray-600 text-sm">Loading...</p>
+        </div>
+      </div>
+    )
+  }
 
   if (showAdminDashboard) {
     return <AdminDashboard onBack={() => setShowAdminDashboard(false)} />

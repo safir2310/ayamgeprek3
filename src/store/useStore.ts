@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 
 export interface CartItem {
   productId: string
@@ -44,6 +44,8 @@ interface StoreState {
   setCurrentTab: (tab: string) => void
   isAdminMode: boolean
   setIsAdminMode: (isAdmin: boolean) => void
+  _hasHydrated: boolean
+  setHasHydrated: (state: boolean) => void
 }
 
 export const useStore = create<StoreState>()(
@@ -96,9 +98,17 @@ export const useStore = create<StoreState>()(
       setCurrentTab: (currentTab) => set({ currentTab }),
       isAdminMode: false,
       setIsAdminMode: (isAdminMode) => set({ isAdminMode }),
+
+      // Hydration state
+      _hasHydrated: false,
+      setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
     {
       name: 'ayam-geprek-storage',
+      storage: createJSONStorage(() => localStorage),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true)
+      },
     }
   )
 )
