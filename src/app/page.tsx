@@ -1596,54 +1596,48 @@ export default function HomePage() {
 
       {/* QRIS Payment Modal */}
       <Dialog open={isQRISModalOpen} onOpenChange={setIsQRISModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Pembayaran QRIS</DialogTitle>
+            <DialogTitle className="text-lg">Pembayaran QRIS</DialogTitle>
           </DialogHeader>
           {qrisData && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="text-center">
-                <p className="text-gray-600 mb-2">Scan QR Code untuk membayar</p>
-                <div className="bg-white p-4 rounded-lg border-2 border-gray-200 inline-block">
+                <p className="text-gray-600 mb-2 text-sm">Scan QR Code untuk membayar</p>
+                <div className="bg-white p-2 rounded-md border border-gray-200 inline-block">
                   <img
                     src={qrisData.qrCode}
                     alt="QRIS QR Code"
-                    className="w-64 h-64 object-contain"
+                    className="w-48 h-48 object-contain"
                   />
                 </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-gray-600">Merchant:</span>
-                  <span className="font-semibold">{qrisData.merchantName}</span>
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-2">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-gray-600 text-xs">Merchant:</span>
+                  <span className="font-semibold text-xs">{qrisData.merchantName}</span>
                 </div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-gray-600">NMID:</span>
-                  <span className="font-mono text-sm">{qrisData.nmId}</span>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-gray-600 text-xs">NMID:</span>
+                  <span className="font-mono text-xs">{qrisData.nmId}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Jumlah:</span>
-                  <span className="font-bold text-red-600 text-xl">Rp {Number(qrisData.amount).toLocaleString()}</span>
+                  <span className="text-gray-600 text-xs">Jumlah:</span>
+                  <span className="font-bold text-red-600 text-lg">Rp {Number(qrisData.amount).toLocaleString()}</span>
                 </div>
               </div>
 
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                <p className="text-sm text-yellow-800">
-                  <span className="font-semibold">⚠️ Catatan:</span> Scan QR Code di atas menggunakan aplikasi e-wallet atau mobile banking Anda untuk pembayaran QRIS.
-                </p>
-              </div>
-
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                <p className="text-sm text-green-800">
-                  <span className="font-semibold">NMID:</span> ID1025429162544
+              <div className="bg-yellow-50 border border-yellow-200 rounded-md p-2">
+                <p className="text-xs text-yellow-800">
+                  <span className="font-semibold">Catatan:</span> Scan QR Code menggunakan e-wallet/mobile banking.
                 </p>
               </div>
 
               <div className="flex gap-2">
                 <Button
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 h-9 text-xs"
                   onClick={() => {
                     navigator.clipboard.writeText(qrisData.nmId)
                     toast.success('NMID disalin!')
@@ -1652,7 +1646,7 @@ export default function HomePage() {
                   Copy NMID
                 </Button>
                 <Button
-                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 h-9 text-xs"
                   onClick={() => {
                     setIsQRISModalOpen(false)
                     toast.success('Pembayaran berhasil dikonfirmasi')
