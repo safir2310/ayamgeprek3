@@ -348,26 +348,26 @@ export function ProductManagement() {
 
       {/* Add/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-sm p-4">
-          <DialogHeader className="pb-3">
-            <DialogTitle className="text-lg">
-              {editingProduct ? 'Edit Produk' : 'Tambah Produk Baru'}
+        <DialogContent className="max-w-xs p-3">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-base font-semibold">
+              {editingProduct ? 'Edit Produk' : 'Tambah Produk'}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nama Produk *</label>
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">Nama Produk *</label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Masukkan nama produk"
                 required
-                className="h-9 text-sm"
+                className="h-8 text-xs px-2"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Harga (Rp) *</label>
+                <label className="block text-xs font-medium text-gray-700 mb-0.5">Harga (Rp) *</label>
                 <Input
                   type="number"
                   value={formData.price}
@@ -375,11 +375,11 @@ export function ProductManagement() {
                   placeholder="0"
                   required
                   min="0"
-                  className="h-9 text-sm"
+                  className="h-8 text-xs px-2"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Stok *</label>
+                <label className="block text-xs font-medium text-gray-700 mb-0.5">Stok *</label>
                 <Input
                   type="number"
                   value={formData.stock}
@@ -387,16 +387,16 @@ export function ProductManagement() {
                   placeholder="0"
                   required
                   min="0"
-                  className="h-9 text-sm"
+                  className="h-8 text-xs px-2"
                 />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Kategori *</label>
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">Kategori *</label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm h-9"
+                className="w-full px-2 py-1.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent text-xs h-8"
                 required
               >
                 <option value="makanan">Makanan</option>
@@ -406,20 +406,20 @@ export function ProductManagement() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">Deskripsi</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Masukkan deskripsi produk"
-                rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none text-sm"
+                placeholder="Deskripsi produk"
+                rows={1}
+                className="w-full px-2 py-1.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none text-xs h-12"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Gambar Produk</label>
-              <div className="space-y-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">Gambar Produk</label>
+              <div className="space-y-1">
                 {imagePreview ? (
-                  <div className="relative w-full h-32 rounded-lg overflow-hidden border-2 border-gray-200">
+                  <div className="relative w-full h-20 rounded-md overflow-hidden border border-gray-200">
                     <img
                       src={imagePreview}
                       alt="Preview"
@@ -428,19 +428,19 @@ export function ProductManagement() {
                     <button
                       type="button"
                       onClick={handleRemoveImage}
-                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                      className="absolute top-1 right-1 bg-red-500 text-white p-0.5 rounded-full hover:bg-red-600 transition-colors"
                     >
-                      <XIcon className="h-4 w-4" />
+                      <XIcon className="h-3 w-3" />
                     </button>
                   </div>
                 ) : (
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-red-500 hover:bg-red-50 transition-colors"
+                    className="w-full h-20 border border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center cursor-pointer hover:border-red-500 hover:bg-red-50 transition-colors"
                   >
-                    <Upload className="h-6 w-6 text-gray-400 mb-1" />
-                    <p className="text-xs text-gray-600">Klik untuk upload</p>
-                    <p className="text-xs text-gray-400">Maks 2MB</p>
+                    <Upload className="h-4 w-4 text-gray-400 mb-0.5" />
+                    <p className="text-[10px] text-gray-600">Upload</p>
+                    <p className="text-[10px] text-gray-400">Max 2MB</p>
                   </div>
                 )}
                 <input
@@ -455,21 +455,21 @@ export function ProductManagement() {
                 )}
               </div>
             </div>
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-2 pt-1">
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1 h-9 text-sm"
+                className="flex-1 h-7 text-xs"
                 onClick={() => setIsModalOpen(false)}
               >
-                <X className="h-3 w-3 mr-1" />
+                <X className="h-2.5 w-2.5 mr-1" />
                 Batal
               </Button>
               <Button
                 type="submit"
-                className="flex-1 h-9 text-sm bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
+                className="flex-1 h-7 text-xs bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
               >
-                <Save className="h-3 w-3 mr-1" />
+                <Save className="h-2.5 w-2.5 mr-1" />
                 Simpan
               </Button>
             </div>

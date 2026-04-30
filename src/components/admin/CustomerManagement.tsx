@@ -395,78 +395,81 @@ export function CustomerManagement() {
 
       {/* Add/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl">
-              {editingCustomer ? 'Edit Pelanggan' : 'Tambah Pelanggan Baru'}
+        <DialogContent className="max-w-xs p-3">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-base font-semibold">
+              {editingCustomer ? 'Edit Pelanggan' : 'Tambah Pelanggan'}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap *</label>
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">Nama Lengkap *</label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Masukkan nama pelanggan"
+                placeholder="Nama pelanggan"
                 required
+                className="h-8 text-xs px-2"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">Email</label>
               <Input
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="email@contoh.com"
+                className="h-8 text-xs px-2"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">No. Telepon *</label>
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">No. Telepon *</label>
               <Input
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 placeholder="08xxxxxxxxxx"
                 required
+                className="h-8 text-xs px-2"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
+              <label className="block text-xs font-medium text-gray-700 mb-0.5">Alamat</label>
               <textarea
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                placeholder="Masukkan alamat pelanggan"
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                placeholder="Alamat pelanggan"
+                rows={1}
+                className="w-full px-2 py-1.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none text-xs h-12"
               />
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <input
                 type="checkbox"
                 id="isMember"
                 checked={formData.isMember}
                 onChange={(e) => setFormData({ ...formData, isMember: e.target.checked })}
-                className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                className="w-3 h-3 text-red-600 border-gray-300 rounded focus:ring-red-500"
               />
-              <label htmlFor="isMember" className="text-sm font-medium text-gray-700">
-                Jadikan sebagai Member
+              <label htmlFor="isMember" className="text-xs font-medium text-gray-700">
+                Jadikan Member
               </label>
             </div>
-            <div className="flex gap-3 pt-4">
+            <div className="flex gap-2 pt-1">
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1"
+                className="flex-1 h-7 text-xs"
                 onClick={() => setIsModalOpen(false)}
               >
-                <X className="h-4 w-4 mr-2" />
+                <X className="h-2.5 w-2.5 mr-1" />
                 Batal
               </Button>
               <Button
                 type="submit"
-                className="flex-1 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
+                className="flex-1 h-7 text-xs bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
               >
-                <Save className="h-4 w-4 mr-2" />
+                <Save className="h-2.5 w-2.5 mr-1" />
                 Simpan
               </Button>
             </div>
