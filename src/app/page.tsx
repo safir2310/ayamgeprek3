@@ -245,7 +245,6 @@ export default function HomePage() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [orders, setOrders] = useState<any[]>([])
   const [qrisData, setQrisData] = useState<any>(null)
-  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
 
   const {
     user,
@@ -322,11 +321,9 @@ export default function HomePage() {
       logout()
       toast.success('Logout berhasil')
       setOrders([])
-      stopPollingPayment()
     } catch (error) {
       logout()
       setOrders([])
-      stopPollingPayment()
     }
   }
 
@@ -359,108 +356,7 @@ export default function HomePage() {
     notes: '',
   })
   const [showAdminDashboard, setShowAdminDashboard] = useState(false)
-
-  const {
-    user,
-    token,
-    setUser,
-    setToken,
-    logout,
-    cart,
-    addToCart,
-    updateCartQuantity,
-    removeFromCart,
-    clearCart,
-    currentTab,
-    setCurrentTab,
-  } = useStore()
-
-  const checkAuth = async () => {
-    try {
-      const res = await fetch('/api/auth/me')
-      if (res.ok) {
-        const data = await res.json()
-        setUser(data.user)
-      }
-    } catch (error) {
-      console.error('Auth check failed:', error)
-    }
-  }
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true)
-    checkAuth()
-  }, [])
-
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try {
-      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register'
-      const body = isLogin
-        ? { email: authData.email, password: authData.password }
-        : {
-            email: authData.email,
-            password: authData.password,
-            name: authData.name,
-            phone: authData.phone,
-            address: authData.address,
-          }
-
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-
-      const data = await res.json()
-
-      if (res.ok) {
-        setUser(data.user)
-        setToken(data.token)
-        setIsAuthModalOpen(false)
-        toast.success(isLogin ? 'Login berhasil!' : 'Registrasi berhasil!')
-        setAuthData({ email: '', password: '', name: '', phone: '', address: '' })
-      } else {
-        toast.error(data.error || 'Terjadi kesalahan')
-      }
-    } catch (error) {
-      toast.error('Terjadi kesalahan koneksi')
-    }
-  }
-
-  const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/me', { method: 'DELETE' })
-      logout()
-      toast.success('Logout berhasil')
-      setOrders([])
-    } catch (error) {
-      logout()
-      setOrders([])
-    }
-  }
-
-  const generateQRIS = async (amount: number, orderId: string) => {
-    try {
-      const res = await fetch('/api/qrcode/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, orderId }),
-      })
-
-      if (res.ok) {
-        const data = await res.json()
-        setQrisData(data)
-        setIsQRISModalOpen(true)
-      } else {
-        toast.error('Gagal generate QR Code')
-      }
-    } catch (error) {
-      console.error('QRIS generation error:', error)
-      toast.error('Gagal generate QR Code')
-    }
-  }
+  const [selectedVoucher, setSelectedVoucher] = useState<string | null>(null)
 
   async function fetchOrdersFromApi(signal?: AbortSignal) {
     if (!user || !token) return
@@ -484,49 +380,6 @@ export default function HomePage() {
     }
   }
 
-  const startPollingPayment = () => {
-    if (pollingInterval) return // Sudah polling
-
-    const interval = setInterval(async () => {
-      if (!qrisData || !qrisData.orderId) return
-
-      try {
-        const res = await fetch('/api/orders')
-        if (res.ok) {
-          const data = await res.json()
-          const updatedOrder = data.orders?.find((o: any) => o.orderNumber === qrisData.orderId)
-
-          if (updatedOrder && updatedOrder.paymentStatus === 'paid') {
-            // Pembayaran berhasil
-            clearInterval(interval)
-            setPollingInterval(null)
-            setIsQRISModalOpen(false)
-            toast.success('✅ Pembayaran berhasil dikonfirmasi otomatis!')
-            fetchOrdersFromApi()
-          } else if (updatedOrder && updatedOrder.paymentStatus === 'failed') {
-            // Pembayaran gagal
-            clearInterval(interval)
-            setPollingInterval(null)
-            setIsQRISModalOpen(false)
-            toast.error('❌ Pembayaran gagal')
-            fetchOrdersFromApi()
-          }
-        }
-      } catch (error) {
-        console.error('Polling error:', error)
-      }
-    }, 3000) // Check setiap 3 detik
-
-    setPollingInterval(interval)
-  }
-
-  const stopPollingPayment = () => {
-    if (pollingInterval) {
-      clearInterval(pollingInterval)
-      setPollingInterval(null)
-    }
-  }
-
   const simulatePayment = async () => {
     if (!qrisData || !qrisData.orderId) return
 
@@ -541,7 +394,6 @@ export default function HomePage() {
         const data = await res.json()
         toast.success('✅ Simulasi pembayaran berhasil!')
         setIsQRISModalOpen(false)
-        stopPollingPayment()
         fetchOrdersFromApi()
       } else {
         toast.error('Gagal mensimulasikan pembayaran')
@@ -554,14 +406,49 @@ export default function HomePage() {
 
   // Start/stop polling ketika QRIS modal terbuka/tutup
   useEffect(() => {
-    if (isQRISModalOpen && qrisData) {
-      startPollingPayment()
-    } else {
-      stopPollingPayment()
+    if (!isQRISModalOpen || !qrisData) {
+      return () => {
+        // Cleanup function
+      }
     }
 
+    let intervalId: NodeJS.Timeout | null = null
+
+    const checkPaymentStatus = async () => {
+      if (!qrisData || !qrisData.orderId) return
+
+      try {
+        const res = await fetch('/api/orders')
+        if (res.ok) {
+          const data = await res.json()
+          const updatedOrder = data.orders?.find((o: any) => o.orderNumber === qrisData.orderId)
+
+          if (updatedOrder && updatedOrder.paymentStatus === 'paid') {
+            // Pembayaran berhasil
+            if (intervalId) clearInterval(intervalId)
+            setIsQRISModalOpen(false)
+            toast.success('✅ Pembayaran berhasil dikonfirmasi otomatis!')
+            fetchOrdersFromApi()
+          } else if (updatedOrder && updatedOrder.paymentStatus === 'failed') {
+            // Pembayaran gagal
+            if (intervalId) clearInterval(intervalId)
+            setIsQRISModalOpen(false)
+            toast.error('❌ Pembayaran gagal')
+            fetchOrdersFromApi()
+          }
+        }
+      } catch (error) {
+        console.error('Polling error:', error)
+      }
+    }
+
+    // Start polling using setTimeout to avoid setState in effect
+    setTimeout(() => {
+      intervalId = setInterval(checkPaymentStatus, 3000)
+    }, 0)
+
     return () => {
-      stopPollingPayment()
+      if (intervalId) clearInterval(intervalId)
     }
   }, [isQRISModalOpen, qrisData])
 
