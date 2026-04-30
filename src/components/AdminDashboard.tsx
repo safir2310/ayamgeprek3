@@ -96,51 +96,6 @@ export function AdminDashboard({ onBack }: { onBack?: () => void }) {
     },
   ])
 
-  const quickActions = [
-    {
-      title: 'Point of Sale',
-      description: 'Transaksi kasir',
-      icon: Store,
-      color: 'bg-gradient-to-br from-red-500 to-orange-500',
-      onClick: () => setShowPOS(true),
-    },
-    {
-      title: 'Kelola Produk',
-      description: 'Tambah, edit, hapus produk',
-      icon: Package,
-      color: 'bg-gradient-to-br from-blue-500 to-purple-500',
-      onClick: () => {},
-    },
-    {
-      title: 'Daftar Pesanan',
-      description: 'Lihat semua pesanan',
-      icon: ShoppingBag,
-      color: 'bg-gradient-to-br from-green-500 to-teal-500',
-      onClick: () => {},
-    },
-    {
-      title: 'Kelola User',
-      description: 'Kelola pelanggan',
-      icon: Users,
-      color: 'bg-gradient-to-br from-yellow-500 to-orange-500',
-      onClick: () => {},
-    },
-    {
-      title: 'Laporan Penjualan',
-      description: 'Analisis dan laporan',
-      icon: BarChart3,
-      color: 'bg-gradient-to-br from-pink-500 to-rose-500',
-      onClick: () => {},
-    },
-    {
-      title: 'Sinkronisasi Database',
-      description: 'Sinkronisasi ke seluruh halaman',
-      icon: Database,
-      color: 'bg-gradient-to-br from-indigo-500 to-purple-500',
-      onClick: handleSync,
-    },
-  ]
-
   const handleSync = async () => {
     setIsSyncing(true)
     try {
@@ -198,6 +153,51 @@ export function AdminDashboard({ onBack }: { onBack?: () => void }) {
       setIsSyncing(false)
     }
   }
+
+  const quickActions = [
+    {
+      title: 'Point of Sale',
+      description: 'Transaksi kasir',
+      icon: Store,
+      color: 'bg-gradient-to-br from-red-500 to-orange-500',
+      onClick: () => setShowPOS(true),
+    },
+    {
+      title: 'Kelola Produk',
+      description: 'Tambah, edit, hapus produk',
+      icon: Package,
+      color: 'bg-gradient-to-br from-blue-500 to-purple-500',
+      onClick: () => {},
+    },
+    {
+      title: 'Daftar Pesanan',
+      description: 'Lihat semua pesanan',
+      icon: ShoppingBag,
+      color: 'bg-gradient-to-br from-green-500 to-teal-500',
+      onClick: () => {},
+    },
+    {
+      title: 'Kelola User',
+      description: 'Kelola pelanggan',
+      icon: Users,
+      color: 'bg-gradient-to-br from-yellow-500 to-orange-500',
+      onClick: () => {},
+    },
+    {
+      title: 'Laporan Penjualan',
+      description: 'Analisis dan laporan',
+      icon: BarChart3,
+      color: 'bg-gradient-to-br from-pink-500 to-rose-500',
+      onClick: () => {},
+    },
+    {
+      title: 'Sinkronisasi Database',
+      description: 'Sinkronisasi ke seluruh halaman',
+      icon: Database,
+      color: 'bg-gradient-to-br from-indigo-500 to-purple-500',
+      onClick: handleSync,
+    },
+  ]
 
   useEffect(() => {
     // Auto sync on mount
