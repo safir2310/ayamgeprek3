@@ -2282,29 +2282,77 @@ export default function HomePage() {
       </Dialog>
 
       {/* Auth Modal */}
+      {/* Auth Modal */}
       <Dialog open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen}>
-        <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden">
-          {/* Header with gradient background */}
-          <div className="bg-gradient-to-r from-red-600 to-orange-500 px-6 py-6">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full mx-auto flex items-center justify-center mb-4">
-                {isLogin ? (
-                  <User className="w-8 h-8 text-white" />
-                ) : (
-                  <UserCircle className="w-8 h-8 text-white" />
-                )}
-              </div>
-              <DialogTitle className="text-2xl font-bold text-white text-center pb-0">
-                {isLogin ? 'Selamat Datang!' : 'Buat Akun Baru'}
-              </DialogTitle>
-              <p className="text-white/90 text-sm mt-2">
-                {isLogin ? 'Masuk untuk melanjutkan' : 'Isi formulir di bawah untuk mendaftar'}
-              </p>
-            </div>
-          </div>
+        <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden rounded-3xl border-0 shadow-2xl shadow-black/10">
+          {/* Premium Gradient Background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 -z-10"></div>
+          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-purple-500/5 to-transparent -z-10"></div>
 
-          {/* Content */}
-          <div className="p-6 bg-white min-h-[500px]">
+          {/* Decorative Glow */}
+          <div className="absolute -top-32 -left-32 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl -z-10"></div>
+          <div className="absolute -bottom-32 -right-32 w-64 h-64 bg-red-500/20 rounded-full blur-3xl -z-10"></div>
+
+          {/* Premium Close Button */}
+          <button
+            onClick={() => setIsAuthModalOpen(false)}
+            className="absolute top-4 right-4 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 transition-all duration-300"
+          >
+            <X className="w-4 h-4 text-white/70 hover:text-white transition-colors" />
+          </button>
+
+          <div className="relative p-6 sm:p-8">
+            {/* Premium Logo/Icon Section */}
+            <div className="text-center mb-6">
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", duration: 0.6, bounce: 0.3 }}
+                className="w-16 h-16 mx-auto mb-5 relative"
+              >
+                {/* Glow Effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl blur-lg opacity-40"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl blur-md opacity-30"></div>
+                {/* Main Icon */}
+                <div className="relative w-full h-full bg-gradient-to-br from-red-600 via-orange-500 to-red-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-red-500/50 border border-white/20">
+                  {isLogin ? (
+                    <motion.div
+                      initial={{ rotate: -180 }}
+                      animate={{ rotate: 0 }}
+                      transition={{ delay: 0.3, type: "spring" }}
+                    >
+                      <User className="w-7 h-7 text-white" />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      initial={{ rotate: -180 }}
+                      animate={{ rotate: 0 }}
+                      transition={{ delay: 0.3, type: "spring" }}
+                    >
+                      <UserPlus className="w-7 h-7 text-white" />
+                    </motion.div>
+                  )}
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2 tracking-tight">
+                  {isLogin ? 'Welcome Back' : 'Create Account'}
+                </h2>
+                <p className="text-white/60 text-sm sm:text-base font-light">
+                  {isLogin
+                    ? 'Sign in to access your account'
+                    : 'Start your journey with us today'
+                  }
+                </p>
+              </motion.div>
+            </div>
+
+            {/* Content */}
             <AnimatePresence mode="wait">
               {isLogin ? (
                 <motion.div
@@ -2312,94 +2360,123 @@ export default function HomePage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration: 0.3 }}
+                  transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+                  className="space-y-4 sm:space-y-5"
                 >
-                  <form onSubmit={handleAuth} className="space-y-5">
-                  {/* Email Field */}
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email" className="text-sm font-semibold text-gray-700">
-                      Email Address
-                    </Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <Input
-                        id="login-email"
-                        type="email"
-                        value={authData.email}
-                        onChange={(e) => setAuthData({ ...authData, email: e.target.value })}
-                        placeholder="nama@email.com"
-                        required
-                        className="pl-10 h-11 border-gray-200 focus:border-red-500 focus:ring-red-500"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Password Field */}
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password" className="text-sm font-semibold text-gray-700">
-                      Password
-                    </Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <Input
-                        id="login-password"
-                        type="password"
-                        value={authData.password}
-                        onChange={(e) => setAuthData({ ...authData, password: e.target.value })}
-                        placeholder="•••••••••••••"
-                        required
-                        className="pl-10 h-11 border-gray-200 focus:border-red-500 focus:ring-red-500"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Forgot Password */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsForgotPasswordOpen(true)
-                      setIsAuthModalOpen(false)
-                    }}
-                    className="text-sm text-red-600 hover:text-red-700 font-medium hover:underline text-right w-full"
-                  >
-                    Lupa Password?
-                  </button>
-
-                  {/* Submit Button */}
-                  <Button 
-                    type="submit" 
-                    className="w-full h-11 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white font-semibold text-base shadow-lg shadow-red-500/30"
-                  >
-                    Masuk Sekarang
-                  </Button>
-                </form>
-
-                {/* Divider */}
-                <div className="relative my-6">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-200"></div>
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white px-3 text-gray-500 font-medium">atau</span>
-                  </div>
-                </div>
-
-                {/* Register Link */}
-                <div className="text-center">
-                  <p className="text-sm text-gray-600">
-                    Belum punya akun?{' '}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsLogin(false)
-                        setAuthData({ email: '', password: '', name: '', phone: '', address: '' })
-                      }}
-                      className="text-red-600 hover:text-red-700 font-semibold hover:underline transition-colors"
+                  <form onSubmit={handleAuth} className="space-y-4 sm:space-y-5">
+                    {/* Premium Email Field */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 }}
                     >
-                      Daftar Sekarang
-                    </button>
-                  </p>
-                </div>
+                      <Label htmlFor="login-email" className="text-sm font-medium text-white/80 mb-2.5 block">
+                        Email Address
+                      </Label>
+                      <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
+                          <Mail className="w-5 h-5 text-white/40 group-focus-within:text-white transition-colors" />
+                        </div>
+                        <Input
+                          id="login-email"
+                          type="email"
+                          value={authData.email}
+                          onChange={(e) => setAuthData({ ...authData, email: e.target.value })}
+                          placeholder="your@email.com"
+                          required
+                          className="h-12 sm:h-13 pl-12 pr-4 bg-white/5 backdrop-blur-md border-2 border-white/10 text-white placeholder:text-white/30 focus:border-red-400 focus:bg-white/10 focus:ring-4 focus:ring-red-500/20 transition-all duration-300 text-sm sm:text-base"
+                        />
+                      </div>
+                    </motion.div>
+
+                    {/* Premium Password Field */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.6 }}
+                    >
+                      <div className="flex items-center justify-between mb-2.5">
+                        <Label htmlFor="login-password" className="text-sm font-medium text-white/80">
+                          Password
+                        </Label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsForgotPasswordOpen(true)
+                            setIsAuthModalOpen(false)
+                          }}
+                          className="text-xs text-white/60 hover:text-red-300 font-medium hover:underline transition-colors"
+                        >
+                          Forgot password?
+                        </button>
+                      </div>
+                      <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
+                          <Lock className="w-5 h-5 text-white/40 group-focus-within:text-white transition-colors" />
+                        </div>
+                        <Input
+                          id="login-password"
+                          type="password"
+                          value={authData.password}
+                          onChange={(e) => setAuthData({ ...authData, password: e.target.value })}
+                          placeholder="•••••••"
+                          required
+                          className="h-12 sm:h-13 pl-12 pr-4 bg-white/5 backdrop-blur-md border-2 border-white/10 text-white placeholder:text-white/30 focus:border-red-400 focus:bg-white/10 focus:ring-4 focus:ring-red-500/20 transition-all duration-300 text-sm sm:text-base"
+                        />
+                      </div>
+                    </motion.div>
+
+                    {/* Premium Submit Button */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.7 }}
+                    >
+                      <Button
+                        type="submit"
+                        className="w-full h-12 sm:h-13 bg-gradient-to-r from-red-600 via-orange-500 to-red-600 hover:from-red-700 hover:via-orange-600 hover:to-red-700 text-white font-semibold text-base sm:text-base shadow-2xl shadow-red-500/40 hover:shadow-red-500/60 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] border border-white/20"
+                      >
+                        <span className="relative z-10">Sign In</span>
+                      </Button>
+                    </motion.div>
+                  </form>
+
+                  {/* Premium Divider */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.8 }}
+                    className="relative my-5 sm:my-6"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                      <span className="text-xs text-white/40 font-medium uppercase tracking-wider">Or continue with</span>
+                      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                    </div>
+                  </motion.div>
+
+                  {/* Register Link */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.9 }}
+                    className="text-center"
+                  >
+                    <p className="text-sm text-white/70">
+                      Don't have an account?{' '}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsLogin(false)
+                          setAuthData({ email: '', password: '', name: '', phone: '', address: '' })
+                        }}
+                        className="text-white font-semibold hover:text-red-300 hover:underline transition-all inline-flex items-center gap-1.5 group"
+                      >
+                        Create Account
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </button>
+                    </p>
+                  </motion.div>
                 </motion.div>
               ) : (
                 <motion.div
@@ -2407,147 +2484,191 @@ export default function HomePage() {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
+                  transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+                  className="space-y-4 sm:space-y-4"
                 >
-                  <form onSubmit={handleAuth} className="space-y-4">
-                  {/* Name Field */}
-                  <div className="space-y-2">
-                    <Label htmlFor="register-name" className="text-sm font-semibold text-gray-700">
-                      Nama Lengkap
-                    </Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <Input
-                        id="register-name"
-                        value={authData.name}
-                        onChange={(e) => setAuthData({ ...authData, name: e.target.value })}
-                        placeholder="John Doe"
-                        required
-                        className="pl-10 h-11 border-gray-200 focus:border-red-500 focus:ring-red-500"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Email Field */}
-                  <div className="space-y-2">
-                    <Label htmlFor="register-email" className="text-sm font-semibold text-gray-700">
-                      Email Address
-                    </Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <Input
-                        id="register-email"
-                        type="email"
-                        value={authData.email}
-                        onChange={(e) => setAuthData({ ...authData, email: e.target.value })}
-                        placeholder="nama@email.com"
-                        required
-                        className="pl-10 h-11 border-gray-200 focus:border-red-500 focus:ring-red-500"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Phone Field */}
-                  <div className="space-y-2">
-                    <Label htmlFor="register-phone" className="text-sm font-semibold text-gray-700">
-                      Nomor HP
-                    </Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <Input
-                        id="register-phone"
-                        type="tel"
-                        value={authData.phone}
-                        onChange={(e) => setAuthData({ ...authData, phone: e.target.value })}
-                        placeholder="081234567890"
-                        className="pl-10 h-11 border-gray-200 focus:border-red-500 focus:ring-red-500"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Address Field */}
-                  <div className="space-y-2">
-                    <Label htmlFor="register-address" className="text-sm font-semibold text-gray-700">
-                      Alamat Lengkap
-                    </Label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                      <Textarea
-                        id="register-address"
-                        value={authData.address}
-                        onChange={(e) => setAuthData({ ...authData, address: e.target.value })}
-                        placeholder="Masukkan alamat lengkap Anda"
-                        rows={3}
-                        className="pl-10 border-gray-200 focus:border-red-500 focus:ring-red-500 resize-none"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Password Field */}
-                  <div className="space-y-2">
-                    <Label htmlFor="register-password" className="text-sm font-semibold text-gray-700">
-                      Password
-                    </Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <Input
-                        id="register-password"
-                        type="password"
-                        value={authData.password}
-                        onChange={(e) => setAuthData({ ...authData, password: e.target.value })}
-                        placeholder="•••••••••••••"
-                        required
-                        minLength={6}
-                        className="pl-10 h-11 border-gray-200 focus:border-red-500 focus:ring-red-500"
-                      />
-                    </div>
-                    <p className="text-xs text-gray-500">Minimal 6 karakter</p>
-                  </div>
-
-                  {/* Submit Button */}
-                  <Button 
-                    type="submit" 
-                    className="w-full h-11 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white font-semibold text-base shadow-lg shadow-red-500/30"
-                  >
-                    Buat Akun
-                  </Button>
-                </form>
-
-                {/* Divider */}
-                <div className="relative my-6">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-200"></div>
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white px-3 text-gray-500 font-medium">atau</span>
-                  </div>
-                </div>
-
-                {/* Login Link */}
-                <div className="text-center">
-                  <p className="text-sm text-gray-600">
-                    Sudah punya akun?{' '}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsLogin(true)
-                        setAuthData({ email: '', password: '', name: '', phone: '', address: '' })
-                      }}
-                      className="text-red-600 hover:text-red-700 font-semibold hover:underline transition-colors"
+                  <form onSubmit={handleAuth} className="space-y-4 sm:space-y-4">
+                    {/* Premium Name Field */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 }}
                     >
-                      Masuk Sekarang
-                    </button>
-                  </p>
-                </div>
+                      <Label htmlFor="register-name" className="text-sm font-medium text-white/80 mb-2.5 block">
+                        Full Name
+                      </Label>
+                      <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
+                          <User className="w-5 h-5 text-white/40 group-focus-within:text-white transition-colors" />
+                        </div>
+                        <Input
+                          id="register-name"
+                          value={authData.name}
+                          onChange={(e) => setAuthData({ ...authData, name: e.target.value })}
+                          placeholder="John Doe"
+                          required
+                          className="h-11 sm:h-12 pl-12 pr-4 bg-white/5 backdrop-blur-md border-2 border-white/10 text-white placeholder:text-white/30 focus:border-red-400 focus:bg-white/10 focus:ring-4 focus:ring-red-500/20 transition-all duration-300 text-sm"
+                        />
+                      </div>
+                    </motion.div>
+
+                    {/* Premium Email Field */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.55 }}
+                    >
+                      <Label htmlFor="register-email" className="text-sm font-medium text-white/80 mb-2.5 block">
+                        Email Address
+                      </Label>
+                      <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
+                          <Mail className="w-5 h-5 text-white/40 group-focus-within:text-white transition-colors" />
+                        </div>
+                        <Input
+                          id="register-email"
+                          type="email"
+                          value={authData.email}
+                          onChange={(e) => setAuthData({ ...authData, email: e.target.value })}
+                          placeholder="your@email.com"
+                          required
+                          className="h-11 sm:h-12 pl-12 pr-4 bg-white/5 backdrop-blur-md border-2 border-white/10 text-white placeholder:text-white/30 focus:border-red-400 focus:bg-white/10 focus:ring-4 focus:ring-red-500/20 transition-all duration-300 text-sm"
+                        />
+                      </div>
+                    </motion.div>
+
+                    {/* Premium Phone Field */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.6 }}
+                    >
+                      <Label htmlFor="register-phone" className="text-sm font-medium text-white/80 mb-2.5 block">
+                        Phone Number
+                      </Label>
+                      <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
+                          <Phone className="w-5 h-5 text-white/40 group-focus-within:text-white transition-colors" />
+                        </div>
+                        <Input
+                          id="register-phone"
+                          type="tel"
+                          value={authData.phone}
+                          onChange={(e) => setAuthData({ ...authData, phone: e.target.value })}
+                          placeholder="081234567890"
+                          className="h-11 sm:h-12 pl-12 pr-4 bg-white/5 backdrop-blur-md border-2 border-white/10 text-white placeholder:text-white/30 focus:border-red-400 focus:bg-white/10 focus:ring-4 focus:ring-red-500/20 transition-all duration-300 text-sm"
+                        />
+                      </div>
+                    </motion.div>
+
+                    {/* Premium Address Field */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.65 }}
+                    >
+                      <Label htmlFor="register-address" className="text-sm font-medium text-white/80 mb-2.5 block">
+                        Full Address
+                      </Label>
+                      <div className="relative group">
+                        <div className="absolute top-3 left-0 pl-3.5 flex items-start pointer-events-none z-10">
+                          <MapPin className="w-5 h-5 text-white/40 group-focus-within:text-white transition-colors" />
+                        </div>
+                        <Textarea
+                          id="register-address"
+                          value={authData.address}
+                          onChange={(e) => setAuthData({ ...authData, address: e.target.value })}
+                          placeholder="Enter your full address"
+                          rows={2.5}
+                          className="pl-12 pr-4 py-3 bg-white/5 backdrop-blur-md border-2 border-white/10 text-white placeholder:text-white/30 focus:border-red-400 focus:bg-white/10 focus:ring-4 focus:ring-red-500/20 transition-all duration-300 text-sm resize-none"
+                        />
+                      </div>
+                    </motion.div>
+
+                    {/* Premium Password Field */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.7 }}
+                    >
+                      <Label htmlFor="register-password" className="text-sm font-medium text-white/80 mb-2.5 block">
+                        Password
+                      </Label>
+                      <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
+                          <Lock className="w-5 h-5 text-white/40 group-focus-within:text-white transition-colors" />
+                        </div>
+                        <Input
+                          id="register-password"
+                          type="password"
+                          value={authData.password}
+                          onChange={(e) => setAuthData({ ...authData, password: e.target.value })}
+                          placeholder="Create password"
+                          required
+                          minLength={6}
+                          className="h-11 sm:h-12 pl-12 pr-4 bg-white/5 backdrop-blur-md border-2 border-white/10 text-white placeholder:text-white/30 focus:border-red-400 focus:bg-white/10 focus:ring-4 focus:ring-red-500/20 transition-all duration-300 text-sm"
+                        />
+                      </div>
+                      <p className="text-xs text-white/50 mt-1.5">Minimum 6 characters</p>
+                    </motion.div>
+
+                    {/* Premium Submit Button */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.75 }}
+                    >
+                      <Button
+                        type="submit"
+                        className="w-full h-11 sm:h-12 bg-gradient-to-r from-red-600 via-orange-500 to-red-600 hover:from-red-700 hover:via-orange-600 hover:to-red-700 text-white font-semibold text-base sm:text-base shadow-2xl shadow-red-500/40 hover:shadow-red-500/60 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] border border-white/20"
+                      >
+                        <span className="relative z-10">Create Account</span>
+                      </Button>
+                    </motion.div>
+                  </form>
+
+                  {/* Premium Divider */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.8 }}
+                    className="relative my-5"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                      <span className="text-xs text-white/40 font-medium uppercase tracking-wider">Or continue with</span>
+                      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                    </div>
+                  </motion.div>
+
+                  {/* Login Link */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.85 }}
+                    className="text-center"
+                  >
+                    <p className="text-sm text-white/70">
+                      Already have an account?{' '}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsLogin(true)
+                          setAuthData({ email: '', password: '', name: '', phone: '', address: '' })
+                        }}
+                        className="text-white font-semibold hover:text-red-300 hover:underline transition-all inline-flex items-center gap-1.5 group"
+                      >
+                        Sign In
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </button>
+                    </p>
+                  </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Barcode Modal */}
-      {/* Forgot Password Modal */}
       <Dialog open={isForgotPasswordOpen} onOpenChange={setIsForgotPasswordOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
