@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
+import { useStore } from '@/store/useStore'
 
 interface PointVoucher {
   id: string
@@ -29,6 +30,9 @@ export function PointVoucherManagement() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [isLoading, setIsLoading] = useState(true)
 
+  // Get token from store
+  const { token } = useStore()
+
   useEffect(() => {
     loadVouchers()
   }, [])
@@ -36,12 +40,23 @@ export function PointVoucherManagement() {
   const loadVouchers = async () => {
     setIsLoading(true)
     try {
-      const res = await fetch('/api/admin/point-vouchers')
+      if (!token) {
+        toast.error('Anda belum login. Silakan login terlebih dahulu.')
+        return
+      }
+
+      const res = await fetch('/api/admin/point-vouchers', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
       if (res.ok) {
         const data = await res.json()
         setVouchers(data.vouchers || [])
       } else {
-        toast.error('Gagal mengambil data voucher')
+        const errorData = await res.json()
+        toast.error(errorData.error || 'Gagal mengambil data voucher')
       }
     } catch (error) {
       console.error('Error loading vouchers:', error)

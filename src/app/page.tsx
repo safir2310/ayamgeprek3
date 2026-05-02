@@ -561,15 +561,39 @@ export default function HomePage() {
     }
   }
 
-  const handleAdminPinSubmit = () => {
-    // Default admin PIN: 1234
-    if (adminPin === '1234') {
-      setShowAdminPinModal(false)
-      setShowAdminDashboard(true)
-      setAdminPin('')
-      toast.success('🔓 Admin panel terbuka!')
-    } else {
-      toast.error('❌ PIN salah!')
+  const handleAdminPinSubmit = async () => {
+    if (!adminPin) {
+      toast.error('PIN wajib diisi')
+      return
+    }
+
+    try {
+      const res = await fetch('/api/auth/admin-pin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ pin: adminPin }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok && data.success) {
+        // Update user and token in store
+        setUser(data.user)
+        setToken(data.token)
+
+        setShowAdminPinModal(false)
+        setShowAdminDashboard(true)
+        setAdminPin('')
+        toast.success('🔓 Admin panel terbuka!')
+      } else {
+        toast.error(data.error || '❌ PIN salah!')
+        setAdminPin('')
+      }
+    } catch (error) {
+      console.error('Admin login error:', error)
+      toast.error('Terjadi kesalahan saat login admin')
       setAdminPin('')
     }
   }

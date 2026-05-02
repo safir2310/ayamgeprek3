@@ -22,6 +22,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { toast } from 'sonner'
+import { useStore } from '@/store/useStore'
 
 interface Product {
   id: string
@@ -51,6 +52,9 @@ export function PointRedemptionManagement() {
   const [showDialog, setShowDialog] = useState(false)
   const [editingRedemption, setEditingRedemption] = useState<PointRedemption | null>(null)
 
+  // Get token from store
+  const { token } = useStore()
+
   // Form state
   const [formData, setFormData] = useState({
     name: '',
@@ -70,7 +74,11 @@ export function PointRedemptionManagement() {
   const loadRedemptions = async () => {
     setIsLoading(true)
     try {
-      const token = localStorage.getItem('token')
+      if (!token) {
+        toast.error('Anda belum login. Silakan login terlebih dahulu.')
+        return
+      }
+
       const res = await fetch('/api/admin/point-redemption', {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -81,7 +89,8 @@ export function PointRedemptionManagement() {
         const data = await res.json()
         setRedemptions(data.redemptions || [])
       } else {
-        toast.error('Gagal mengambil data penukaran poin')
+        const errorData = await res.json()
+        toast.error(errorData.error || 'Gagal mengambil data penukaran poin')
       }
     } catch (error) {
       console.error('Error loading redemptions:', error)
@@ -140,8 +149,12 @@ export function PointRedemptionManagement() {
       return
     }
 
+    if (!token) {
+      toast.error('Anda belum login. Silakan login terlebih dahulu.')
+      return
+    }
+
     try {
-      const token = localStorage.getItem('token')
       const res = await fetch(`/api/admin/point-redemption?id=${id}`, {
         method: 'DELETE',
         headers: {
@@ -153,7 +166,8 @@ export function PointRedemptionManagement() {
         toast.success('Opsi penukaran berhasil dihapus')
         loadRedemptions()
       } else {
-        toast.error('Gagal menghapus opsi penukaran')
+        const errorData = await res.json()
+        toast.error(errorData.error || 'Gagal menghapus opsi penukaran')
       }
     } catch (error) {
       console.error('Error deleting redemption:', error)
@@ -162,8 +176,12 @@ export function PointRedemptionManagement() {
   }
 
   const handleToggleActive = async (redemption: PointRedemption) => {
+    if (!token) {
+      toast.error('Anda belum login. Silakan login terlebih dahulu.')
+      return
+    }
+
     try {
-      const token = localStorage.getItem('token')
       const res = await fetch('/api/admin/point-redemption', {
         method: 'PUT',
         headers: {
@@ -180,7 +198,8 @@ export function PointRedemptionManagement() {
         toast.success(redemption.active ? 'Opsi penukaran dinonaktifkan' : 'Opsi penukaran diaktifkan')
         loadRedemptions()
       } else {
-        toast.error('Gagal mengubah status opsi penukaran')
+        const errorData = await res.json()
+        toast.error(errorData.error || 'Gagal mengubah status opsi penukaran')
       }
     } catch (error) {
       console.error('Error toggling active:', error)
@@ -189,7 +208,13 @@ export function PointRedemptionManagement() {
   }
 
   const handleSave = async () => {
-    // Validate
+    // Validate token
+    if (!token) {
+      toast.error('Anda belum login. Silakan login terlebih dahulu.')
+      return
+    }
+
+    // Validate form
     if (!formData.name.trim()) {
       toast.error('Nama wajib diisi')
       return
@@ -209,7 +234,6 @@ export function PointRedemptionManagement() {
 
     setIsSaving(true)
     try {
-      const token = localStorage.getItem('token')
       const method = editingRedemption ? 'PUT' : 'POST'
       const body = editingRedemption ? { ...formData, id: editingRedemption.id } : formData
 
@@ -227,8 +251,8 @@ export function PointRedemptionManagement() {
         setShowDialog(false)
         loadRedemptions()
       } else {
-        const data = await res.json()
-        toast.error(data.error || 'Gagal menyimpan opsi penukaran')
+        const errorData = await res.json()
+        toast.error(errorData.error || 'Gagal menyimpan opsi penukaran')
       }
     } catch (error) {
       console.error('Error saving redemption:', error)
