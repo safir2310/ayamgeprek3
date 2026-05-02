@@ -1313,12 +1313,12 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-red-50 via-orange-50 to-white">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-gradient-to-r from-red-600 to-orange-500 shadow-md">
-        <div className="container mx-auto px-3 py-2.5 sm:px-4 sm:py-3">
+        <div className="container mx-auto px-3 py-3 sm:px-4 sm:py-4">
           <div className="flex items-center justify-between gap-3 sm:gap-4">
             {/* Logo Section */}
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+            <div className="flex items-center gap-2 sm:gap-2 flex-shrink-0">
               <div
-                className="w-9 h-9 sm:w-10 sm:h-10 bg-white rounded-lg flex items-center justify-center shadow-md cursor-pointer select-none active:scale-95 transition-transform md:cursor-default relative"
+                className="w-10 h-10 sm:w-10 sm:h-10 bg-white rounded-lg flex items-center justify-center shadow-md cursor-pointer select-none active:scale-95 transition-transform md:cursor-default relative"
                 onClick={handleLogoTap}
                 onTouchStart={handleLogoPressStart}
                 onMouseDown={handleLogoPressStart}
@@ -1326,7 +1326,7 @@ export default function HomePage() {
                 onMouseUp={handleLogoPressEnd}
                 onMouseLeave={handleLogoPressEnd}
               >
-                <svg viewBox="0 0 100 100" className="w-7 h-7 sm:w-8 sm:h-8">
+                <svg viewBox="0 0 100 100" className="w-8 h-8 sm:w-8 sm:h-8">
                   <defs>
                     <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="#DC2626" stopOpacity={1} />
@@ -1415,12 +1415,12 @@ export default function HomePage() {
                 )}
               </div>
               <div>
-                <h1 className="text-[10px] sm:text-xs font-bold text-white tracking-wide leading-tight">AYAM GEPREK SAMBAL IJO</h1>
+                <h1 className="text-[11px] sm:text-xs font-bold text-white tracking-wide leading-tight">AYAM GEPREK SAMBAL IJO</h1>
                 <button
                   onClick={() => setIsAddressModalOpen(true)}
-                  className="flex items-center gap-1 text-white/90 text-[9px] sm:text-[10px] hover:text-white transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 text-white/90 text-[10px] sm:text-[10px] hover:text-white transition-colors cursor-pointer"
                 >
-                  <MapPin className="h-2 w-2 sm:h-2.5 sm:w-2.5" />
+                  <MapPin className="h-2.5 w-2.5 sm:h-2.5 sm:w-2.5" />
                   <span className="truncate max-w-[100px] sm:max-w-[150px]">Jl. Medan - Banda Aceh, Simpang Camat, Gampong Tijue, 24151</span>
                 </button>
                 {/* Mobile Admin Tap Indicator - Changed to 2 for double-tap */}
@@ -1458,12 +1458,12 @@ export default function HomePage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20 relative h-9 w-9 sm:h-10 sm:w-10"
+                className="text-white hover:bg-white/20 relative h-10 w-10 sm:h-10 sm:w-10"
                 onClick={() => setIsCartOpen(true)}
               >
-                <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
+                <ShoppingCart className="h-5 w-5 sm:h-5 sm:w-5" />
                 {cartCount > 0 && (
-                  <Badge className="absolute -top-0.5 -right-0.5 h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center bg-yellow-400 text-red-900 text-[9px] sm:text-[10px] font-bold">
+                  <Badge className="absolute -top-0.5 -right-0.5 h-5 w-5 sm:h-5 sm:w-5 flex items-center justify-center bg-yellow-400 text-red-900 text-[10px] sm:text-[10px] font-bold">
                     {cartCount}
                   </Badge>
                 )}
@@ -1472,7 +1472,7 @@ export default function HomePage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-white hover:bg-white/20 relative h-9 w-9 sm:h-10 sm:w-10"
+                  className="text-white hover:bg-white/20 relative h-10 w-10 sm:h-10 sm:w-10"
                   onClick={() => {
                     if (user) {
                       setIsChatOpen(true)
@@ -1482,9 +1482,9 @@ export default function HomePage() {
                     }
                   }}
                 >
-                  <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <MessageCircle className="h-5 w-5 sm:h-5 sm:w-5" />
                   {unreadChatCount > 0 && (
-                    <Badge className="absolute -top-0.5 -right-0.5 h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center bg-red-500 text-white text-[9px] sm:text-[10px] font-bold animate-pulse">
+                    <Badge className="absolute -top-0.5 -right-0.5 h-5 w-5 sm:h-5 sm:w-5 flex items-center justify-center bg-red-500 text-white text-[10px] sm:text-[10px] font-bold animate-pulse">
                       {unreadChatCount > 9 ? '9+' : unreadChatCount}
                     </Badge>
                   )}
@@ -1493,10 +1493,10 @@ export default function HomePage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20 h-9 w-9 sm:h-10 sm:w-10"
+                className="text-white hover:bg-white/20 h-10 w-10 sm:h-10 sm:w-10"
                 onClick={() => (user ? handleLogout() : setIsAuthModalOpen(true))}
               >
-                <User className="h-4 w-4 sm:h-5 sm:w-5" />
+                <User className="h-5 w-5 sm:h-5 sm:w-5" />
               </Button>
             </div>
           </div>
@@ -1505,7 +1505,7 @@ export default function HomePage() {
 
       {/* Search Bar - Below Header (Home & Products tabs only) */}
       {(currentTab === 'home' || currentTab === 'products') && (
-        <div className="sticky top-[68px] sm:top-[76px] z-40 bg-white shadow-sm">
+        <div className="sticky top-[76px] sm:top-[88px] z-40 bg-white shadow-sm">
           <div className="container mx-auto px-3 py-3 sm:px-4 sm:py-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -1747,7 +1747,7 @@ export default function HomePage() {
             </motion.div>
 
             {/* Categories - Sticky */}
-            <div className="sticky top-[128px] sm:top-[144px] z-30 bg-gradient-to-br from-red-50 via-orange-50 to-white shadow-sm mb-6">
+            <div className="sticky top-[136px] sm:top-[156px] z-30 bg-gradient-to-br from-red-50 via-orange-50 to-white shadow-sm mb-6">
               <ScrollArea className="w-full">
                 <div className="flex gap-3 py-3 px-3">
                   {categories.map((category) => (
@@ -1860,7 +1860,7 @@ export default function HomePage() {
         {currentTab === 'products' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             {/* Categories - Sticky */}
-            <div className="sticky top-[128px] sm:top-[144px] z-30 bg-gradient-to-br from-red-50 via-orange-50 to-white shadow-sm mb-6">
+            <div className="sticky top-[136px] sm:top-[156px] z-30 bg-gradient-to-br from-red-50 via-orange-50 to-white shadow-sm mb-6">
               <ScrollArea className="w-full">
                 <div className="flex gap-3 py-3 px-3">
                   {categories.map((category) => (
