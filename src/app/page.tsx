@@ -783,14 +783,14 @@ export default function HomePage() {
   const handlePrintReceipt = () => {
     if (!selectedOrder) return
 
-    const printWindow = window.open('', '', 'height=600,width=400')
+    const printWindow = window.open('', '', 'height=200,width=400')
     if (!printWindow) {
       toast.error('Gagal membuka jendela cetak')
       return
     }
 
     const itemsHtml = selectedOrder.items.map((item: any) => `
-      <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 12px;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 9px;">
         <span>${item.name} x${item.quantity}</span>
         <span>Rp ${(item.price * item.quantity).toLocaleString()}</span>
       </div>
@@ -802,68 +802,80 @@ export default function HomePage() {
         <head>
           <title>Struk Pesanan ${selectedOrder.orderNumber}</title>
           <style>
+            @page {
+              size: 58mm 30mm;
+              margin: 2mm;
+            }
+            @media print {
+              body {
+                margin: 0;
+              }
+            }
             body {
               font-family: 'Courier New', monospace;
-              padding: 20px;
+              padding: 8px;
               margin: 0;
-              font-size: 12px;
+              font-size: 9px;
+              line-height: 1.2;
             }
             .header {
               text-align: center;
-              margin-bottom: 20px;
+              margin-bottom: 8px;
               border-bottom: 1px dashed #000;
-              padding-bottom: 10px;
+              padding-bottom: 4px;
             }
             .store-name {
-              font-size: 18px;
+              font-size: 11px;
               font-weight: bold;
-              margin-bottom: 5px;
+              margin-bottom: 2px;
             }
             .store-address {
-              font-size: 10px;
-              margin-bottom: 10px;
+              font-size: 7px;
+              margin-bottom: 4px;
             }
             .order-info {
-              margin-bottom: 15px;
+              margin-bottom: 8px;
             }
             .order-info-row {
               display: flex;
               justify-content: space-between;
-              margin-bottom: 5px;
+              margin-bottom: 3px;
             }
             .items {
-              margin-bottom: 15px;
+              margin-bottom: 8px;
               border-bottom: 1px dashed #000;
-              padding-bottom: 10px;
+              padding-bottom: 4px;
             }
             .items-header {
               font-weight: bold;
-              margin-bottom: 10px;
+              margin-bottom: 5px;
               border-bottom: 1px solid #000;
-              padding-bottom: 5px;
+              padding-bottom: 3px;
+              font-size: 8px;
             }
             .total {
               display: flex;
               justify-content: space-between;
-              font-size: 16px;
+              font-size: 12px;
               font-weight: bold;
-              margin-bottom: 10px;
+              margin-bottom: 5px;
               border-top: 1px dashed #000;
-              padding-top: 10px;
+              padding-top: 4px;
             }
             .footer {
               text-align: center;
-              margin-top: 20px;
+              margin-top: 8px;
               border-top: 1px dashed #000;
-              padding-top: 10px;
-              font-size: 10px;
+              padding-top: 4px;
+              font-size: 7px;
             }
             .status {
-              padding: 5px;
-              border-radius: 3px;
+              padding: 3px;
+              border-radius: 2px;
               text-align: center;
               font-weight: bold;
-              margin-bottom: 15px;
+              margin-bottom: 8px;
+              font-size: 8px;
             }
             .status.completed { background-color: #d4edda; color: #155724; }
             .status.shipped { background-color: #cce5ff; color: #004085; }
@@ -886,20 +898,20 @@ export default function HomePage() {
               <span>Tanggal:</span>
               <span>${new Date(selectedOrder.createdAt).toLocaleDateString('id-ID', {
                 day: 'numeric',
-                month: 'long',
-                year: 'numeric',
+                month: 'short',
+                year: '2-digit',
                 hour: '2-digit',
                 minute: '2-digit'
               })}</span>
             </div>
             <div class="order-info-row">
-              <span>Pembayaran:</span>
+              <span>Bayar:</span>
               <span>${selectedOrder.paymentMethod}</span>
             </div>
           </div>
 
           <div class="status ${selectedOrder.orderStatus}">
-            ${selectedOrder.orderStatus === 'completed' ? 'SELESAI ✅' : selectedOrder.orderStatus === 'shipped' ? 'DIKIRIM 🚚' : selectedOrder.paymentStatus === 'paid' ? 'SUDAH BAYAR 💰' : 'DIPROSES ⏳'}
+            ${selectedOrder.orderStatus === 'completed' ? 'SELESAI ✅' : selectedOrder.orderStatus === 'shipped' ? 'DIKIRIM 🚚' : selectedOrder.paymentStatus === 'paid' ? 'BAYAR 💰' : 'PROSES ⏳'}
           </div>
 
           <div class="items">
@@ -913,14 +925,13 @@ export default function HomePage() {
           </div>
 
           <div class="order-info-row">
-            <span>Poin didapat:</span>
-            <span>+${Math.floor(selectedOrder.finalAmount / 1000)} Poin</span>
+            <span>Poin:</span>
+            <span>+${Math.floor(selectedOrder.finalAmount / 1000)}</span>
           </div>
 
           <div class="footer">
-            <div>Terima kasih atas pesanan Anda!</div>
-            <div>Silakan kunjungi kami kembali</div>
-            <div style="margin-top: 10px;">⭐⭐⭐⭐⭐</div>
+            <div>Terima kasih!</div>
+            <div>⭐⭐⭐⭐⭐</div>
           </div>
         </body>
       </html>
@@ -3964,13 +3975,21 @@ export default function HomePage() {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Tanggal</span>
-                  <span>
-                    {new Date(selectedOrder.createdAt).toLocaleDateString('id-ID', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                    })}
-                  </span>
+                  <div className="text-right">
+                    <div className="font-semibold">
+                      {new Date(selectedOrder.createdAt).toLocaleDateString('id-ID', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {new Date(selectedOrder.createdAt).toLocaleTimeString('id-ID', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </div>
+                  </div>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Metode Pembayaran</span>
