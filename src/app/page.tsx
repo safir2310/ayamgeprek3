@@ -32,6 +32,7 @@ import {
   ArrowRight,
   Percent,
   MessageCircle,
+  Gift,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -251,6 +252,12 @@ export default function HomePage() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
   const [isPaymentUploadModalOpen, setIsPaymentUploadModalOpen] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
+  const [isRedeemModalOpen, setIsRedeemModalOpen] = useState(false)
+  const [redeemedVoucherCode, setRedeemedVoucherCode] = useState('')
+  const [pointRedemptions, setPointRedemptions] = useState<any[]>([])
+  const [isRedeeming, setIsRedeeming] = useState(false)
+  const [pointVoucher, setPointVoucher] = useState<any>(null)
+  const [isApplyingVoucher, setIsApplyingVoucher] = useState(false)
 
   const {
     user,
@@ -499,6 +506,22 @@ export default function HomePage() {
     }
 
     try {
+      // If point voucher exists, add free product to cart
+      let checkoutCart = [...cart]
+      if (pointVoucher) {
+        const freeProduct = {
+          productId: pointVoucher.productId,
+          name: pointVoucher.productName,
+          price: 0,
+          discountPrice: 0,
+          quantity: 1,
+          image: pointVoucher.productImage || '🎁',
+          isFree: true,
+          voucherCode: pointVoucher.code,
+        }
+        checkoutCart = [...checkoutCart, freeProduct]
+      }
+
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: {
@@ -506,9 +529,10 @@ export default function HomePage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          cart,
+          cart: checkoutCart,
           ...checkoutData,
-          voucherCode: selectedVoucher || undefined,
+          voucherCode: selectedVoucher || pointVoucher?.code || undefined,
+          pointVoucherCode: pointVoucher?.code,
         }),
       })
 
@@ -517,8 +541,24 @@ export default function HomePage() {
       if (response.ok) {
         clearCart()
         setIsCheckoutOpen(false)
+        setPointVoucher(null)
         const orderData = data.order
         toast.success(`Order ${orderData.orderNumber} berhasil dibuat!`)
+
+        // Mark point voucher as used
+        if (pointVoucher && orderData.orderNumber) {
+          await fetch('/api/point-voucher/use', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              code: pointVoucher.code,
+              orderId: orderData.id,
+            }),
+          })
+        }
 
         if (checkoutData.paymentMethod === 'QRIS') {
           // Generate QRIS QR code
@@ -580,6 +620,94 @@ export default function HomePage() {
     setIsCheckoutOpen(true)
   }
 
+  // Fetch point redemption options
+  const fetchPointRedemptions = async () => {
+    try {
+      const res = await fetch('/api/point-redemption')
+      if (res.ok) {
+        const data = await res.json()
+        setPointRedemptions(data.redemptions || [])
+      }
+    } catch (error) {
+      console.error('Failed to fetch point redemptions:', error)
+    }
+  }
+
+  // Handle redeem points
+  const handleRedeemPoints = async (redemptionId: string) => {
+    if (!user || !token) {
+      toast.error('Silakan login terlebih dahulu')
+      return
+    }
+
+    setIsRedeeming(true)
+    try {
+      const res = await fetch('/api/point-redemption', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ redemptionId }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok && data.success) {
+        setRedeemedVoucherCode(data.voucherCode)
+        setIsRedeemModalOpen(true)
+        toast.success(`Berhasil menukar ${data.redemption.pointsUsed} poin!`)
+        // Refresh user data
+        const meRes = await fetch('/api/auth/me')
+        if (meRes.ok) {
+          const meData = await meRes.json()
+          setUser(meData.user)
+        }
+      } else {
+        toast.error(data.error || 'Gagal menukar poin')
+      }
+    } catch (error) {
+      toast.error('Terjadi kesalahan koneksi')
+    } finally {
+      setIsRedeeming(false)
+    }
+  }
+
+  // Handle validate point voucher
+  const handleApplyPointVoucher = async (code: string) => {
+    if (!user || !token) {
+      toast.error('Silakan login terlebih dahulu')
+      return
+    }
+
+    setIsApplyingVoucher(true)
+    try {
+      const res = await fetch('/api/point-voucher', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ code }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok && data.success) {
+        setPointVoucher(data.voucher)
+        toast.success(`Voucher berhasil! ${data.voucher.productName} akan ditambahkan ke keranjang`)
+      } else {
+        toast.error(data.error || 'Gagal memvalidasi voucher')
+        setPointVoucher(null)
+      }
+    } catch (error) {
+      toast.error('Terjadi kesalahan koneksi')
+      setPointVoucher(null)
+    } finally {
+      setIsApplyingVoucher(false)
+    }
+  }
+
   // Fetch orders when user changes or tab changes to orders
   useEffect(() => {
     if (user && currentTab === 'orders') {
@@ -594,6 +722,13 @@ export default function HomePage() {
       }
     }
   }, [user, currentTab])
+
+  // Fetch point redemptions when tab changes to redeem
+  useEffect(() => {
+    if (currentTab === 'redeem') {
+      setTimeout(() => fetchPointRedemptions(), 0)
+    }
+  }, [currentTab])
 
   if (!mounted || !_hasHydrated) {
     return (
@@ -1360,6 +1495,91 @@ export default function HomePage() {
             )}
           </motion.div>
         )}
+
+        {currentTab === 'redeem' && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <h2 className="text-2xl font-bold mb-4 text-gray-800">Tukar Poin</h2>
+            {user ? (
+              <div className="space-y-4">
+                {/* Points Card */}
+                <Card className="bg-gradient-to-r from-red-500 to-orange-500 border-0">
+                  <CardContent className="p-6 text-white">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-white/80 text-sm">Poin Anda</p>
+                        <h3 className="text-4xl font-bold mt-1">{user.points}</h3>
+                      </div>
+                      <div className="text-6xl">🎁</div>
+                    </div>
+                    <p className="text-white/80 text-xs mt-2">
+                      Tukar poin Anda untuk mendapatkan produk gratis!
+                    </p>
+                  </CardContent>
+                </Card>
+
+                {/* Redemption Options */}
+                {pointRedemptions.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {pointRedemptions.map((redemption) => (
+                      <Card
+                        key={redemption.id}
+                        className="overflow-hidden hover:shadow-lg transition-all"
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex gap-4">
+                            <div className="w-20 h-20 bg-gradient-to-br from-red-100 to-orange-100 rounded-lg flex items-center justify-center text-4xl flex-shrink-0">
+                              {redemption.productImage || '🎁'}
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-gray-800 mb-1">
+                                {redemption.name}
+                              </h4>
+                              <p className="text-xs text-gray-500 mb-2 line-clamp-2">
+                                {redemption.description}
+                              </p>
+                              <div className="flex items-center justify-between">
+                                <Badge className="bg-gradient-to-r from-red-500 to-orange-500 text-white">
+                                  <Star className="h-3 w-3 mr-1" />
+                                  {redemption.pointsRequired} Poin
+                                </Badge>
+                                <Button
+                                  size="sm"
+                                  className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600"
+                                  onClick={() => handleRedeemPoints(redemption.id)}
+                                  disabled={
+                                    isRedeeming || user.points < redemption.pointsRequired
+                                  }
+                                >
+                                  {isRedeeming ? 'Memproses...' : 'Tukar'}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <Card className="p-8 text-center">
+                    <Gift className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                    <p className="text-gray-500">Belum ada menu penukaran tersedia</p>
+                  </Card>
+                )}
+              </div>
+            ) : (
+              <Card className="p-8 text-center">
+                <Gift className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                <p className="text-gray-500 mb-4">Silakan login untuk menukar poin</p>
+                <Button
+                  className="bg-gradient-to-r from-red-500 to-orange-500"
+                  onClick={() => setIsAuthModalOpen(true)}
+                >
+                  Login Sekarang
+                </Button>
+              </Card>
+            )}
+          </motion.div>
+        )}
       </main>
 
       {/* Chat Dialog */}
@@ -1379,7 +1599,7 @@ export default function HomePage() {
             {[
               { id: 'home', icon: Home, label: 'Beranda' },
               { id: 'products', icon: Package, label: 'Belanja' },
-              { id: 'promo', icon: Flame, label: 'Promo' },
+              { id: 'redeem', icon: Gift, label: 'Tukar' },
               { id: 'orders', icon: FileText, label: 'Pesanan' },
               { id: 'account', icon: User, label: 'Akun' },
             ].map((item) => (
@@ -1516,17 +1736,26 @@ export default function HomePage() {
                 <div className="space-y-2">
                   {cart.map((item) => (
                     <div key={item.productId} className="flex justify-between text-sm">
-                      <span>{item.name} x{item.quantity}</span>
+                      <span>
+                        {item.name} x{item.quantity}
+                        {item.isFree && <Badge className="ml-2 bg-green-500 text-white">GRATIS</Badge>}
+                      </span>
                       <span>Rp {((item.discountPrice || item.price) * item.quantity).toLocaleString()}</span>
                     </div>
                   ))}
+                  {pointVoucher && (
+                    <div className="flex justify-between text-sm text-green-600 bg-green-50 p-2 rounded">
+                      <span>🎁 {pointVoucher.productName} (Gratis)</span>
+                      <span>Rp 0</span>
+                    </div>
+                  )}
                 </div>
                 <Separator className="my-3" />
                 <div className="flex justify-between font-bold">
                   <span>Subtotal</span>
                   <span>Rp {cartTotal.toLocaleString()}</span>
                 </div>
-                {selectedVoucher && (
+                {selectedVoucher && !pointVoucher && (
                   <div className="flex justify-between text-green-600">
                     <span>Diskon Voucher</span>
                     <span>-Rp {discountAmount.toLocaleString()}</span>
@@ -1538,14 +1767,54 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Voucher */}
+              {/* Point Voucher */}
               <div>
-                <Label className="mb-2 block">Voucher (Opsional)</Label>
+                <Label className="mb-2 block">Voucher Poin (Opsional)</Label>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Masukkan kode voucher"
+                    placeholder="Masukkan kode voucher poin"
+                    value={pointVoucher ? pointVoucher.code : ''}
+                    onChange={(e) => {
+                      const code = e.target.value.toUpperCase().trim()
+                      if (code.length >= 10) {
+                        handleApplyPointVoucher(code)
+                      } else if (code === '') {
+                        setPointVoucher(null)
+                      }
+                    }}
+                    disabled={!!pointVoucher || isApplyingVoucher}
+                  />
+                  {pointVoucher && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setPointVoucher(null)}
+                    >
+                      <XCircle className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                {isApplyingVoucher && (
+                  <p className="text-xs text-gray-500 mt-1">Memvalidasi voucher...</p>
+                )}
+                {pointVoucher && (
+                  <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
+                    <p className="text-sm text-green-700">
+                      ✅ {pointVoucher.productName} akan ditambahkan gratis!
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Regular Voucher */}
+              <div>
+                <Label className="mb-2 block">Voucher Diskon (Opsional)</Label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Masukkan kode voucher diskon"
                     value={selectedVoucher}
                     onChange={(e) => setSelectedVoucher(e.target.value.toUpperCase())}
+                    disabled={!!pointVoucher}
                   />
                   {selectedVoucher && (
                     <Button
@@ -1642,6 +1911,41 @@ export default function HomePage() {
               </Button>
             </div>
           </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Voucher Redeem Modal */}
+      <Dialog open={isRedeemModalOpen} onOpenChange={setIsRedeemModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-center">🎉 Penukaran Berhasil!</DialogTitle>
+          </DialogHeader>
+          <div className="text-center space-y-4">
+            <div className="bg-gradient-to-br from-red-50 to-orange-50 p-6 rounded-lg">
+              <p className="text-sm text-gray-600 mb-2">Kode Voucher Anda:</p>
+              <div className="bg-white border-2 border-dashed border-red-300 rounded-lg p-4">
+                <p className="text-2xl font-bold text-red-600 tracking-wider">
+                  {redeemedVoucherCode}
+                </p>
+              </div>
+            </div>
+            <div className="text-sm text-gray-600 space-y-1">
+              <p>✅ Voucher sekali pakai</p>
+              <p>✅ Gunakan di keranjang saat checkout</p>
+              <p>✅ Produk gratis akan ditambahkan otomatis</p>
+            </div>
+            <Button
+              className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600"
+              onClick={() => {
+                setIsRedeemModalOpen(false)
+                navigator.clipboard?.writeText(redeemedVoucherCode)
+                toast.success('Kode voucher disalin!')
+              }}
+            >
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Salin Kode Voucher
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 

@@ -30,6 +30,7 @@ model User {
   cartItems    CartItem[]
   pointHistory PointHistory[]
   voucherUsages VoucherUsage[]
+  pointVouchers PointVoucher[]
   chatConversations ChatConversation[]
 }
 
@@ -178,6 +179,35 @@ model VoucherUsage {
 
   voucher   Voucher  @relation(fields: [voucherId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
+}
+
+// Point Vouchers - Generated from point redemption
+model PointVoucher {
+  id             String   @id @default(cuid())
+  code           String   @unique
+  pointsRequired Int
+  productId      String
+  userId         String
+  isUsed         Boolean  @default(false)
+  usedOrderId    String?
+  createdAt      DateTime @default(now())
+  usedAt         DateTime?
+
+  user           User     @relation(fields: [userId], references: [id])
+}
+
+// Point Redemption Options
+model PointRedemption {
+  id              String   @id @default(cuid())
+  name            String
+  description     String
+  pointsRequired  Int
+  productId       String
+  productImage    String?
+  active          Boolean  @default(true)
+  order           Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 // Point History

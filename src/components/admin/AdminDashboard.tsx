@@ -44,6 +44,7 @@ import { CustomerManagement } from '@/components/admin/CustomerManagement'
 import { SalesReports } from '@/components/admin/SalesReports'
 import { CategoryManagement } from '@/components/admin/CategoryManagement'
 import { VoucherManagement } from '@/components/admin/VoucherManagement'
+import { PointVoucherManagement } from '@/components/admin/PointVoucherManagement'
 import { PromoManagement } from '@/components/admin/PromoManagement'
 import { PaymentConfirmation } from '@/components/admin/PaymentConfirmation'
 import { ChatManagement } from '@/components/admin/ChatManagement'
@@ -165,8 +166,9 @@ const AdminDashboard: React.FC = () => {
     { id: 'pos', icon: ShoppingCart, label: 'POS System' },
     { id: 'products', icon: Package, label: 'Products' },
     { id: 'categories', icon: Layers, label: 'Categories' },
-    { id: 'vouchers', icon: Tag, label: 'Vouchers' },
-    { id: 'promo', icon: Gift, label: 'Promo' },
+    { id: 'vouchers', icon: Percent, label: 'Voucher Diskon' },
+    { id: 'point-vouchers', icon: Gift, label: 'Voucher Poin' },
+    { id: 'promo', icon: Tag, label: 'Promo' },
     { id: 'orders', icon: ShoppingBag, label: 'Orders' },
     { id: 'payments', icon: CheckSquare, label: 'Payment Confirmation' },
     { id: 'customers', icon: Users, label: 'Customers' },
@@ -477,6 +479,16 @@ const AdminDashboard: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
               >
                 <VoucherManagement onBack={() => setActivePage('dashboard')} />
+              </motion.div>
+            )}
+
+            {/* Point Vouchers Page */}
+            {activePage === 'point-vouchers' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <PointVoucherManagement />
               </motion.div>
             )}
 
