@@ -270,6 +270,7 @@ export default function HomePage() {
   const [resetToken, setResetToken] = useState('')
   const [isVerifying, setIsVerifying] = useState(false)
   const [isResetting, setIsResetting] = useState(false)
+  const [showNotificationBanner, setShowNotificationBanner] = useState(true)
 
   const {
     user,
@@ -308,6 +309,19 @@ export default function HomePage() {
       setMounted(true) // Ensure mounted is set even on error
     }
   }, [])
+
+  // Calculate notifications
+  const cartNotification = cart.length
+  const pendingOrders = orders.filter((order: any) =>
+    order.orderStatus === 'pending' || order.orderStatus === 'processing'
+  ).length
+  const completedOrders = orders.filter((order: any) => order.orderStatus === 'completed').length
+
+  // Total notification count for orders tab
+  const orderNotifications = pendingOrders
+
+  // Determine if notification banner should show
+  const hasNotifications = cartNotification > 0 || pendingOrders > 0 || (user && user.points > 0)
 
   // Fetch products from database
   const fetchProducts = async () => {
@@ -1864,28 +1878,110 @@ export default function HomePage() {
         />
       )}
 
+      {/* Notification Banner */}
+      <AnimatePresence>
+        {showNotificationBanner && hasNotifications && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-[64px] left-2 right-2 md:left-1/2 md:-translate-x-1/2 md:right-auto md:w-[400px] z-50"
+          >
+            <Card className="bg-gradient-to-r from-red-600 to-orange-500 text-white shadow-2xl border-0">
+              <CardContent className="p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <Bell className="h-4 w-4 animate-pulse" />
+                      <p className="font-semibold text-sm">Notifikasi</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-2 text-xs">
+                      {cartNotification > 0 && (
+                        <div
+                          className="flex items-center gap-1 bg-white/20 px-2 py-1 rounded-full cursor-pointer hover:bg-white/30 transition-colors"
+                          onClick={() => {
+                            setCurrentTab('products')
+                            setIsCartOpen(true)
+                          }}
+                        >
+                          <ShoppingCart className="h-3 w-3" />
+                          <span>{cartNotification} item di keranjang</span>
+                        </div>
+                      )}
+                      {pendingOrders > 0 && (
+                        <div
+                          className="flex items-center gap-1 bg-white/20 px-2 py-1 rounded-full cursor-pointer hover:bg-white/30 transition-colors"
+                          onClick={() => {
+                            setCurrentTab('orders')
+                          }}
+                        >
+                          <FileText className="h-3 w-3" />
+                          <span>{pendingOrders} pesanan pending</span>
+                        </div>
+                      )}
+                      {user && user.points > 0 && (
+                        <div
+                          className="flex items-center gap-1 bg-white/20 px-2 py-1 rounded-full cursor-pointer hover:bg-white/30 transition-colors"
+                          onClick={() => {
+                            setCurrentTab('account')
+                          }}
+                        >
+                          <Gift className="h-3 w-3" />
+                          <span>{user.points} poin tersedia</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowNotificationBanner(false)}
+                    className="flex-shrink-0 p-1 hover:bg-white/20 rounded-full transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-40">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-around py-2">
             {[
               { id: 'home', icon: Home, label: 'Beranda' },
-              { id: 'products', icon: Package, label: 'Belanja' },
+              { id: 'products', icon: Package, label: 'Belanja', notification: cartNotification },
               { id: 'redeem', icon: Gift, label: 'Tukar' },
-              { id: 'orders', icon: FileText, label: 'Pesanan' },
+              { id: 'orders', icon: FileText, label: 'Pesanan', notification: orderNotifications },
               { id: 'account', icon: User, label: 'Akun' },
             ].map((item) => (
               <button
                 key={item.id}
                 onClick={() => setCurrentTab(item.id)}
-                className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all ${
-                  currentTab === item.id
-                    ? 'text-red-600 bg-red-50'
-                    : 'text-gray-500 hover:text-red-600'
-                }`}
+                className="relative flex flex-col items-center gap-1 p-2 rounded-lg transition-all"
               >
-                <item.icon className="h-6 w-6" />
-                <span className="text-xs font-medium">{item.label}</span>
+                {item.notification > 0 && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-1 -right-1 bg-gradient-to-r from-red-600 to-orange-500 text-white text-xs font-bold rounded-full h-5 min-w-[20px] flex items-center justify-center shadow-md"
+                  >
+                    {item.notification > 9 ? '9+' : item.notification}
+                  </motion.div>
+                )}
+                <item.icon
+                  className={`h-6 w-6 ${
+                    currentTab === item.id ? 'text-red-600' : 'text-gray-500'
+                  }`}
+                />
+                <span
+                  className={`text-xs font-medium ${
+                    currentTab === item.id ? 'text-red-600' : 'text-gray-500'
+                  }`}
+                >
+                  {item.label}
+                </span>
               </button>
             ))}
           </div>
