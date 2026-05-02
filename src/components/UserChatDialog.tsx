@@ -157,37 +157,48 @@ export function UserChatDialog({ isOpen, onClose, userId, userName }: {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`p-0 gap-0 max-w-md w-full !z-[9999] ${
-        isMinimized ? 'max-h-12' : 'max-h-[600px]'
-      }`}>
+      <DialogContent className={`p-0 gap-0 max-w-sm w-[350px] !z-[9999] rounded-2xl ${
+        isMinimized ? 'max-h-[60px]' : 'max-h-[550px]'
+      }`}
+        showCloseButton={false}
+      >
         <DialogTitle className="sr-only">Chat dengan Admin</DialogTitle>
+
         {/* Header */}
-        <div className="bg-gradient-to-r from-red-600 to-orange-500 p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3 text-white">
-            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-              <Store className="h-5 w-5" />
+        <div className="bg-gradient-to-br from-red-600 via-red-500 to-orange-500 px-4 py-3 flex items-center justify-between relative overflow-hidden">
+          {/* Decorative pattern */}
+          <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+          <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+
+          <div className="flex items-center gap-3 text-white relative z-10">
+            <div className="relative">
+              <div className="w-9 h-9 bg-white/25 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                <Store className="h-4.5 w-4.5" />
+              </div>
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></div>
             </div>
-            <div>
-              <h3 className="font-semibold">Chat dengan Admin</h3>
-              <p className="text-xs text-white/80">Butuh bantuan? Tanyakan di sini</p>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-sm leading-tight">CS Ayam Geprek</h3>
+              <p className="text-[10px] text-white/80 leading-tight">Online • Respon cepat</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex items-center gap-1 relative z-10">
             <Button
               size="icon"
               variant="ghost"
               onClick={() => setIsMinimized(!isMinimized)}
-              className="text-white hover:bg-white/20 h-8 w-8"
+              className="text-white hover:bg-white/20 h-7 w-7 rounded-lg"
             >
-              {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
+              {isMinimized ? <Maximize2 className="h-3.5 w-3.5" /> : <Minimize2 className="h-3.5 w-3.5" />}
             </Button>
             <Button
               size="icon"
               variant="ghost"
               onClick={onClose}
-              className="text-white hover:bg-white/20 h-8 w-8"
+              className="text-white hover:bg-white/20 h-7 w-7 rounded-lg"
             >
-              <X className="h-4 w-4" />
+              <X className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>
@@ -195,45 +206,57 @@ export function UserChatDialog({ isOpen, onClose, userId, userName }: {
         {/* Messages */}
         {!isMinimized && (
           <>
-            <div className="p-4">
+            <div className="p-3 bg-gray-50/50">
               {isLoading ? (
-                <div className="text-center py-8 text-gray-500">
-                  <p>Memuat percakapan...</p>
+                <div className="text-center py-12">
+                  <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-red-500 to-orange-500 rounded-full animate-pulse mb-3">
+                    <MessageCircle className="h-5 w-5 text-white" />
+                  </div>
+                  <p className="text-xs text-gray-500 font-medium">Memuat percakapan...</p>
                 </div>
               ) : messages.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p className="text-sm">Mulai percakapan dengan admin</p>
-                  <p className="text-xs mt-1">Kami akan merespons secepat mungkin</p>
+                <div className="text-center py-8 px-4">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-red-100 to-orange-100 rounded-2xl mb-4">
+                    <MessageCircle className="h-8 w-8 text-red-500" />
+                  </div>
+                  <p className="text-sm font-semibold text-gray-700 mb-1">Halo! Ada yang bisa kami bantu?</p>
+                  <p className="text-xs text-gray-500 leading-relaxed">Silakan tanyakan apa saja tentang produk atau pesanan Anda</p>
                 </div>
               ) : (
-                <ScrollArea className="h-[400px]">
-                  <div className="space-y-4 pr-4" ref={scrollRef}>
-                    <AnimatePresence>
-                      {messages.map((message) => (
+                <ScrollArea className="h-[340px] pr-2">
+                  <div className="space-y-3" ref={scrollRef}>
+                    <AnimatePresence mode="popLayout">
+                      {messages.map((message, index) => (
                         <motion.div
                           key={message.id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                          transition={{ duration: 0.2, delay: index * 0.05 }}
                           layout
                           className={`flex ${message.senderType === 'user' ? 'justify-end' : 'justify-start'}`}
                         >
                           <div
-                            className={`max-w-[70%] rounded-2xl px-4 py-2 ${
+                            className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 shadow-sm ${
                               message.senderType === 'user'
-                                ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
-                                : 'bg-gray-100 text-gray-900'
+                                ? 'bg-gradient-to-br from-red-500 to-orange-500 text-white rounded-br-lg'
+                                : 'bg-white text-gray-900 border border-gray-200 rounded-bl-lg'
                             }`}
                           >
-                            <p className="text-sm">{message.message}</p>
+                            <p className="text-[13px] leading-relaxed break-words">{message.message}</p>
                             <div
-                              className={`text-xs mt-1 ${
+                              className={`text-[10px] mt-1.5 flex items-center gap-1 ${
                                 message.senderType === 'user' ? 'text-red-100' : 'text-gray-400'
                               }`}
                             >
                               {formatDate(message.createdAt)}
                               {message.senderType === 'user' && message.isRead && (
-                                <span className="ml-1">✓✓</span>
+                                <span className="flex items-center gap-0.5">
+                                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" opacity="0.5" transform="translate(6,0)"/>
+                                  </svg>
+                                </span>
                               )}
                             </div>
                           </div>
@@ -246,24 +269,35 @@ export function UserChatDialog({ isOpen, onClose, userId, userName }: {
             </div>
 
             {/* Message Input */}
-            <div className="p-4 border-t bg-gray-50">
+            <div className="p-3 bg-white border-t border-gray-100">
               <form onSubmit={handleSendMessage} className="flex gap-2">
-                <Input
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Tulis pesan Anda..."
-                  disabled={isSending || isLoading}
-                  className="flex-1"
-                />
+                <div className="flex-1 relative">
+                  <Input
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder="Tulis pesan..."
+                    disabled={isSending || isLoading}
+                    className="pr-10 h-10 text-sm border-gray-200 focus:border-red-400 focus:ring-red-400/20 bg-gray-50/50"
+                  />
+                  {newMessage && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+                    </div>
+                  )}
+                </div>
                 <Button
                   type="submit"
                   disabled={isSending || isLoading || !newMessage.trim()}
-                  className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600"
+                  className="h-10 w-10 p-0 bg-gradient-to-br from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 rounded-xl shadow-md shadow-red-500/20 flex items-center justify-center"
                 >
-                  <Send className="h-4 w-4" />
+                  {isSending ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
                 </Button>
               </form>
-              <p className="text-xs text-gray-500 mt-2 text-center">
+              <p className="text-[10px] text-gray-400 mt-2 text-center font-medium">
                 Admin akan merespons dalam waktu 1x24 jam
               </p>
             </div>
