@@ -43,6 +43,7 @@ import {
   Volume2,
   RefreshCw,
   AlertCircle,
+  Printer,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -776,6 +777,161 @@ export default function HomePage() {
     } finally {
       setIsUpdatingAddress(false)
     }
+  }
+
+  // Print receipt function
+  const handlePrintReceipt = () => {
+    if (!selectedOrder) return
+
+    const printWindow = window.open('', '', 'height=600,width=400')
+    if (!printWindow) {
+      toast.error('Gagal membuka jendela cetak')
+      return
+    }
+
+    const itemsHtml = selectedOrder.items.map((item: any) => `
+      <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 12px;">
+        <span>${item.name} x${item.quantity}</span>
+        <span>Rp ${(item.price * item.quantity).toLocaleString()}</span>
+      </div>
+    `).join('')
+
+    const content = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Struk Pesanan ${selectedOrder.orderNumber}</title>
+          <style>
+            body {
+              font-family: 'Courier New', monospace;
+              padding: 20px;
+              margin: 0;
+              font-size: 12px;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 20px;
+              border-bottom: 1px dashed #000;
+              padding-bottom: 10px;
+            }
+            .store-name {
+              font-size: 18px;
+              font-weight: bold;
+              margin-bottom: 5px;
+            }
+            .store-address {
+              font-size: 10px;
+              margin-bottom: 10px;
+            }
+            .order-info {
+              margin-bottom: 15px;
+            }
+            .order-info-row {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 5px;
+            }
+            .items {
+              margin-bottom: 15px;
+              border-bottom: 1px dashed #000;
+              padding-bottom: 10px;
+            }
+            .items-header {
+              font-weight: bold;
+              margin-bottom: 10px;
+              border-bottom: 1px solid #000;
+              padding-bottom: 5px;
+            }
+            .total {
+              display: flex;
+              justify-content: space-between;
+              font-size: 16px;
+              font-weight: bold;
+              margin-bottom: 10px;
+              border-top: 1px dashed #000;
+              padding-top: 10px;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 20px;
+              border-top: 1px dashed #000;
+              padding-top: 10px;
+              font-size: 10px;
+            }
+            .status {
+              padding: 5px;
+              border-radius: 3px;
+              text-align: center;
+              font-weight: bold;
+              margin-bottom: 15px;
+            }
+            .status.completed { background-color: #d4edda; color: #155724; }
+            .status.shipped { background-color: #cce5ff; color: #004085; }
+            .status.paid { background-color: #d4edda; color: #155724; }
+            .status.processing { background-color: #fff3cd; color: #856404; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="store-name">AYAM GEPREK SAMBAL IJO</div>
+            <div class="store-address">Jl. Medan - Banda Aceh, Simpang Camat, Gampong Tijue, 24151</div>
+          </div>
+
+          <div class="order-info">
+            <div class="order-info-row">
+              <span>No. Order:</span>
+              <span>${selectedOrder.orderNumber}</span>
+            </div>
+            <div class="order-info-row">
+              <span>Tanggal:</span>
+              <span>${new Date(selectedOrder.createdAt).toLocaleDateString('id-ID', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}</span>
+            </div>
+            <div class="order-info-row">
+              <span>Pembayaran:</span>
+              <span>${selectedOrder.paymentMethod}</span>
+            </div>
+          </div>
+
+          <div class="status ${selectedOrder.orderStatus}">
+            ${selectedOrder.orderStatus === 'completed' ? 'SELESAI ✅' : selectedOrder.orderStatus === 'shipped' ? 'DIKIRIM 🚚' : selectedOrder.paymentStatus === 'paid' ? 'SUDAH BAYAR 💰' : 'DIPROSES ⏳'}
+          </div>
+
+          <div class="items">
+            <div class="items-header">ITEM PESANAN</div>
+            ${itemsHtml}
+          </div>
+
+          <div class="total">
+            <span>TOTAL</span>
+            <span>Rp ${selectedOrder.finalAmount.toLocaleString()}</span>
+          </div>
+
+          <div class="order-info-row">
+            <span>Poin didapat:</span>
+            <span>+${Math.floor(selectedOrder.finalAmount / 1000)} Poin</span>
+          </div>
+
+          <div class="footer">
+            <div>Terima kasih atas pesanan Anda!</div>
+            <div>Silakan kunjungi kami kembali</div>
+            <div style="margin-top: 10px;">⭐⭐⭐⭐⭐</div>
+          </div>
+        </body>
+      </html>
+    `
+
+    printWindow.document.write(content)
+    printWindow.document.close()
+    printWindow.focus()
+    printWindow.print()
+
+    toast.success('Struk berhasil dicetak')
   }
 
   const generateQRIS = async (amount: number, orderId: string) => {
@@ -3870,6 +4026,18 @@ export default function HomePage() {
                 </div>
               </div>
             </ScrollArea>
+          )}
+          {/* Print Receipt Button - Bottom Right */}
+          {selectedOrder && (
+            <div className="mt-4 flex justify-end">
+              <Button
+                onClick={handlePrintReceipt}
+                className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 gap-2"
+              >
+                <Printer className="h-4 w-4" />
+                Cetak Struk
+              </Button>
+            </div>
           )}
         </DialogContent>
       </Dialog>
