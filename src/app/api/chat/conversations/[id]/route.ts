@@ -10,10 +10,10 @@ interface MessageData {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const conversationId = params.id
+    const { id: conversationId } = await params
 
     const messages = await db.chatMessage.findMany({
       where: {
@@ -54,10 +54,10 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const conversationId = params.id
+    const { id: conversationId } = await params
     const body = await req.json()
     const { senderId, senderType, message } = body as MessageData
 
