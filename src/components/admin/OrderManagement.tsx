@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, ShoppingBag, Eye, CheckCircle2, XCircle, Clock, Truck, Filter, Calendar } from 'lucide-react'
+import { Search, ShoppingBag, Eye, CheckCircle2, XCircle, Clock, Truck, Filter, Calendar, RefreshCw } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,14 +23,17 @@ interface Order {
   orderNumber: string
   customerName: string
   customerPhone?: string
+  customerEmail?: string
+  customerAddress?: string
   items: OrderItem[]
   subtotal: number
   tax: number
   total: number
   paymentMethod: string
-  orderStatus: 'pending' | 'processing' | 'shipped' | 'completed' | 'cancelled'
-  createdAt: Date
-  updatedAt: Date
+  paymentStatus: string
+  orderStatus: 'pending' | 'processing' | 'shipped' | 'completed' | 'cancelled' | 'confirmed'
+  createdAt: string
+  updatedAt: string
 }
 
 export function OrderManagement() {
@@ -39,65 +42,57 @@ export function OrderManagement() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const statusOptions = ['all', 'pending', 'processing', 'shipped', 'completed', 'cancelled']
+  const statusOptions = ['all', 'pending', 'processing', 'shipped', 'completed', 'cancelled', 'confirmed']
 
-  const loadOrders = () => {
-    // Mock orders - will be replaced with API call
-    setOrders([
-      {
-        id: '1',
-        orderNumber: 'ORD-2024-001',
-        customerName: 'Budi Santoso',
-        customerPhone: '08123456789',
-        items: [
-          { id: '1', productName: 'Ayam Geprek Sambal Ijo', quantity: 2, price: 18000, image: '🍗' },
-          { id: '2', productName: 'Es Teh Manis', quantity: 2, price: 5000, image: '🧃' },
-        ],
-        subtotal: 46000,
-        tax: 4600,
-        total: 50600,
-        paymentMethod: 'QRIS',
-        orderStatus: 'pending',
-        createdAt: new Date('2024-01-15T10:30:00'),
-        updatedAt: new Date('2024-01-15T10:30:00'),
-      },
-      {
-        id: '2',
-        orderNumber: 'ORD-2024-002',
-        customerName: 'Siti Rahayu',
-        customerPhone: '08198765432',
-        items: [
-          { id: '1', productName: 'Ayam Geprek Sambal Merah', quantity: 1, price: 18000, image: '🍗' },
-          { id: '2', productName: 'Kentang Goreng', quantity: 1, price: 12000, image: '🍟' },
-        ],
-        subtotal: 30000,
-        tax: 3000,
-        total: 33000,
-        paymentMethod: 'Cash',
-        orderStatus: 'processing',
-        createdAt: new Date('2024-01-15T11:00:00'),
-        updatedAt: new Date('2024-01-15T11:05:00'),
-      },
-    ])
+  const loadOrders = async () => {
+    setIsLoading(true)
+    try {
+      const params = new URLSearchParams()
+      if (statusFilter && statusFilter !== 'all') {
+        params.set('status', statusFilter)
+      }
+      if (searchQuery) {
+        params.set('search', searchQuery)
+      }
+
+      const res = await fetch(`/api/admin/orders?${params.toString()}`)
+      const data = await res.json()
+
+      if (data.success) {
+        setOrders(data.orders || [])
+      } else {
+        toast.error(data.error || 'Gagal memuat pesanan')
+      }
+    } catch (error) {
+      console.error('Error loading orders:', error)
+      toast.error('Gagal memuat pesanan')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   useEffect(() => {
     loadOrders()
-  }, [])
+  }, [statusFilter])
 
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch =
-      order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.customerName.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesStatus = statusFilter === 'all' || order.orderStatus === statusFilter
-    return matchesSearch && matchesStatus
-  })
+  // Debounce search
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      loadOrders()
+    }, 500)
+    return () => clearTimeout(timeoutId)
+  }, [searchQuery])
+
+  const filteredOrders = orders // Filter is now handled on the server side
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
         return 'bg-yellow-100 text-yellow-700'
+      case 'confirmed':
+        return 'bg-cyan-100 text-cyan-700'
       case 'processing':
         return 'bg-blue-100 text-blue-700'
       case 'shipped':
@@ -115,6 +110,8 @@ export function OrderManagement() {
     switch (status) {
       case 'pending':
         return <Clock className="h-4 w-4" />
+      case 'confirmed':
+        return <CheckCircle2 className="h-4 w-4" />
       case 'processing':
         return <Truck className="h-4 w-4" />
       case 'shipped':
@@ -132,6 +129,8 @@ export function OrderManagement() {
     switch (status) {
       case 'pending':
         return 'Pending'
+      case 'confirmed':
+        return 'Dikonfirmasi'
       case 'processing':
         return 'Diproses'
       case 'shipped':
@@ -152,16 +151,28 @@ export function OrderManagement() {
 
   const handleStatusChange = async (orderId: string, newStatus: Order['orderStatus']) => {
     try {
-      // Mock update - will be replaced with API call
-      setOrders(prev =>
-        prev.map(order =>
-          order.id === orderId
-            ? { ...order, orderStatus: newStatus, updatedAt: new Date() }
-            : order
+      const res = await fetch('/api/admin/orders', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: orderId, orderStatus: newStatus }),
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        setOrders(prev =>
+          prev.map(order =>
+            order.id === orderId
+              ? { ...order, orderStatus: newStatus, updatedAt: new Date().toISOString() }
+              : order
+          )
         )
-      )
-      toast.success(`✅ Status pesanan diperbarui ke ${getStatusLabel(newStatus)}`)
+        toast.success(`✅ Status pesanan diperbarui ke ${getStatusLabel(newStatus)}`)
+      } else {
+        toast.error(data.error || 'Gagal memperbarui status pesanan')
+      }
     } catch (error) {
+      console.error('Error updating order status:', error)
       toast.error('Gagal memperbarui status pesanan')
     }
   }
@@ -170,10 +181,20 @@ export function OrderManagement() {
     if (!confirm('Apakah Anda yakin ingin menghapus pesanan ini?')) return
 
     try {
-      // Mock delete - will be replaced with API call
-      setOrders(prev => prev.filter(o => o.id !== orderId))
-      toast.success('✅ Pesanan berhasil dihapus!')
+      const res = await fetch(`/api/admin/orders?id=${orderId}`, {
+        method: 'DELETE',
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        setOrders(prev => prev.filter(o => o.id !== orderId))
+        toast.success('✅ Pesanan berhasil dihapus!')
+      } else {
+        toast.error(data.error || 'Gagal menghapus pesanan')
+      }
     } catch (error) {
+      console.error('Error deleting order:', error)
       toast.error('Gagal menghapus pesanan')
     }
   }
@@ -181,9 +202,20 @@ export function OrderManagement() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-800">Daftar Pesanan</h2>
-        <p className="text-gray-600">Kelola dan pantau semua pesanan</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">Daftar Pesanan</h2>
+          <p className="text-gray-600">Kelola dan pantau semua pesanan</p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={loadOrders}
+          disabled={isLoading}
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
       </div>
 
       {/* Search & Filters */}
@@ -243,7 +275,16 @@ export function OrderManagement() {
         <CardContent>
           <div className="space-y-3">
             <AnimatePresence mode="popLayout">
-              {filteredOrders.length === 0 ? (
+              {isLoading ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center py-12 text-gray-500"
+                >
+                  <RefreshCw className="h-16 w-16 mx-auto mb-4 animate-spin" />
+                  <p>Memuat pesanan...</p>
+                </motion.div>
+              ) : filteredOrders.length === 0 ? (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -381,7 +422,7 @@ export function OrderManagement() {
                     <ShoppingBag className="h-4 w-4 text-red-600" />
                     Informasi Pelanggan
                   </h4>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-gray-600">Nama</p>
                       <p className="font-semibold">{selectedOrder.customerName}</p>
@@ -390,6 +431,16 @@ export function OrderManagement() {
                       <p className="text-sm text-gray-600">Telepon</p>
                       <p className="font-semibold">{selectedOrder.customerPhone || '-'}</p>
                     </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Email</p>
+                      <p className="font-semibold">{selectedOrder.customerEmail || '-'}</p>
+                    </div>
+                    {selectedOrder.customerAddress && (
+                      <div className="col-span-1 sm:col-span-2">
+                        <p className="text-sm text-gray-600">Alamat</p>
+                        <p className="font-semibold">{selectedOrder.customerAddress}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -437,6 +488,17 @@ export function OrderManagement() {
                     <div className="flex justify-between">
                       <span className="text-gray-600">Metode Pembayaran</span>
                       <span className="font-semibold">{selectedOrder.paymentMethod}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Status Pembayaran</span>
+                      <Badge className={
+                        selectedOrder.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' :
+                        selectedOrder.paymentStatus === 'verified' ? 'bg-blue-100 text-blue-700' :
+                        selectedOrder.paymentStatus === 'failed' || selectedOrder.paymentStatus === 'rejected' ? 'bg-red-100 text-red-700' :
+                        'bg-yellow-100 text-yellow-700'
+                      }>
+                        {selectedOrder.paymentStatus.charAt(0).toUpperCase() + selectedOrder.paymentStatus.slice(1)}
+                      </Badge>
                     </div>
                     <div className="flex justify-between text-lg font-bold pt-3 border-t">
                       <span>Total</span>
