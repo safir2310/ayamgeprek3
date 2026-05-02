@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useStore } from '@/store/useStore'
 import {
@@ -97,25 +97,10 @@ const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [isMobileAdminMode, setIsMobileAdminMode] = useState(false);
   const [tapCount, setTapCount] = useState(0);
   const [tapTimeout, setTapTimeout] = useState<NodeJS.Timeout | null>(null);
-
-  // Auto-enable mobile mode when accessed from main page
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.innerWidth < 768) {
-      setIsMobileAdminMode(true);
-    }
-  }, []);
-
-  // Early return for POS page
-  if (activePage === 'pos') {
-    return (
-      <div className="hidden md:flex">
-        <POS onClose={() => setActivePage('dashboard')} />
-      </div>
-    );
-  }
+  const [showAdminDashboard, setShowAdminDashboard] = useState(false);
 
   // Handle triple-tap on mobile logo to access admin
-  const handleLogoTap = () => {
+  const handleLogoTap = useCallback(() => {
     if (typeof window === 'undefined') return;
 
     // Only check for mobile
@@ -144,43 +129,18 @@ const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     }, 1000);
 
     setTapTimeout(timeout);
-  };
-
-  // Check URL parameter for admin access
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('admin') === 'true') {
-      setIsMobileAdminMode(true);
-      // Clean URL
-      window.history.replaceState({}, '', window.location.pathname);
-    }
-  }, []);
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (tapTimeout) {
-        clearTimeout(tapTimeout);
-      }
-    };
-  }, [tapTimeout]);
+  }, [tapCount, tapTimeout]);
 
   // Handle mobile close/back
-  const handleMobileClose = () => {
+  const handleMobileClose = useCallback(() => {
     if (onBack) {
       onBack();
     } else {
       setIsMobileAdminMode(false);
     }
-  };
+  }, [onBack]);
 
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
-
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     setIsLoading(true);
     try {
       // Fetch dashboard stats from database
@@ -254,9 +214,9 @@ const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const handleDatabaseSync = async () => {
+  const handleDatabaseSync = useCallback(async () => {
     setIsSyncing(true);
     setSyncStatus('syncing');
 
@@ -285,7 +245,50 @@ const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     } finally {
       setIsSyncing(false);
     }
-  };
+  }, [loadDashboardData]);
+
+  // Auto-enable mobile mode when accessed from main page
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setIsMobileAdminMode(true);
+    }
+  }, []);
+
+  // Check URL parameter for admin access
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('admin') === 'true') {
+      setIsMobileAdminMode(true);
+      // Clean URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (tapTimeout) {
+        clearTimeout(tapTimeout);
+      }
+    };
+  }, [tapTimeout]);
+
+  // Load dashboard data
+  useEffect(() => {
+    if (!showAdminDashboard) return;
+    loadDashboardData();
+  }, [showAdminDashboard, loadDashboardData]);
+
+  // Early return for POS page
+  if (activePage === 'pos') {
+    return (
+      <div className="hidden md:flex">
+        <POS onClose={() => setActivePage('dashboard')} />
+      </div>
+    );
+  }
 
   const sidebarItems = [
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -326,11 +329,21 @@ const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   return (
     <>
       <div className="flex min-h-screen bg-gray-50 flex">
-        {/* Mobile Close Button */}
-        {isMobileAdminMode && (
+        {/* Mobile Hamburger Button - Always Visible on Mobile */}
+        <button
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="md:hidden fixed top-4 left-4 z-50 bg-white shadow-lg rounded-full p-3 hover:bg-gray-100 transition-colors"
+          aria-label="Toggle menu"
+        >
+          {isSidebarOpen ? <X className="w-6 h-6 text-gray-600" /> : <Menu className="w-6 h-6 text-gray-600" />}
+        </button>
+
+        {/* Mobile Close Button for Back Navigation */}
+        {isMobileAdminMode && !isSidebarOpen && (
           <button
             onClick={handleMobileClose}
-            className="md:hidden fixed top-4 left-4 z-50 bg-white shadow-lg rounded-full p-3 hover:bg-gray-100 transition-colors"
+            className="md:hidden fixed top-4 right-4 z-50 bg-white shadow-lg rounded-full p-3 hover:bg-gray-100 transition-colors"
+            aria-label="Close admin panel"
           >
             <ArrowLeft className="w-5 h-5 text-gray-600" />
           </button>
@@ -344,9 +357,22 @@ const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
               animate={{ x: 0 }}
               exit={{ x: -300 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className={`w-64 bg-white shadow-lg fixed h-full z-20 flex flex-col md:relative`}
+              className={`w-64 bg-white shadow-lg h-full z-20 flex flex-col ${isMobileAdminMode ? 'fixed inset-0' : 'relative md:relative'}`}
             >
-              <div className="p-6 flex-shrink-0">
+              {/* Mobile Close Button in Sidebar */}
+              <div className="md:hidden flex items-center justify-between p-4 border-b">
+                <button
+                  onClick={() => setIsSidebarOpen(false)}
+                  className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  aria-label="Close menu"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+                <span className="font-semibold text-gray-800">Menu</span>
+                <div className="w-6"></div>
+              </div>
+
+              <div className="p-6 flex-shrink-0 hidden md:block">
                 <h1 className="text-2xl font-bold text-gray-800">Admin Panel</h1>
                 <p className="text-sm text-gray-500 mt-1">Management System</p>
               </div>
@@ -390,10 +416,10 @@ const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         )}
 
         {/* Main Content */}
-        <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-0'}`}>
-          {/* Header */}
-          <header className="bg-white shadow-sm sticky top-0 z-10">
-            <div className="flex items-center justify-between px-6 py-4">
+        <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-0 md:ml-64' : 'ml-0'}`}>
+          {/* Header - Desktop Only */}
+          <header className="hidden md:flex bg-white shadow-sm sticky top-0 z-10">
+            <div className="flex items-center justify-between w-full px-6 py-4">
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
