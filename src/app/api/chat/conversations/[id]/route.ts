@@ -36,6 +36,18 @@ export async function GET(
       },
     })
 
+    // Mark admin messages as read if they're not already read
+    await db.chatMessage.updateMany({
+      where: {
+        conversationId,
+        senderType: 'admin',
+        isRead: false,
+      },
+      data: {
+        isRead: true,
+      },
+    })
+
     // Update conversation timestamp
     await db.chatConversation.update({
       where: { id: conversationId },

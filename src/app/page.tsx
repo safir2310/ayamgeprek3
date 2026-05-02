@@ -257,6 +257,7 @@ export default function HomePage() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
   const [isPaymentUploadModalOpen, setIsPaymentUploadModalOpen] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
+  const [unreadChatCount, setUnreadChatCount] = useState(0)
   const [isRedeemModalOpen, setIsRedeemModalOpen] = useState(false)
   const [redeemedVoucherCode, setRedeemedVoucherCode] = useState('')
   const [pointRedemptions, setPointRedemptions] = useState<any[]>([])
@@ -642,6 +643,43 @@ export default function HomePage() {
       }
     }
   }
+
+  // Fetch unread chat messages count
+  const fetchUnreadChatCount = async () => {
+    if (!user) return
+
+    try {
+      const res = await fetch(`/api/chat/unread?userId=${user.id}`)
+      if (res.ok) {
+        const data = await res.json()
+        setUnreadChatCount(data.unreadCount || 0)
+      }
+    } catch (error) {
+      console.error('Failed to fetch unread chat count:', error)
+    }
+  }
+
+  // Poll for unread messages
+  useEffect(() => {
+    if (!user) return
+
+    // Fetch initial count
+    fetchUnreadChatCount()
+
+    // Poll every 5 seconds
+    const interval = setInterval(() => {
+      fetchUnreadChatCount()
+    }, 5000)
+
+    return () => clearInterval(interval)
+  }, [user])
+
+  // Clear unread count when chat is opened
+  useEffect(() => {
+    if (isChatOpen && user) {
+      setUnreadChatCount(0)
+    }
+  }, [isChatOpen, user])
 
   const handlePaymentProofUpload = async (file: File) => {
     if (!qrisData) return
@@ -1156,7 +1194,7 @@ export default function HomePage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20 h-8 w-8"
+                className="text-white hover:bg-white/20 relative h-8 w-8"
                 onClick={() => {
                   if (user) {
                     setIsChatOpen(true)
@@ -1167,6 +1205,11 @@ export default function HomePage() {
                 }}
               >
                 <MessageCircle className="h-4 w-4" />
+                {unreadChatCount > 0 && (
+                  <Badge className="absolute -top-0.5 -right-0.5 h-4 w-4 flex items-center justify-center bg-red-500 text-white text-[9px] font-bold animate-pulse">
+                    {unreadChatCount > 9 ? '9+' : unreadChatCount}
+                  </Badge>
+                )}
               </Button>
               <Button
                 variant="ghost"
