@@ -12,25 +12,28 @@ datasource db {
 
 // User & Member System
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  name         String?
-  phone        String?
-  address      String?
-  password     String
-  memberLevel  String   @default("Bronze") // Bronze, Silver, Gold, Platinum, Crazy Rich
-  points       Int      @default(0)
-  stampCount   Int      @default(0)
-  starCount    Int      @default(0)
-  role         String   @default("customer") // customer, admin
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              String   @id @default(cuid())
+  email           String   @unique
+  name            String?
+  phone           String?
+  address         String?
+  password        String
+  memberLevel     String   @default("Bronze") // Bronze, Silver, Gold, Platinum, Crazy Rich
+  points          Int      @default(0)
+  stampCount      Int      @default(0)
+  starCount       Int      @default(0)
+  role            String   @default("customer") // customer, admin
+  profilePhoto    String?  // Base64 encoded profile photo
+  theme           String   @default("light") // light, dark
+  notificationSound String   @default("default") // default, silent, custom
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  orders       Order[]
-  cartItems    CartItem[]
-  pointHistory PointHistory[]
-  voucherUsages VoucherUsage[]
-  pointVouchers PointVoucher[]
+  orders          Order[]
+  cartItems       CartItem[]
+  pointHistory     PointHistory[]
+  voucherUsages   VoucherUsage[]
+  pointVouchers   PointVoucher[]
   chatConversations ChatConversation[]
 }
 

@@ -38,14 +38,17 @@ import {
   Mail,
   Lock,
   UserCircle,
+  Shield,
+  Save,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from 'sonner'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -274,6 +277,18 @@ export default function HomePage() {
   const [showNotificationBanner, setShowNotificationBanner] = useState(true)
   const [hasInitialRender, setHasInitialRender] = useState(false)
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false)
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
+  const [selectedAccountSection, setSelectedAccountSection] = useState('overview')
+  const [profilePhotoPreview, setProfilePhotoPreview] = useState<string | null>(null)
+  const [editProfileData, setEditProfileData] = useState({
+    name: '',
+    phone: '',
+    address: '',
+    theme: 'light',
+    notificationSound: 'default'
+  })
+  const [vouchers, setVouchers] = useState<any[]>([])
+  const [pointVouchers, setPointVouchers] = useState<any[]>([])
 
   const {
     user,
@@ -406,6 +421,95 @@ export default function HomePage() {
       setIsLogoutConfirmOpen(false)
     }
   }
+
+  // Handle profile photo upload
+  const handleProfilePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error('Ukuran foto maksimal 2MB')
+        return
+      }
+
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setProfilePhotoPreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  // Open edit profile modal
+  const handleOpenEditProfile = () => {
+    if (user) {
+      setEditProfileData({
+        name: user.name || '',
+        phone: user.phone || '',
+        address: user.address || '',
+        theme: (user as any).theme || 'light',
+        notificationSound: (user as any).notificationSound || 'default'
+      })
+      setProfilePhotoPreview((user as any).profilePhoto || null)
+      setIsEditProfileOpen(true)
+    }
+  }
+
+  // Save profile changes
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!user) return
+
+    try {
+      const res = await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          ...editProfileData,
+          profilePhoto: profilePhotoPreview
+        })
+      })
+
+      const data = await res.json()
+
+      if (res.ok && data.success) {
+        setUser(data.user)
+        toast.success('Profil berhasil diperbarui!')
+        setIsEditProfileOpen(false)
+        setProfilePhotoPreview(null)
+      } else {
+        toast.error(data.error || 'Gagal memperbarui profil')
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error)
+      toast.error('Gagal memperbarui profil')
+    }
+  }
+
+  // Fetch user vouchers
+  const fetchUserVouchers = async () => {
+    if (!user) return
+
+    try {
+      const res = await fetch(`/api/user/vouchers?userId=${user.id}`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.success) {
+          setVouchers(data.vouchers || [])
+          setPointVouchers(data.pointVouchers || [])
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching vouchers:', error)
+    }
+  }
+
+  // Fetch vouchers when account tab is active
+  useEffect(() => {
+    if (currentTab === 'account' && user) {
+      fetchUserVouchers()
+    }
+  }, [currentTab, user])
 
   // Handle forgot password verification
   const handleForgotPassword = async (e: React.FormEvent) => {
@@ -1796,23 +1900,36 @@ export default function HomePage() {
             <h2 className="text-2xl font-bold mb-4 text-gray-800">Akun Saya</h2>
             {user ? (
               <div className="space-y-4">
+                {/* Profile Card */}
                 <Card className="bg-gradient-to-r from-red-500 to-orange-500 border-0">
                   <CardContent className="p-6 text-white">
                     <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-3xl">
-                        👤
-                      </div>
-                      <div>
+                      <Avatar className="w-20 h-20 border-4 border-white/50">
+                        <AvatarImage src={(user as any).profilePhoto || undefined} />
+                        <AvatarFallback className="text-3xl bg-white text-red-600 font-bold">
+                          {(user as any).name?.charAt(0).toUpperCase() || 'P'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
                         <h3 className="text-xl font-bold">{user.name || 'Pelanggan'}</h3>
                         <p className="text-white/80">{user.email}</p>
                         <Badge className="mt-2 bg-yellow-400 text-red-900 font-bold">
                           {user.memberLevel}
                         </Badge>
                       </div>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="text-white hover:bg-white/20"
+                        onClick={handleOpenEditProfile}
+                      >
+                        <UserCircle className="h-5 w-5" />
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
 
+                {/* Loyalty Points */}
                 <Card>
                   <CardContent className="p-4">
                     <h4 className="font-semibold mb-4 flex items-center gap-2">
@@ -1836,17 +1953,27 @@ export default function HomePage() {
                   </CardContent>
                 </Card>
 
+                {/* Quick Actions */}
                 <Card>
                   <CardContent className="p-4 space-y-2">
-                    <Button variant="ghost" className="w-full justify-start" onClick={() => setIsAuthModalOpen(false)}>
-                      <UserIcon className="h-5 w-5 mr-3" />
+                    <h4 className="font-semibold mb-3">Menu Cepat</h4>
+                    <Button variant="ghost" className="w-full justify-start" onClick={handleOpenEditProfile}>
+                      <UserCircle className="h-5 w-5 mr-3" />
                       Edit Profil
                     </Button>
-                    <Button variant="ghost" className="w-full justify-start" onClick={() => setIsAuthModalOpen(false)}>
-                      <MapPin className="h-5 w-5 mr-3" />
-                      Alamat Pengiriman
+                    <Button variant="ghost" className="w-full justify-start" onClick={() => setSelectedAccountSection('vouchers')}>
+                      <Gift className="h-5 w-5 mr-3" />
+                      Voucher Diskon
                     </Button>
-                    <Button variant="ghost" className="w-full justify-start" onClick={() => setIsAuthModalOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start" onClick={() => setSelectedAccountSection('notifications')}>
+                      <Bell className="h-5 w-5 mr-3" />
+                      Notifikasi
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start" onClick={() => setSelectedAccountSection('security')}>
+                      <Lock className="h-5 w-5 mr-3" />
+                      Keamanan & Privasi
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start" onClick={() => setSelectedAccountSection('settings')}>
                       <Settings className="h-5 w-5 mr-3" />
                       Pengaturan
                     </Button>
@@ -1857,6 +1984,276 @@ export default function HomePage() {
                     </Button>
                   </CardContent>
                 </Card>
+
+                {/* Dynamic Sections */}
+                {selectedAccountSection === 'vouchers' && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Gift className="h-5 w-5 text-red-600" />
+                        Voucher Diskon
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Available Vouchers */}
+                      <div>
+                        <h5 className="font-semibold mb-3">Voucher Tersedia</h5>
+                        {vouchers.length > 0 ? (
+                          <div className="space-y-3">
+                            {vouchers.map((voucher: any) => (
+                              <div key={voucher.id} className="border border-gray-200 rounded-lg p-4 bg-gradient-to-r from-red-50 to-orange-50">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <h6 className="font-bold text-gray-800 mb-1">{voucher.name}</h6>
+                                    <p className="text-sm text-gray-600 mb-2">{voucher.description}</p>
+                                    <div className="flex gap-2 flex-wrap">
+                                      <Badge variant="outline" className="text-xs">
+                                        {voucher.discountType === 'percentage' ? `${voucher.discountValue}%` : `Rp ${voucher.discountValue.toLocaleString()}`}
+                                      </Badge>
+                                      <Badge variant="outline" className="text-xs">
+                                        Min. Rp {voucher.minPurchase.toLocaleString()}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                  <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white">
+                                    Pakai
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8 text-gray-500">
+                            <Gift className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                            <p>Belum ada voucher tersedia</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Point Vouchers */}
+                      <div>
+                        <h5 className="font-semibold mb-3">Voucher Poin</h5>
+                        {pointVouchers.length > 0 ? (
+                          <div className="space-y-3">
+                            {pointVouchers.map((pv: any) => (
+                              <div key={pv.id} className="border border-gray-200 rounded-lg p-4 bg-gradient-to-r from-yellow-50 to-orange-50">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <h6 className="font-bold text-gray-800 mb-1">Produk Gratis</h6>
+                                    <p className="text-sm text-gray-600 mb-2">
+                                      {pv.productId} - {pv.pointsRequired} poin
+                                    </p>
+                                  </div>
+                                  <Badge className="bg-green-500 text-white">
+                                    Aktif
+                                  </Badge>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8 text-gray-500">
+                            <Star className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                            <p>Belum ada voucher poin</p>
+                            <p className="text-sm mt-2">Tukarkan poin di menu Tukar Poin</p>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {selectedAccountSection === 'notifications' && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Bell className="h-5 w-5 text-red-600" />
+                        Notifikasi
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-3">
+                        <div className="border border-gray-200 rounded-lg p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h6 className="font-semibold text-gray-800">Promo Spesial</h6>
+                              <p className="text-sm text-gray-600">Diskon hingga 17% untuk semua produk</p>
+                            </div>
+                            <Badge className="bg-red-100 text-red-600">Baru</Badge>
+                          </div>
+                        </div>
+                        <div className="border border-gray-200 rounded-lg p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h6 className="font-semibold text-gray-800">Order Selesai</h6>
+                              <p className="text-sm text-gray-600">Order Anda telah selesai diproses</p>
+                            </div>
+                            <Badge className="bg-green-100 text-green-600">Info</Badge>
+                          </div>
+                        </div>
+                        <div className="border border-gray-200 rounded-lg p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h6 className="font-semibold text-gray-800">Poin Bertambah</h6>
+                              <p className="text-sm text-gray-600">Anda mendapat 100 poin dari pembelian</p>
+                            </div>
+                            <Badge className="bg-yellow-100 text-yellow-600">Reward</Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {selectedAccountSection === 'security' && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Lock className="h-5 w-5 text-red-600" />
+                        Keamanan & Privasi
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <Button variant="ghost" className="w-full justify-start" onClick={() => setIsForgotPasswordOpen(true)}>
+                        <Lock className="h-5 w-5 mr-3" />
+                        Ganti Password
+                      </Button>
+                      <Button variant="ghost" className="w-full justify-start">
+                        <Mail className="h-5 w-5 mr-3" />
+                        Ubah Email
+                      </Button>
+                      <Button variant="ghost" className="w-full justify-start">
+                        <Phone className="h-5 w-5 mr-3" />
+                        Ubah Nomor Telepon
+                      </Button>
+                      <Button variant="ghost" className="w-full justify-start">
+                        <MapPin className="h-5 w-5 mr-3" />
+                        Ubah Alamat
+                      </Button>
+                      <Separator />
+                      <div className="pt-4">
+                        <h6 className="font-semibold mb-3">Kebijakan & Privasi</h6>
+                        <Button variant="ghost" className="w-full justify-start text-blue-600">
+                          <FileText className="h-5 w-5 mr-3" />
+                          Syarat & Ketentuan
+                        </Button>
+                        <Button variant="ghost" className="w-full justify-start text-blue-600">
+                          <Shield className="h-5 w-5 mr-3" />
+                          Kebijakan Privasi
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {selectedAccountSection === 'settings' && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Settings className="h-5 w-5 text-red-600" />
+                        Pengaturan
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Theme Selection */}
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700 mb-2">Tema Aplikasi</Label>
+                        <RadioGroup 
+                          value={(user as any).theme || 'light'} 
+                          onValueChange={(value: 'light' | 'dark') => {
+                            if (user) {
+                              fetch('/api/user/profile', {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ userId: user.id, theme: value })
+                              }).then(res => res.json()).then(data => {
+                                if (data.success) {
+                                  setUser(data.user)
+                                  toast.success('Tema berhasil diubah!')
+                                }
+                              })
+                            }
+                          }}
+                        >
+                          <div className="flex gap-3">
+                            <div className="flex items-center gap-2">
+                              <RadioGroupItem value="light" />
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
+                                  <div className="w-4 h-4 rounded-full bg-yellow-200"></div>
+                                </div>
+                                <span className="text-sm">Light</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <RadioGroupItem value="dark" />
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-full bg-gray-800 border-2 border-gray-300 flex items-center justify-center">
+                                  <div className="w-4 h-4 rounded-full bg-gray-700"></div>
+                                </div>
+                                <span className="text-sm">Dark</span>
+                              </div>
+                            </div>
+                          </div>
+                        </RadioGroup>
+                      </div>
+
+                      {/* Notification Sound */}
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700 mb-2">Nada Notifikasi</Label>
+                        <RadioGroup 
+                          value={(user as any).notificationSound || 'default'}
+                          onValueChange={(value) => {
+                            if (user) {
+                              fetch('/api/user/profile', {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ userId: user.id, notificationSound: value })
+                              }).then(res => res.json()).then(data => {
+                                if (data.success) {
+                                  setUser(data.user)
+                                  toast.success('Nada notifikasi berhasil diubah!')
+                                }
+                              })
+                            }
+                          }}
+                        >
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <RadioGroupItem value="default" />
+                              <span className="text-sm">Default 🔔</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <RadioGroupItem value="chime" />
+                              <span className="text-sm">Chime 🔔</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <RadioGroupItem value="silent" />
+                              <span className="text-sm">Silent 🔕</span>
+                            </div>
+                          </div>
+                        </RadioGroup>
+                      </div>
+
+                      <Separator />
+
+                      {/* App Info */}
+                      <div className="pt-2">
+                        <h6 className="font-semibold mb-3">Tentang Aplikasi</h6>
+                        <div className="space-y-2 text-sm text-gray-600">
+                          <div className="flex justify-between">
+                            <span>Versi Aplikasi</span>
+                            <span className="font-medium">1.0.0</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Terakhir Update</span>
+                            <span className="font-medium">Januari 2025</span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             ) : (
               <Card className="p-8 text-center">
@@ -2008,6 +2405,157 @@ export default function HomePage() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Profile Dialog */}
+      <Dialog open={isEditProfileOpen} onOpenChange={setIsEditProfileOpen}>
+        <DialogContent className="max-w-sm p-6">
+          <DialogHeader className="pb-3">
+            <DialogTitle className="text-lg font-bold text-gray-800">✏️ Edit Profil</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSaveProfile} className="space-y-4">
+            {/* Profile Photo */}
+            <div>
+              <Label className="block text-sm font-medium text-gray-700 mb-2">Foto Profil</Label>
+              <div className="flex items-center gap-4">
+                <Avatar className="w-20 h-20">
+                  <AvatarImage src={profilePhotoPreview || undefined} />
+                  <AvatarFallback className="text-2xl bg-red-100 text-red-600 font-bold">
+                    {editProfileData.name?.charAt(0).toUpperCase() || 'P'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 space-y-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleProfilePhotoUpload}
+                    className="hidden"
+                    id="profile-photo-input"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => document.getElementById('profile-photo-input')?.click()}
+                  >
+                    Upload Foto
+                  </Button>
+                  {profilePhotoPreview && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setProfilePhotoPreview(null)}
+                    >
+                      Hapus
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Name */}
+            <div>
+              <Label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Nama</Label>
+              <Input
+                id="name"
+                value={editProfileData.name}
+                onChange={(e) => setEditProfileData({ ...editProfileData, name: e.target.value })}
+                placeholder="Nama lengkap"
+                required
+              />
+            </div>
+
+            {/* Phone */}
+            <div>
+              <Label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Nomor Telepon</Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={editProfileData.phone}
+                onChange={(e) => setEditProfileData({ ...editProfileData, phone: e.target.value })}
+                placeholder="08xxxxxxxxxx"
+              />
+            </div>
+
+            {/* Address */}
+            <div>
+              <Label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Alamat</Label>
+              <Textarea
+                id="address"
+                value={editProfileData.address}
+                onChange={(e) => setEditProfileData({ ...editProfileData, address: e.target.value })}
+                placeholder="Alamat lengkap"
+                rows={3}
+              />
+            </div>
+
+            {/* Theme */}
+            <div>
+              <Label className="block text-sm font-medium text-gray-700 mb-2">Tema</Label>
+              <RadioGroup 
+                value={editProfileData.theme} 
+                onValueChange={(value: 'light' | 'dark') => setEditProfileData({ ...editProfileData, theme: value })}
+              >
+                <div className="flex gap-3">
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value="light" />
+                    <span className="text-sm">Light ☀️</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value="dark" />
+                    <span className="text-sm">Dark 🌙</span>
+                  </div>
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* Notification Sound */}
+            <div>
+              <Label className="block text-sm font-medium text-gray-700 mb-2">Nada Notifikasi</Label>
+              <RadioGroup 
+                value={editProfileData.notificationSound}
+                onValueChange={(value) => setEditProfileData({ ...editProfileData, notificationSound: value })}
+              >
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value="default" />
+                    <span className="text-sm">Default 🔔</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value="chime" />
+                    <span className="text-sm">Chime 🔔</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value="silent" />
+                    <span className="text-sm">Silent 🔕</span>
+                  </div>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div className="flex gap-3 pt-4 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setIsEditProfileOpen(false)
+                  setProfilePhotoPreview(null)
+                }}
+              >
+                Batal
+              </Button>
+              <Button
+                type="submit"
+                className="flex-1 bg-gradient-to-r from-red-500 to-orange-500"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Simpan
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
 
