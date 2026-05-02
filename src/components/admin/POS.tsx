@@ -38,18 +38,29 @@ export function POS({ onClose }: { onClose?: () => void }) {
   const categories = ['all', 'makanan', 'minuman', 'snack', 'lainnya']
 
   useEffect(() => {
-    // Mock products - will be replaced with API call
-    setProducts([
-      { id: '1', name: 'Ayam Geprek Sambal Ijo', price: 18000, stock: 50, category: 'makanan', image: '🍗' },
-      { id: '2', name: 'Ayam Geprek Sambal Merah', price: 18000, stock: 45, category: 'makanan', image: '🍗' },
-      { id: '3', name: 'Es Teh Manis', price: 5000, stock: 100, category: 'minuman', image: '🧃' },
-      { id: '4', name: 'Es Jeruk', price: 6000, stock: 80, category: 'minuman', image: '🍊' },
-      { id: '5', name: 'Kentang Goreng', price: 12000, stock: 60, category: 'snack', image: '🍟' },
-      { id: '6', name: 'Tahu Crispy', price: 8000, stock: 70, category: 'snack', image: '🧈' },
-      { id: '7', name: 'Nasi', price: 5000, stock: 200, category: 'makanan', image: '🍚' },
-      { id: '8', name: 'Air Mineral', price: 4000, stock: 120, category: 'minuman', image: '💧' },
-    ])
+    loadProducts()
   }, [])
+
+  const loadProducts = async () => {
+    try {
+      const res = await fetch('/api/products')
+      if (res.ok) {
+        const data = await res.json()
+        if (data.success) {
+          setProducts(data.products.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            price: p.price,
+            stock: p.stock,
+            category: p.category,
+            image: p.image
+          })))
+        }
+      }
+    } catch (error) {
+      console.error('Error loading products:', error)
+    }
+  }
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -222,8 +233,20 @@ export function POS({ onClose }: { onClose?: () => void }) {
                 >
                   <Card className="h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                     <CardContent className="p-3 md:p-4">
-                      <div className="aspect-square bg-gradient-to-br from-red-50 to-orange-50 rounded-lg flex items-center justify-center text-4xl md:text-5xl mb-2 md:mb-3">
-                        {product.image || '📦'}
+                      <div className="aspect-square bg-gradient-to-br from-red-50 to-orange-50 rounded-lg overflow-hidden mb-2 md:mb-3">
+                        {product.image ? (
+                          product.image.startsWith('data:') ? (
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-4xl md:text-5xl flex items-center justify-center w-full h-full">{product.image}</span>
+                          )
+                        ) : (
+                          <span className="text-4xl md:text-5xl">📦</span>
+                        )}
                       </div>
                       <h3 className="font-semibold text-xs md:text-sm mb-1 line-clamp-2">{product.name}</h3>
                       <div className="flex items-center justify-between">
@@ -291,8 +314,20 @@ export function POS({ onClose }: { onClose?: () => void }) {
                     transition={{ delay: index * 0.05 }}
                     className="flex gap-3 p-3 bg-gray-50 rounded-lg mb-3"
                   >
-                    <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-red-100 to-orange-100 rounded-lg flex items-center justify-center text-2xl md:text-3xl flex-shrink-0">
-                      {item.image || '📦'}
+                    <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-red-100 to-orange-100 rounded-lg overflow-hidden flex-shrink-0">
+                      {item.image ? (
+                        item.image.startsWith('data:') ? (
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-2xl md:text-3xl flex items-center justify-center w-full h-full">{item.image}</span>
+                        )
+                      ) : (
+                        <span className="text-2xl md:text-3xl">📦</span>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold text-xs md:text-sm truncate">{item.name}</h4>

@@ -46,10 +46,6 @@ export function ProductManagement() {
 
   const categories = ['all', 'makanan', 'minuman', 'snack', 'lainnya']
 
-  useEffect(() => {
-    loadProducts()
-  }, [])
-
   const loadProducts = async () => {
     try {
       const res = await fetch('/api/admin/products')
@@ -64,6 +60,10 @@ export function ProductManagement() {
       toast.error('Gagal memuat produk')
     }
   }
+
+  useEffect(() => {
+    loadProducts()
+  }, [])
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase())

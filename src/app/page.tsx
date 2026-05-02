@@ -1533,7 +1533,7 @@ export default function HomePage() {
                         <div className="flex items-center justify-between mb-2">
                           <div>
                             <p className="font-bold text-red-600">
-                              Rp {product.discountPrice || product.price.toLocaleString()}
+                              Rp {(product.discountPrice || product.price).toLocaleString()}
                             </p>
                             {product.discountPrice && (
                               <p className="text-xs text-gray-400 line-through">
@@ -1580,7 +1580,7 @@ export default function HomePage() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <h2 className="text-2xl font-bold mb-4 text-gray-800">Semua Produk</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {mockProducts.map((product, index) => (
+              {filteredProducts.map((product, index) => (
                 <motion.div
                   key={product.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -1589,8 +1589,20 @@ export default function HomePage() {
                 >
                   <Card className="overflow-hidden shadow-md hover:shadow-xl transition-all duration-300">
                     <div className="relative">
-                      <div className="aspect-square bg-gradient-to-br from-red-100 to-orange-100 flex items-center justify-center text-6xl">
-                        {product.image}
+                      <div className="aspect-square bg-gradient-to-br from-red-100 to-orange-100 flex items-center justify-center overflow-hidden">
+                        {product.image ? (
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement
+                              target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23f3f4f6" rx="8"/%3E%3Ctext x="50" y="50" font-size="40" text-anchor="middle" fill="%23dc2626" text="📦" dy="15"/%3E%3C/svg%3E'
+                            }}
+                          />
+                        ) : (
+                          <span className="text-6xl">📦</span>
+                        )}
                       </div>
                       {product.discountPercent && (
                         <Badge className="absolute top-2 right-2 bg-red-600 text-white font-bold">
@@ -1603,7 +1615,7 @@ export default function HomePage() {
                       <div className="flex items-center justify-between mb-2">
                         <div>
                           <p className="font-bold text-red-600">
-                            Rp {product.discountPrice || product.price.toLocaleString()}
+                            Rp {(product.discountPrice || product.price).toLocaleString()}
                           </p>
                           {product.discountPrice && (
                             <p className="text-xs text-gray-400 line-through">
@@ -1621,6 +1633,8 @@ export default function HomePage() {
                             price: product.price,
                             discountPrice: product.discountPrice || undefined,
                             quantity: 1,
+                            image: product.image,
+                            category: product.category,
                           })
                           toast.success(`${product.name} ditambahkan ke keranjang`)
                         }}
