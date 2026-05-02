@@ -295,6 +295,22 @@ export default function HomePage() {
   const [vouchers, setVouchers] = useState<any[]>([])
   const [pointVouchers, setPointVouchers] = useState<any[]>([])
 
+  // Security & Privacy modals state
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false)
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false)
+  const [isUpdateAddressModal, setIsUpdateAddressModal] = useState(false)
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false)
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false)
+
+  // Security update form data
+  const [emailUpdateData, setEmailUpdateData] = useState({ newEmail: '', currentPassword: '' })
+  const [phoneUpdateData, setPhoneUpdateData] = useState({ newPhone: '', currentPassword: '' })
+  const [addressUpdateData, setAddressUpdateData] = useState({ newAddress: '', currentPassword: '' })
+
+  const [isUpdatingEmail, setIsUpdatingEmail] = useState(false)
+  const [isUpdatingPhone, setIsUpdatingPhone] = useState(false)
+  const [isUpdatingAddress, setIsUpdatingAddress] = useState(false)
+
   const {
     user,
     token,
@@ -643,6 +659,122 @@ export default function HomePage() {
       toast.error('Terjadi kesalahan koneksi')
     } finally {
       setIsResetting(false)
+    }
+  }
+
+  // Handle voucher "Pakai" button - Navigate to checkout with voucher code
+  const handleUseVoucher = (voucherCode: string) => {
+    setSelectedVoucher(voucherCode)
+    setCurrentTab('home')
+    setIsCheckoutOpen(true)
+    toast.success(`Voucher ${voucherCode} ditambahkan!`)
+  }
+
+  // Handle email update
+  const handleUpdateEmail = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!user) return
+
+    setIsUpdatingEmail(true)
+
+    try {
+      const res = await fetch('/api/user/email', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          newEmail: emailUpdateData.newEmail,
+          currentPassword: emailUpdateData.currentPassword,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok && data.success) {
+        setUser(data.user)
+        setIsEmailModalOpen(false)
+        setEmailUpdateData({ newEmail: '', currentPassword: '' })
+        toast.success('Email berhasil diubah!')
+      } else {
+        toast.error(data.error || 'Gagal mengubah email')
+      }
+    } catch (error) {
+      toast.error('Terjadi kesalahan koneksi')
+    } finally {
+      setIsUpdatingEmail(false)
+    }
+  }
+
+  // Handle phone update
+  const handleUpdatePhone = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!user) return
+
+    setIsUpdatingPhone(true)
+
+    try {
+      const res = await fetch('/api/user/phone', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          newPhone: phoneUpdateData.newPhone,
+          currentPassword: phoneUpdateData.currentPassword,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok && data.success) {
+        setUser(data.user)
+        setIsPhoneModalOpen(false)
+        setPhoneUpdateData({ newPhone: '', currentPassword: '' })
+        toast.success('Nomor telepon berhasil diubah!')
+      } else {
+        toast.error(data.error || 'Gagal mengubah nomor telepon')
+      }
+    } catch (error) {
+      toast.error('Terjadi kesalahan koneksi')
+    } finally {
+      setIsUpdatingPhone(false)
+    }
+  }
+
+  // Handle address update
+  const handleUpdateAddress = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!user) return
+
+    setIsUpdatingAddress(true)
+
+    try {
+      const res = await fetch('/api/user/address', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          newAddress: addressUpdateData.newAddress,
+          currentPassword: addressUpdateData.currentPassword,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok && data.success) {
+        setUser(data.user)
+        setIsUpdateAddressModal(false)
+        setAddressUpdateData({ newAddress: '', currentPassword: '' })
+        toast.success('Alamat berhasil diubah!')
+      } else {
+        toast.error(data.error || 'Gagal mengubah alamat')
+      }
+    } catch (error) {
+      toast.error('Terjadi kesalahan koneksi')
+    } finally {
+      setIsUpdatingAddress(false)
     }
   }
 
@@ -2208,7 +2340,10 @@ export default function HomePage() {
                                         </Badge>
                                       </div>
                                     </div>
-                                    <Button className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white shadow-lg">
+                                    <Button
+                                      className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white shadow-lg"
+                                      onClick={() => handleUseVoucher(voucher.code)}
+                                    >
                                       Pakai
                                     </Button>
                                   </div>
@@ -2392,6 +2527,10 @@ export default function HomePage() {
                           <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
+                            onClick={() => {
+                              setEmailUpdateData({ newEmail: user?.email || '', currentPassword: '' })
+                              setIsEmailModalOpen(true)
+                            }}
                             className="w-full flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 hover:shadow-md transition-all text-left"
                           >
                             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
@@ -2407,6 +2546,10 @@ export default function HomePage() {
                           <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
+                            onClick={() => {
+                              setPhoneUpdateData({ newPhone: user?.phone || '', currentPassword: '' })
+                              setIsPhoneModalOpen(true)
+                            }}
                             className="w-full flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 hover:shadow-md transition-all text-left"
                           >
                             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
@@ -2422,6 +2565,10 @@ export default function HomePage() {
                           <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
+                            onClick={() => {
+                              setAddressUpdateData({ newAddress: user?.address || '', currentPassword: '' })
+                              setIsUpdateAddressModal(true)
+                            }}
                             className="w-full flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 hover:shadow-md transition-all text-left"
                           >
                             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
@@ -2447,6 +2594,7 @@ export default function HomePage() {
                             <motion.button
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
+                              onClick={() => setIsTermsModalOpen(true)}
                               className="w-full flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 hover:shadow-md transition-all text-left"
                             >
                               <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
@@ -2462,6 +2610,7 @@ export default function HomePage() {
                             <motion.button
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
+                              onClick={() => setIsPrivacyModalOpen(true)}
                               className="w-full flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 hover:shadow-md transition-all text-left"
                             >
                               <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
@@ -4468,6 +4617,306 @@ export default function HomePage() {
               </div>
             </CardContent>
           </Card>
+        </DialogContent>
+      </Dialog>
+
+      {/* Update Email Modal */}
+      <Dialog open={isEmailModalOpen} onOpenChange={setIsEmailModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              Ubah Email
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUpdateEmail} className="space-y-4">
+            <p className="text-sm text-gray-600 text-center">
+              Masukkan email baru dan password Anda saat ini
+            </p>
+            <div>
+              <Label className="mb-1 block">Email Baru</Label>
+              <Input
+                type="email"
+                value={emailUpdateData.newEmail}
+                onChange={(e) => setEmailUpdateData({ ...emailUpdateData, newEmail: e.target.value })}
+                placeholder="contoh@email.com"
+                required
+              />
+            </div>
+            <div>
+              <Label className="mb-1 block">Password Saat Ini</Label>
+              <Input
+                type="password"
+                value={emailUpdateData.currentPassword}
+                onChange={(e) => setEmailUpdateData({ ...emailUpdateData, currentPassword: e.target.value })}
+                placeholder="Masukkan password Anda"
+                required
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-blue-500 to-indigo-500"
+              disabled={isUpdatingEmail}
+            >
+              {isUpdatingEmail ? 'Mengubah...' : 'Ubah Email'}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Update Phone Modal */}
+      <Dialog open={isPhoneModalOpen} onOpenChange={setIsPhoneModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              Ubah Nomor Telepon
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUpdatePhone} className="space-y-4">
+            <p className="text-sm text-gray-600 text-center">
+              Masukkan nomor telepon baru dan password Anda saat ini
+            </p>
+            <div>
+              <Label className="mb-1 block">Nomor Telepon Baru</Label>
+              <Input
+                type="tel"
+                value={phoneUpdateData.newPhone}
+                onChange={(e) => setPhoneUpdateData({ ...phoneUpdateData, newPhone: e.target.value })}
+                placeholder="08xxxxxxxxxx"
+                required
+              />
+            </div>
+            <div>
+              <Label className="mb-1 block">Password Saat Ini</Label>
+              <Input
+                type="password"
+                value={phoneUpdateData.currentPassword}
+                onChange={(e) => setPhoneUpdateData({ ...phoneUpdateData, currentPassword: e.target.value })}
+                placeholder="Masukkan password Anda"
+                required
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-blue-500 to-indigo-500"
+              disabled={isUpdatingPhone}
+            >
+              {isUpdatingPhone ? 'Mengubah...' : 'Ubah Nomor Telepon'}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Update Address Modal */}
+      <Dialog open={isUpdateAddressModal} onOpenChange={setIsUpdateAddressModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              Ubah Alamat
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUpdateAddress} className="space-y-4">
+            <p className="text-sm text-gray-600 text-center">
+              Masukkan alamat baru dan password Anda saat ini
+            </p>
+            <div>
+              <Label className="mb-1 block">Alamat Baru</Label>
+              <Textarea
+                value={addressUpdateData.newAddress}
+                onChange={(e) => setAddressUpdateData({ ...addressUpdateData, newAddress: e.target.value })}
+                placeholder="Masukkan alamat lengkap Anda"
+                required
+                rows={4}
+              />
+            </div>
+            <div>
+              <Label className="mb-1 block">Password Saat Ini</Label>
+              <Input
+                type="password"
+                value={addressUpdateData.currentPassword}
+                onChange={(e) => setAddressUpdateData({ ...addressUpdateData, currentPassword: e.target.value })}
+                placeholder="Masukkan password Anda"
+                required
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-blue-500 to-indigo-500"
+              disabled={isUpdatingAddress}
+            >
+              {isUpdatingAddress ? 'Mengubah...' : 'Ubah Alamat'}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Terms & Conditions Modal */}
+      <Dialog open={isTermsModalOpen} onOpenChange={setIsTermsModalOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-center text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Syarat & Ketentuan
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-4 pr-4">
+              <section>
+                <h3 className="font-bold text-lg text-gray-800 mb-2">1. Pendahuluan</h3>
+                <p className="text-sm text-gray-600">
+                  Selamat datang di Ayam Geprek Sambal Ijo. Dengan menggunakan aplikasi ini, Anda setuju untuk mematuhi syarat dan ketentuan ini. Harap baca dengan seksama sebelum melanjutkan.
+                </p>
+              </section>
+              <section>
+                <h3 className="font-bold text-lg text-gray-800 mb-2">2. Pendaftaran Akun</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  Untuk menggunakan layanan penuh, Anda harus mendaftar akun. Anda bertanggung jawab untuk:
+                </p>
+                <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                  <li>Menyediakan informasi yang akurat dan lengkap</li>
+                  <li>Menjaga kerahasiaan password akun Anda</li>
+                  <li>Menginformasikan segala pelanggaran keamanan</li>
+                  <li>Tidak membagikan akun Anda kepada orang lain</li>
+                </ul>
+              </section>
+              <section>
+                <h3 className="font-bold text-lg text-gray-800 mb-2">3. Pesanan dan Pembayaran</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  Aturan mengenai pesanan dan pembayaran:
+                </p>
+                <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                  <li>Harga produk dapat berubah sewaktu-waktu</li>
+                  <li>Pembayaran dapat dilakukan melalui COD atau QRIS</li>
+                  <li>Setelah pesanan dibuat, tidak dapat dibatalkan</li>
+                  <li>Stok produk terbatas dan tidak dijamin ketersediaannya</li>
+                </ul>
+              </section>
+              <section>
+                <h3 className="font-bold text-lg text-gray-800 mb-2">4. Program Poin dan Voucher</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  Ketentuan program poin dan voucher:
+                </p>
+                <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                  <li>Poin didapatkan dari setiap pembelian</li>
+                  <li>Voucher memiliki masa berlaku tertentu</li>
+                  <li>Voucher tidak dapat digabungkan</li>
+                  <li>Voucher sekali pakai tidak dapat digunakan ulang</li>
+                  <li>Poin kedaluwarsa setelah 1 tahun</li>
+                </ul>
+              </section>
+              <section>
+                <h3 className="font-bold text-lg text-gray-800 mb-2">5. Privasi dan Keamanan</h3>
+                <p className="text-sm text-gray-600">
+                  Kami menghargai privasi Anda. Data pribadi yang Anda berikan akan digunakan sesuai dengan Kebijakan Privasi kami. Kami tidak akan menjual atau menyewakan data Anda kepada pihak ketiga.
+                </p>
+              </section>
+              <section>
+                <h3 className="font-bold text-lg text-gray-800 mb-2">6. Batasan Tanggung Jawab</h3>
+                <p className="text-sm text-gray-600">
+                  Ayam Geprek Sambal Ijo tidak bertanggung jawab atas kerugian langsung atau tidak langsung yang timbul dari penggunaan layanan ini, termasuk namun tidak terbatas pada kerugian keuntungan bisnis, data, atau kerusakan perangkat.
+                </p>
+              </section>
+              <section>
+                <h3 className="font-bold text-lg text-gray-800 mb-2">7. Perubahan Syarat</h3>
+                <p className="text-sm text-gray-600">
+                  Kami berhak mengubah syarat dan ketentuan ini sewaktu-waktu tanpa pemberitahuan sebelumnya. Penggunaan lanjutan dari layanan ini setelah perubahan berarti Anda menerima syarat yang telah direvisi.
+                </p>
+              </section>
+              <section>
+                <h3 className="font-bold text-lg text-gray-800 mb-2">8. Kontak</h3>
+                <p className="text-sm text-gray-600">
+                  Jika Anda memiliki pertanyaan tentang syarat dan ketentuan ini, silakan hubungi kami melalui email atau nomor telepon yang tertera di halaman kontak.
+                </p>
+              </section>
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Privacy Policy Modal */}
+      <Dialog open={isPrivacyModalOpen} onOpenChange={setIsPrivacyModalOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-center text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Kebijakan Privasi
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-4 pr-4">
+              <section>
+                <h3 className="font-bold text-lg text-gray-800 mb-2">1. Pengumpulan Informasi</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  Kami mengumpulkan informasi berikut saat Anda menggunakan aplikasi:
+                </p>
+                <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                  <li>Informasi pendaftaran (nama, email, nomor telepon, alamat)</li>
+                  <li>Informasi pesanan dan riwayat pembelian</li>
+                  <li>Informasi poin dan reward</li>
+                  <li>Informasi perangkat dan penggunaan aplikasi</li>
+                </ul>
+              </section>
+              <section>
+                <h3 className="font-bold text-lg text-gray-800 mb-2">2. Penggunaan Informasi</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  Kami menggunakan informasi yang dikumpulkan untuk:
+                </p>
+                <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                  <li>Memproses dan mengelola pesanan Anda</li>
+                  <li>Meningkatkan layanan dan pengalaman pengguna</li>
+                  <li>Mengirim notifikasi tentang pesanan dan promo</li>
+                  <li>Mengelola program poin dan reward</li>
+                  <li>Mencegah penipuan dan keamanan akun</li>
+                </ul>
+              </section>
+              <section>
+                <h3 className="font-bold text-lg text-gray-800 mb-2">3. Keamanan Data</h3>
+                <p className="text-sm text-gray-600">
+                  Kami menerapkan langkah-langkah keamanan yang wajar untuk melindungi informasi Anda dari akses tidak sah, perubahan, penghancuran, atau pengungkapan yang tidak disengaja. Namun, tidak ada metode transmisi melalui internet atau penyimpanan elektronik yang 100% aman.
+                </p>
+              </section>
+              <section>
+                <h3 className="font-bold text-lg text-gray-800 mb-2">4. Berbagi Informasi</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  Kami tidak menjual atau menyewakan informasi pribadi Anda kepada pihak ketiga. Kami mungkin membagikan informasi Anda dalam keadaan berikut:
+                </p>
+                <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                  <li>Dengan penyedia layanan untuk memproses pesanan</li>
+                  <li>Jika diwajibkan oleh hukum atau peraturan</li>
+                  <li>Untuk melindungi hak dan properti kami</li>
+                  <li>Dengan persetujuan Anda yang eksplisit</li>
+                </ul>
+              </section>
+              <section>
+                <h3 className="font-bold text-lg text-gray-800 mb-2">5. Hak Anda</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  Anda memiliki hak untuk:
+                </p>
+                <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                  <li>Mengakses informasi pribadi Anda</li>
+                  <li>Memperbarui informasi yang salah</li>
+                  <li>Menghapus akun dan data pribadi</li>
+                  <li>Menolak penerimaan notifikasi promosi</li>
+                  <li>Meminta salinan data pribadi Anda</li>
+                </ul>
+              </section>
+              <section>
+                <h3 className="font-bold text-lg text-gray-800 mb-2">6. Cookie dan Teknologi</h3>
+                <p className="text-sm text-gray-600">
+                  Kami menggunakan cookie dan teknologi serupa untuk meningkatkan pengalaman pengguna, menganalisis tren, dan mengelola aplikasi. Anda dapat menonaktifkan cookie melalui pengaturan browser, namun beberapa fitur mungkin tidak berfungsi dengan baik.
+                </p>
+              </section>
+              <section>
+                <h3 className="font-bold text-lg text-gray-800 mb-2">7. Perubahan Kebijakan</h3>
+                <p className="text-sm text-gray-600">
+                  Kami berhak mengubah kebijakan privasi ini sewaktu-waktu. Perubahan akan dipublikasikan di aplikasi dan akan efektif segera setelah publikasi.
+                </p>
+              </section>
+              <section>
+                <h3 className="font-bold text-lg text-gray-800 mb-2">8. Kontak</h3>
+                <p className="text-sm text-gray-600">
+                  Jika Anda memiliki pertanyaan atau kekhawatiran tentang kebijakan privasi ini, atau ingin mengajukan keluhan, silakan hubungi kami melalui email atau nomor telepon yang tertera.
+                </p>
+              </section>
+            </div>
+          </ScrollArea>
         </DialogContent>
       </Dialog>
     </div>
