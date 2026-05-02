@@ -30,18 +30,21 @@ export function PointVoucherManagement() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [isLoading, setIsLoading] = useState(true)
 
-  // Get token from store
-  const { token } = useStore()
+  // Get token and hydration state from store
+  const { token, _hasHydrated } = useStore()
 
   useEffect(() => {
-    loadVouchers()
-  }, [])
+    if (_hasHydrated) {
+      loadVouchers()
+    }
+  }, [_hasHydrated])
 
   const loadVouchers = async () => {
     setIsLoading(true)
     try {
       if (!token) {
-        toast.error('Anda belum login. Silakan login terlebih dahulu.')
+        toast.error('Anda belum login. Silakan login dengan PIN admin terlebih dahulu.')
+        setIsLoading(false)
         return
       }
 

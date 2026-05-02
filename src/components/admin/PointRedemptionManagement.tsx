@@ -52,8 +52,8 @@ export function PointRedemptionManagement() {
   const [showDialog, setShowDialog] = useState(false)
   const [editingRedemption, setEditingRedemption] = useState<PointRedemption | null>(null)
 
-  // Get token from store
-  const { token } = useStore()
+  // Get token and hydration state from store
+  const { token, _hasHydrated } = useStore()
 
   // Form state
   const [formData, setFormData] = useState({
@@ -66,16 +66,20 @@ export function PointRedemptionManagement() {
     order: 0,
   })
 
+  // Load data only after store has hydrated
   useEffect(() => {
-    loadRedemptions()
-    loadProducts()
-  }, [])
+    if (_hasHydrated) {
+      loadRedemptions()
+      loadProducts()
+    }
+  }, [_hasHydrated])
 
   const loadRedemptions = async () => {
     setIsLoading(true)
     try {
       if (!token) {
-        toast.error('Anda belum login. Silakan login terlebih dahulu.')
+        toast.error('Anda belum login. Silakan login dengan PIN admin terlebih dahulu.')
+        setIsLoading(false)
         return
       }
 
@@ -150,7 +154,7 @@ export function PointRedemptionManagement() {
     }
 
     if (!token) {
-      toast.error('Anda belum login. Silakan login terlebih dahulu.')
+      toast.error('Anda belum login. Silakan login dengan PIN admin terlebih dahulu.')
       return
     }
 
@@ -177,7 +181,7 @@ export function PointRedemptionManagement() {
 
   const handleToggleActive = async (redemption: PointRedemption) => {
     if (!token) {
-      toast.error('Anda belum login. Silakan login terlebih dahulu.')
+      toast.error('Anda belum login. Silakan login dengan PIN admin terlebih dahulu.')
       return
     }
 
@@ -210,7 +214,7 @@ export function PointRedemptionManagement() {
   const handleSave = async () => {
     // Validate token
     if (!token) {
-      toast.error('Anda belum login. Silakan login terlebih dahulu.')
+      toast.error('Anda belum login. Silakan login dengan PIN admin terlebih dahulu.')
       return
     }
 
