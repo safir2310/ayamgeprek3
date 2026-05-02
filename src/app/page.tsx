@@ -3018,7 +3018,7 @@ export default function HomePage() {
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-[64px] left-2 right-2 md:left-1/2 md:-translate-x-1/2 md:right-auto md:w-[400px] z-50"
+            className="fixed bottom-[72px] left-2 right-2 md:left-1/2 md:-translate-x-1/2 md:right-auto md:w-[400px] z-50"
           >
             <Card className="bg-gradient-to-r from-red-600 to-orange-500 text-white shadow-2xl border-0">
               <CardContent className="p-3">
@@ -3069,7 +3069,7 @@ export default function HomePage() {
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-slate-200 dark:border-slate-700 dark:bg-slate-900/95 shadow-lg z-40">
         <div className="container mx-auto px-1 max-w-md">
-          <div className="flex items-center justify-around py-1">
+          <div className="flex items-center justify-around py-2">
             {[
               { id: 'home', icon: Home, label: 'Beranda' },
               { id: 'products', icon: Package, label: 'Belanja', notification: cartNotification },
@@ -3080,24 +3080,24 @@ export default function HomePage() {
               <button
                 key={item.id}
                 onClick={() => setCurrentTab(item.id)}
-                className="relative flex flex-col items-center gap-0 px-1.5 py-1 rounded-lg transition-all"
+                className="relative flex flex-col items-center gap-0.5 px-1.5 py-2 rounded-lg transition-all"
               >
                 {item.notification > 0 && (
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="absolute -top-0 -right-0 bg-gradient-to-r from-red-600 to-orange-500 text-white text-[9px] font-bold rounded-full h-3 min-w-[15px] flex items-center justify-center shadow-md"
+                    className="absolute -top-0 -right-0 bg-gradient-to-r from-red-600 to-orange-500 text-white text-[9px] font-bold rounded-full h-3.5 min-w-[17px] flex items-center justify-center shadow-md"
                   >
                     {item.notification > 9 ? '9+' : item.notification}
                   </motion.div>
                 )}
                 <item.icon
-                  className={`h-4 w-4 sm:h-5 sm:w-5 ${
+                  className={`h-5 w-5 sm:h-6 sm:w-6 ${
                     currentTab === item.id ? 'text-red-600' : 'text-slate-400'
                   }`}
                 />
                 <span
-                  className={`text-[8px] sm:text-[9px] font-medium ${
+                  className={`text-[9px] sm:text-[10px] font-medium ${
                     currentTab === item.id ? 'text-red-600' : 'text-slate-400'
                   }`}
                 >
