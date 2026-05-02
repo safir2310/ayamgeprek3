@@ -258,6 +258,13 @@ export default function HomePage() {
   const [isRedeeming, setIsRedeeming] = useState(false)
   const [pointVoucher, setPointVoucher] = useState<any>(null)
   const [isApplyingVoucher, setIsApplyingVoucher] = useState(false)
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false)
+  const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false)
+  const [forgotPasswordData, setForgotPasswordData] = useState({ email: '', phoneLastSix: '', userId: '' })
+  const [resetPasswordData, setResetPasswordData] = useState({ newPassword: '', confirmPassword: '' })
+  const [resetToken, setResetToken] = useState('')
+  const [isVerifying, setIsVerifying] = useState(false)
+  const [isResetting, setIsResetting] = useState(false)
 
   const {
     user,
@@ -342,6 +349,84 @@ export default function HomePage() {
     } catch (error) {
       logout()
       setOrders([])
+    }
+  }
+
+  // Handle forgot password verification
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsVerifying(true)
+
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: forgotPasswordData.email,
+          phoneLastSix: forgotPasswordData.phoneLastSix,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok && data.success) {
+        setResetToken(data.token)
+        setForgotPasswordData({ ...forgotPasswordData, userId: data.userId })
+        setIsForgotPasswordOpen(false)
+        setIsResetPasswordOpen(true)
+        toast.success('Verifikasi berhasil! Silakan ganti password.')
+        setForgotPasswordData({ email: '', phoneLastSix: '', userId: '' })
+      } else {
+        toast.error(data.error || 'Gagal memverifikasi data')
+      }
+    } catch (error) {
+      toast.error('Terjadi kesalahan koneksi')
+    } finally {
+      setIsVerifying(false)
+    }
+  }
+
+  // Handle reset password
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (resetPasswordData.newPassword !== resetPasswordData.confirmPassword) {
+      toast.error('Password baru tidak cocok!')
+      return
+    }
+
+    if (resetPasswordData.newPassword.length < 6) {
+      toast.error('Password minimal 6 karakter!')
+      return
+    }
+
+    setIsResetting(true)
+
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token: resetToken,
+          newPassword: resetPasswordData.newPassword,
+          userId: forgotPasswordData.userId,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok && data.success) {
+        setIsResetPasswordOpen(false)
+        setResetToken('')
+        setResetPasswordData({ newPassword: '', confirmPassword: '' })
+        toast.success('Password berhasil diubah! Silakan login dengan password baru.')
+      } else {
+        toast.error(data.error || 'Gagal mengubah password')
+      }
+    } catch (error) {
+      toast.error('Terjadi kesalahan koneksi')
+    } finally {
+      setIsResetting(false)
     }
   }
 
@@ -2202,8 +2287,8 @@ export default function HomePage() {
           </DialogHeader>
           <Tabs value={isLogin ? 'login' : 'register'} onValueChange={(v) => setIsLogin(v === 'login')}>
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="register">Daftar</TabsTrigger>
+              <TabsTrigger value="login">Login</TabsTrigger>
             </TabsList>
             <TabsContent value="login">
               <form onSubmit={handleAuth} className="space-y-4">
@@ -2227,6 +2312,16 @@ export default function HomePage() {
                     required
                   />
                 </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsForgotPasswordOpen(true)
+                    setIsAuthModalOpen(false)
+                  }}
+                  className="w-full text-sm text-red-600 hover:text-red-700 hover:underline text-left"
+                >
+                  Lupa Password?
+                </button>
                 <Button type="submit" className="w-full bg-gradient-to-r from-red-500 to-orange-500">
                   Login
                 </Button>
@@ -2297,6 +2392,98 @@ export default function HomePage() {
       </Dialog>
 
       {/* Barcode Modal */}
+      {/* Forgot Password Modal */}
+      <Dialog open={isForgotPasswordOpen} onOpenChange={setIsForgotPasswordOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-xl font-bold bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent">
+              Lupa Password
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleForgotPassword} className="space-y-4">
+            <p className="text-sm text-gray-600 text-center">
+              Masukkan email dan 6 digit terakhir nomor HP Anda untuk verifikasi
+            </p>
+            <div>
+              <Label className="mb-1 block">Email</Label>
+              <Input
+                type="email"
+                value={forgotPasswordData.email}
+                onChange={(e) => setForgotPasswordData({ ...forgotPasswordData, email: e.target.value })}
+                placeholder="email@example.com"
+                required
+              />
+            </div>
+            <div>
+              <Label className="mb-1 block">6 Digit Terakhir No. HP</Label>
+              <Input
+                type="text"
+                value={forgotPasswordData.phoneLastSix}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '').slice(0, 6)
+                  setForgotPasswordData({ ...forgotPasswordData, phoneLastSix: value })
+                }}
+                placeholder="678901"
+                required
+                maxLength={6}
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-red-500 to-orange-500"
+              disabled={isVerifying}
+            >
+              {isVerifying ? 'Memverifikasi...' : 'Verifikasi'}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reset Password Modal */}
+      <Dialog open={isResetPasswordOpen} onOpenChange={setIsResetPasswordOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-xl font-bold bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent">
+              Ganti Password
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleResetPassword} className="space-y-4">
+            <p className="text-sm text-gray-600 text-center">
+              Masukkan password baru Anda
+            </p>
+            <div>
+              <Label className="mb-1 block">Password Baru</Label>
+              <Input
+                type="password"
+                value={resetPasswordData.newPassword}
+                onChange={(e) => setResetPasswordData({ ...resetPasswordData, newPassword: e.target.value })}
+                placeholder="Minimal 6 karakter"
+                required
+                minLength={6}
+              />
+            </div>
+            <div>
+              <Label className="mb-1 block">Konfirmasi Password</Label>
+              <Input
+                type="password"
+                value={resetPasswordData.confirmPassword}
+                onChange={(e) => setResetPasswordData({ ...resetPasswordData, confirmPassword: e.target.value })}
+                placeholder="Ulangi password baru"
+                required
+                minLength={6}
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-red-500 to-orange-500"
+              disabled={isResetting}
+            >
+              {isResetting ? 'Mengubah...' : 'Ganti Password'}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={isBarcodeModalOpen} onOpenChange={setIsBarcodeModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
