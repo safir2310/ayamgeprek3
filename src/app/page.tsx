@@ -2286,9 +2286,10 @@ export default function HomePage() {
             </DialogTitle>
           </DialogHeader>
           <Tabs value={isLogin ? 'login' : 'register'} onValueChange={(v) => setIsLogin(v === 'login')}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="register">Daftar</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="login">Login</TabsTrigger>
+              <TabsTrigger value="register">Daftar</TabsTrigger>
+              <TabsTrigger value="demo">Demo</TabsTrigger>
             </TabsList>
             <TabsContent value="login">
               <form onSubmit={handleAuth} className="space-y-4">
@@ -2326,11 +2327,6 @@ export default function HomePage() {
                   Login
                 </Button>
               </form>
-              <div className="mt-4 p-3 bg-gray-100 rounded text-sm">
-                <p className="font-semibold mb-1">Demo Account:</p>
-                <p className="text-xs">Admin: admin@ayamgeprek.com / admin123</p>
-                <p className="text-xs">User: customer@gmail.com / user123</p>
-              </div>
             </TabsContent>
             <TabsContent value="register">
               <form onSubmit={handleAuth} className="space-y-4">
@@ -2386,6 +2382,61 @@ export default function HomePage() {
                   Daftar
                 </Button>
               </form>
+            </TabsContent>
+            <TabsContent value="demo">
+              <div className="space-y-4">
+                <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
+                      <User className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-gray-800">Demo Accounts</h3>
+                      <p className="text-xs text-gray-600">Gunakan akun ini untuk mencoba aplikasi</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="bg-white rounded-lg p-3 shadow-sm">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge className="bg-red-500">Admin</Badge>
+                        <span className="text-xs text-gray-500">Akses penuh dashboard</span>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm"><span className="font-semibold text-gray-700">Email:</span> admin@ayamgeprek.com</p>
+                        <p className="text-sm"><span className="font-semibold text-gray-700">Password:</span> admin123</p>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg p-3 shadow-sm">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge className="bg-green-500">Customer</Badge>
+                        <span className="text-xs text-gray-500">Akses pembelian pelanggan</span>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm"><span className="font-semibold text-gray-700">Email:</span> customer@gmail.com</p>
+                        <p className="text-sm"><span className="font-semibold text-gray-700">Password:</span> user123</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 pt-3 border-t border-blue-200">
+                    <p className="text-xs text-gray-600 text-center">
+                      💡 Klik tombol salin di samping untuk menyalin kredensial
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsLogin(true)}
+                    className="w-full"
+                  >
+                    Kembali ke Login
+                  </Button>
+                </div>
+              </div>
             </TabsContent>
           </Tabs>
         </DialogContent>
