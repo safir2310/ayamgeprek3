@@ -783,14 +783,14 @@ export default function HomePage() {
   const handlePrintReceipt = () => {
     if (!selectedOrder) return
 
-    const printWindow = window.open('', '', 'height=200,width=400')
+    const printWindow = window.open('', '', 'height=600,width=400')
     if (!printWindow) {
       toast.error('Gagal membuka jendela cetak')
       return
     }
 
     const itemsHtml = selectedOrder.items.map((item: any) => `
-      <div style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 9px;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 11px;">
         <span>${item.name} x${item.quantity}</span>
         <span>Rp ${(item.price * item.quantity).toLocaleString()}</span>
       </div>
@@ -803,8 +803,8 @@ export default function HomePage() {
           <title>Struk Pesanan ${selectedOrder.orderNumber}</title>
           <style>
             @page {
-              size: 58mm 30mm;
-              margin: 2mm;
+              size: 80mm auto;
+              margin: 3mm;
             }
             @media print {
               body {
@@ -813,69 +813,69 @@ export default function HomePage() {
             }
             body {
               font-family: 'Courier New', monospace;
-              padding: 8px;
+              padding: 10px;
               margin: 0;
-              font-size: 9px;
-              line-height: 1.2;
+              font-size: 11px;
+              line-height: 1.3;
             }
             .header {
               text-align: center;
-              margin-bottom: 8px;
+              margin-bottom: 12px;
               border-bottom: 1px dashed #000;
-              padding-bottom: 4px;
+              padding-bottom: 8px;
             }
             .store-name {
-              font-size: 11px;
+              font-size: 14px;
               font-weight: bold;
-              margin-bottom: 2px;
+              margin-bottom: 3px;
             }
             .store-address {
-              font-size: 7px;
-              margin-bottom: 4px;
+              font-size: 9px;
+              margin-bottom: 6px;
             }
             .order-info {
-              margin-bottom: 8px;
+              margin-bottom: 12px;
             }
             .order-info-row {
               display: flex;
               justify-content: space-between;
-              margin-bottom: 3px;
+              margin-bottom: 4px;
             }
             .items {
-              margin-bottom: 8px;
+              margin-bottom: 12px;
               border-bottom: 1px dashed #000;
-              padding-bottom: 4px;
+              padding-bottom: 8px;
             }
             .items-header {
               font-weight: bold;
-              margin-bottom: 5px;
+              margin-bottom: 8px;
               border-bottom: 1px solid #000;
-              padding-bottom: 3px;
-              font-size: 8px;
+              padding-bottom: 4px;
+              font-size: 10px;
             }
             .total {
               display: flex;
               justify-content: space-between;
-              font-size: 12px;
+              font-size: 14px;
               font-weight: bold;
-              margin-bottom: 5px;
+              margin-bottom: 8px;
               border-top: 1px dashed #000;
-              padding-top: 4px;
+              padding-top: 8px;
             }
             .footer {
               text-align: center;
-              margin-top: 8px;
+              margin-top: 12px;
               border-top: 1px dashed #000;
-              padding-top: 4px;
-              font-size: 7px;
+              padding-top: 8px;
+              font-size: 9px;
             }
             .status {
-              padding: 3px;
-              border-radius: 2px;
+              padding: 4px;
+              border-radius: 3px;
               text-align: center;
               font-weight: bold;
-              margin-bottom: 8px;
-              font-size: 8px;
+              margin-bottom: 12px;
+              font-size: 10px;
             }
             .status.completed { background-color: #d4edda; color: #155724; }
             .status.shipped { background-color: #cce5ff; color: #004085; }
@@ -898,20 +898,20 @@ export default function HomePage() {
               <span>Tanggal:</span>
               <span>${new Date(selectedOrder.createdAt).toLocaleDateString('id-ID', {
                 day: 'numeric',
-                month: 'short',
-                year: '2-digit',
+                month: 'long',
+                year: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit'
               })}</span>
             </div>
             <div class="order-info-row">
-              <span>Bayar:</span>
+              <span>Pembayaran:</span>
               <span>${selectedOrder.paymentMethod}</span>
             </div>
           </div>
 
           <div class="status ${selectedOrder.orderStatus}">
-            ${selectedOrder.orderStatus === 'completed' ? 'SELESAI ✅' : selectedOrder.orderStatus === 'shipped' ? 'DIKIRIM 🚚' : selectedOrder.paymentStatus === 'paid' ? 'BAYAR 💰' : 'PROSES ⏳'}
+            ${selectedOrder.orderStatus === 'completed' ? 'SELESAI ✅' : selectedOrder.orderStatus === 'shipped' ? 'DIKIRIM 🚚' : selectedOrder.paymentStatus === 'paid' ? 'SUDAH BAYAR 💰' : 'DIPROSES ⏳'}
           </div>
 
           <div class="items">
@@ -925,13 +925,14 @@ export default function HomePage() {
           </div>
 
           <div class="order-info-row">
-            <span>Poin:</span>
-            <span>+${Math.floor(selectedOrder.finalAmount / 1000)}</span>
+            <span>Poin didapat:</span>
+            <span>+${Math.floor(selectedOrder.finalAmount / 1000)} Poin</span>
           </div>
 
           <div class="footer">
-            <div>Terima kasih!</div>
-            <div>⭐⭐⭐⭐⭐</div>
+            <div>Terima kasih atas pesanan Anda!</div>
+            <div>Silakan kunjungi kami kembali</div>
+            <div style="margin-top: 8px;">⭐⭐⭐⭐⭐</div>
           </div>
         </body>
       </html>
