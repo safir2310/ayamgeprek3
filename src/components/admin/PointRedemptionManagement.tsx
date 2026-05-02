@@ -1,0 +1,576 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Gift,
+  Search,
+  Check,
+  X,
+  Save,
+  ArrowUpDown,
+  ToggleLeft,
+  ToggleRight,
+} from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Badge } from '@/components/ui/badge'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { toast } from 'sonner'
+
+interface Product {
+  id: string
+  name: string
+  image?: string
+}
+
+interface PointRedemption {
+  id: string
+  name: string
+  description: string
+  pointsRequired: number
+  productId: string
+  productImage?: string
+  active: boolean
+  order: number
+  createdAt: string
+  updatedAt: string
+}
+
+export function PointRedemptionManagement() {
+  const [redemptions, setRedemptions] = useState<PointRedemption[]>([])
+  const [products, setProducts] = useState<Product[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [showDialog, setShowDialog] = useState(false)
+  const [editingRedemption, setEditingRedemption] = useState<PointRedemption | null>(null)
+
+  // Form state
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    pointsRequired: 0,
+    productId: '',
+    productImage: '',
+    active: true,
+    order: 0,
+  })
+
+  useEffect(() => {
+    loadRedemptions()
+    loadProducts()
+  }, [])
+
+  const loadRedemptions = async () => {
+    setIsLoading(true)
+    try {
+      const token = localStorage.getItem('token')
+      const res = await fetch('/api/admin/point-redemption', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        setRedemptions(data.redemptions || [])
+      } else {
+        toast.error('Gagal mengambil data penukaran poin')
+      }
+    } catch (error) {
+      console.error('Error loading redemptions:', error)
+      toast.error('Gagal mengambil data penukaran poin')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const loadProducts = async () => {
+    try {
+      const res = await fetch('/api/products')
+      if (res.ok) {
+        const data = await res.json()
+        setProducts(data.products || [])
+      }
+    } catch (error) {
+      console.error('Error loading products:', error)
+    }
+  }
+
+  const filteredRedemptions = redemptions.filter((redemption) => {
+    return redemption.name.toLowerCase().includes(searchQuery.toLowerCase())
+  })
+
+  const handleAdd = () => {
+    setEditingRedemption(null)
+    setFormData({
+      name: '',
+      description: '',
+      pointsRequired: 0,
+      productId: '',
+      productImage: '',
+      active: true,
+      order: redemptions.length,
+    })
+    setShowDialog(true)
+  }
+
+  const handleEdit = (redemption: PointRedemption) => {
+    setEditingRedemption(redemption)
+    setFormData({
+      name: redemption.name,
+      description: redemption.description,
+      pointsRequired: redemption.pointsRequired,
+      productId: redemption.productId,
+      productImage: redemption.productImage || '',
+      active: redemption.active,
+      order: redemption.order,
+    })
+    setShowDialog(true)
+  }
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`Yakin ingin menghapus opsi penukaran "${name}"?`)) {
+      return
+    }
+
+    try {
+      const token = localStorage.getItem('token')
+      const res = await fetch(`/api/admin/point-redemption?id=${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (res.ok) {
+        toast.success('Opsi penukaran berhasil dihapus')
+        loadRedemptions()
+      } else {
+        toast.error('Gagal menghapus opsi penukaran')
+      }
+    } catch (error) {
+      console.error('Error deleting redemption:', error)
+      toast.error('Gagal menghapus opsi penukaran')
+    }
+  }
+
+  const handleToggleActive = async (redemption: PointRedemption) => {
+    try {
+      const token = localStorage.getItem('token')
+      const res = await fetch('/api/admin/point-redemption', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          id: redemption.id,
+          active: !redemption.active,
+        }),
+      })
+
+      if (res.ok) {
+        toast.success(redemption.active ? 'Opsi penukaran dinonaktifkan' : 'Opsi penukaran diaktifkan')
+        loadRedemptions()
+      } else {
+        toast.error('Gagal mengubah status opsi penukaran')
+      }
+    } catch (error) {
+      console.error('Error toggling active:', error)
+      toast.error('Gagal mengubah status opsi penukaran')
+    }
+  }
+
+  const handleSave = async () => {
+    // Validate
+    if (!formData.name.trim()) {
+      toast.error('Nama wajib diisi')
+      return
+    }
+    if (!formData.description.trim()) {
+      toast.error('Deskripsi wajib diisi')
+      return
+    }
+    if (formData.pointsRequired <= 0) {
+      toast.error('Poin harus lebih dari 0')
+      return
+    }
+    if (!formData.productId) {
+      toast.error('Produk wajib dipilih')
+      return
+    }
+
+    setIsSaving(true)
+    try {
+      const token = localStorage.getItem('token')
+      const method = editingRedemption ? 'PUT' : 'POST'
+      const body = editingRedemption ? { ...formData, id: editingRedemption.id } : formData
+
+      const res = await fetch('/api/admin/point-redemption', {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      })
+
+      if (res.ok) {
+        toast.success(editingRedemption ? 'Opsi penukaran berhasil diupdate' : 'Opsi penukaran berhasil dibuat')
+        setShowDialog(false)
+        loadRedemptions()
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'Gagal menyimpan opsi penukaran')
+      }
+    } catch (error) {
+      console.error('Error saving redemption:', error)
+      toast.error('Gagal menyimpan opsi penukaran')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const selectedProduct = products.find(p => p.id === formData.productId)
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h2 className="text-2xl font-bold text-gray-800">Kelola Tukar Poin</h2>
+        <p className="text-gray-600">Atur produk yang dapat ditukar dengan poin pelanggan</p>
+      </div>
+
+      {/* Search & Add */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Input
+                placeholder="Cari opsi penukaran..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Button
+              onClick={handleAdd}
+              className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Tambah Opsi
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Statistics */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Gift className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Total Opsi</p>
+                <p className="text-2xl font-bold text-gray-900">{redemptions.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <Check className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Aktif</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {redemptions.filter((r) => r.active).length}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                <X className="h-6 w-6 text-gray-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Nonaktif</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {redemptions.filter((r) => !r.active).length}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Redemptions List */}
+      {isLoading ? (
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent"></div>
+        </div>
+      ) : filteredRedemptions.length === 0 ? (
+        <Card className="p-12 text-center">
+          <Gift className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+          <p className="text-gray-500">
+            {searchQuery ? 'Tidak ada opsi penukaran ditemukan' : 'Belum ada opsi penukaran poin'}
+          </p>
+          {!searchQuery && (
+            <Button
+              onClick={handleAdd}
+              className="mt-4 bg-gradient-to-r from-red-600 to-orange-500"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Tambah Opsi Pertama
+            </Button>
+          )}
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredRedemptions.map((redemption, index) => {
+            const product = products.find((p) => p.id === redemption.productId)
+            return (
+              <motion.div
+                key={redemption.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className={`bg-white border rounded-xl overflow-hidden hover:shadow-xl transition-all ${
+                  redemption.active ? 'border-green-200' : 'border-gray-200 opacity-75'
+                }`}
+              >
+                <div className="relative">
+                  <div className="aspect-video bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center text-6xl">
+                    {redemption.productImage ? (
+                      <img
+                        src={redemption.productImage}
+                        alt={redemption.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : product?.image ? (
+                      <img
+                        src={product.image}
+                        alt={redemption.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Gift className="h-16 w-16 text-red-400" />
+                    )}
+                  </div>
+                  {redemption.active ? (
+                    <Badge className="absolute top-2 right-2 bg-green-500">Aktif</Badge>
+                  ) : (
+                    <Badge className="absolute top-2 right-2 bg-gray-400">Nonaktif</Badge>
+                  )}
+                  <div className="absolute top-2 left-2 bg-gradient-to-r from-red-600 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                    {redemption.pointsRequired} Poin
+                  </div>
+                </div>
+
+                <div className="p-4">
+                  <h3 className="font-bold text-lg mb-2">{redemption.name}</h3>
+                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                    {redemption.description}
+                  </p>
+                  {product && (
+                    <div className="text-xs text-gray-500 mb-3">
+                      <strong>Produk:</strong> {product.name}
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleToggleActive(redemption)}
+                      className="flex-1"
+                    >
+                      {redemption.active ? (
+                        <>
+                          <ToggleLeft className="h-4 w-4 mr-1" />
+                          Nonaktifkan
+                        </>
+                      ) : (
+                        <>
+                          <ToggleRight className="h-4 w-4 mr-1" />
+                          Aktifkan
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(redemption)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(redemption.id, redemption.name)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Add/Edit Dialog */}
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingRedemption ? 'Edit Opsi Penukaran Poin' : 'Tambah Opsi Penukaran Poin Baru'}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Nama Opsi *</label>
+              <Input
+                placeholder="Contoh: Ayam Geprek Gratis"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Deskripsi *</label>
+              <Textarea
+                placeholder="Deskripsi detail tentang opsi penukaran poin ini"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Poin yang Dibutuhkan *</label>
+              <Input
+                type="number"
+                min="1"
+                placeholder="Contoh: 100"
+                value={formData.pointsRequired}
+                onChange={(e) => setFormData({ ...formData, pointsRequired: parseInt(e.target.value) || 0 })}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Pilih Produk *</label>
+              <select
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                value={formData.productId}
+                onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
+              >
+                <option value="">-- Pilih Produk --</option>
+                {products.map((product) => (
+                  <option key={product.id} value={product.id}>
+                    {product.name} (Rp {product.price.toLocaleString()})
+                  </option>
+                ))}
+              </select>
+              {selectedProduct && (
+                <div className="mt-2 p-3 bg-gray-50 rounded-lg flex items-center gap-3">
+                  {selectedProduct.image ? (
+                    <img
+                      src={selectedProduct.image}
+                      alt={selectedProduct.name}
+                      className="w-12 h-12 object-cover rounded"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
+                      <Gift className="h-6 w-6 text-gray-400" />
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">{selectedProduct.name}</p>
+                    <p className="text-xs text-gray-500">Rp {selectedProduct.price.toLocaleString()}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">URL Gambar (Opsional)</label>
+              <Input
+                placeholder="https://..."
+                value={formData.productImage}
+                onChange={(e) => setFormData({ ...formData, productImage: e.target.value })}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Kosongkan untuk menggunakan gambar produk default
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Urutan Tampilan</label>
+              <Input
+                type="number"
+                min="0"
+                placeholder="Contoh: 0"
+                value={formData.order}
+                onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Angka lebih kecil akan ditampilkan lebih dulu
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="active"
+                checked={formData.active}
+                onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
+                className="w-4 h-4 text-red-600 rounded focus:ring-red-500"
+              />
+              <label htmlFor="active" className="text-sm font-medium">
+                Aktif (Tampilkan di halaman tukar poin user)
+              </label>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDialog(false)}>
+              Batal
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
+            >
+              {isSaving ? (
+                'Menyimpan...'
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  {editingRedemption ? 'Update' : 'Simpan'}
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}

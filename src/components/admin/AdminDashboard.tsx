@@ -49,6 +49,7 @@ import { PointVoucherManagement } from '@/components/admin/PointVoucherManagemen
 import { PromoManagement } from '@/components/admin/PromoManagement'
 import { PaymentConfirmation } from '@/components/admin/PaymentConfirmation'
 import { ChatManagement } from '@/components/admin/ChatManagement'
+import { PointRedemptionManagement } from '@/components/admin/PointRedemptionManagement'
 
 interface DashboardStats {
   totalSales: number;
@@ -296,6 +297,7 @@ const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     { id: 'products', icon: Package, label: 'Products' },
     { id: 'categories', icon: Layers, label: 'Categories' },
     { id: 'vouchers', icon: Percent, label: 'Voucher Diskon' },
+    { id: 'point-redemptions', icon: Gift, label: 'Tukar Poin' },
     { id: 'point-vouchers', icon: Gift, label: 'Voucher Poin' },
     { id: 'promo', icon: Tag, label: 'Promo' },
     { id: 'orders', icon: ShoppingBag, label: 'Orders' },
@@ -655,6 +657,16 @@ const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                 animate={{ opacity: 1, y: 0 }}
               >
                 <VoucherManagement onBack={() => setActivePage('dashboard')} />
+              </motion.div>
+            )}
+
+            {/* Point Redemptions Page */}
+            {activePage === 'point-redemptions' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <PointRedemptionManagement />
               </motion.div>
             )}
 
