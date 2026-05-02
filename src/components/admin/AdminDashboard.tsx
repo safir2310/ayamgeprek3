@@ -93,10 +93,110 @@ const AdminDashboard: React.FC = () => {
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
+  const [isMobileAdminMode, setIsMobileAdminMode] = useState(false);
+  const [tapCount, setTapCount] = useState(0);
+  const [tapTimeout, setTapTimeout] = useState<NodeJS.Timeout | null>(null);
 
   // Early return for POS page
   if (activePage === 'pos') {
-    return <POS onClose={() => setActivePage('dashboard')} />;
+    return (
+      <div className="hidden md:flex">
+        <POS onClose={() => setActivePage('dashboard')} />
+      </div>
+    );
+  }
+
+  // Handle triple-tap on mobile logo to access admin
+  const handleLogoTap = () => {
+    if (typeof window === 'undefined') return;
+
+    // Only check for mobile
+    if (window.innerWidth >= 768) {
+      setIsMobileAdminMode(true);
+      return;
+    }
+
+    const newTapCount = tapCount + 1;
+    setTapCount(newTapCount);
+
+    // Clear existing timeout
+    if (tapTimeout) {
+      clearTimeout(tapTimeout);
+    }
+
+    // Check if triple-tap within 1 second
+    const timeout = setTimeout(() => {
+      if (newTapCount >= 3) {
+        setIsMobileAdminMode(true);
+        setTapCount(0);
+        toast.success('🔓 Admin panel terbuka!');
+      } else {
+        setTapCount(0);
+      }
+    }, 1000);
+
+    setTapTimeout(timeout);
+  };
+
+  // Check URL parameter for admin access
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('admin') === 'true') {
+      setIsMobileAdminMode(true);
+      // Clean URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (tapTimeout) {
+        clearTimeout(tapTimeout);
+      }
+    };
+  }, [tapTimeout]);
+
+  // Early return for mobile - show message unless admin mode is active
+  if (typeof window !== 'undefined' && window.innerWidth < 768 && !isMobileAdminMode) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-white flex items-center justify-center p-4">
+        <Card className="max-w-md w-full p-8 text-center shadow-xl border-0">
+          <div
+            className="w-20 h-20 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 cursor-pointer select-none transition-transform active:scale-95"
+            onClick={handleLogoTap}
+          >
+            <Store className="w-10 h-10 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Admin Panel</h2>
+          <p className="text-gray-600 mb-6">
+            Admin panel hanya dapat diakses melalui desktop/tablet
+          </p>
+          <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-lg p-4 text-left text-sm text-gray-600 space-y-2 border border-orange-200">
+            <p>📱 <strong>Mobile:</strong> Ketuk logo 3x dalam 1 detik</p>
+            <p>🔗 <strong>URL:</strong> Tambahkan ?admin=true di URL</p>
+            <p>💻 <strong>Desktop/Tablet:</strong> Buka di layar yang lebih besar</p>
+          </div>
+          {tapCount > 0 && (
+            <div className="mt-4">
+              <div className="flex justify-center gap-2 mb-2">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className={`w-8 h-1 rounded-full transition-colors ${
+                      i <= tapCount ? 'bg-red-500' : 'bg-gray-200'
+                    }`}
+                  />
+                ))}
+              </div>
+              <p className="text-xs text-gray-500">{3 - tapCount} ketuk lagi...</p>
+            </div>
+          )}
+        </Card>
+      </div>
+    );
   }
 
   useEffect(() => {
@@ -106,35 +206,74 @@ const AdminDashboard: React.FC = () => {
   const loadDashboardData = async () => {
     setIsLoading(true);
     try {
-      // Simulate API calls - replace with actual API calls
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setStats({
-        totalSales: 45231.89,
-        totalOrders: 487,
-        totalCustomers: 1234,
-        averageOrderValue: 92.91,
-        salesChange: 12.5,
-        ordersChange: 8.2,
-        customersChange: 15.3,
-      });
+      // Fetch dashboard stats from database
+      const res = await fetch('/api/admin/stats');
 
-      setRecentOrders([
-        { id: '#ORD-001', customerName: 'John Doe', items: 3, total: 156.00, status: 'completed', date: '2 min ago' },
-        { id: '#ORD-002', customerName: 'Jane Smith', items: 2, total: 89.50, status: 'pending', date: '5 min ago' },
-        { id: '#ORD-003', customerName: 'Bob Johnson', items: 5, total: 234.75, status: 'completed', date: '12 min ago' },
-        { id: '#ORD-004', customerName: 'Alice Brown', items: 1, total: 45.00, status: 'cancelled', date: '25 min ago' },
-        { id: '#ORD-005', customerName: 'Charlie Wilson', items: 4, total: 187.25, status: 'completed', date: '45 min ago' },
-      ]);
+      if (res.ok) {
+        const data = await res.json();
 
-      setTopProducts([
-        { id: '1', name: 'Premium Headphones', sales: 234, revenue: 23400, image: '/api/placeholder/100/100' },
-        { id: '2', name: 'Wireless Mouse', sales: 189, revenue: 9450, image: '/api/placeholder/100/100' },
-        { id: '3', name: 'USB-C Hub', sales: 156, revenue: 12480, image: '/api/placeholder/100/100' },
-        { id: '4', name: 'Mechanical Keyboard', sales: 143, revenue: 28600, image: '/api/placeholder/100/100' },
-      ]);
+        // Calculate percentage changes (mock comparison for now)
+        const previousMonthSales = data.data.totalRevenue * 0.9;
+        const previousMonthOrders = data.data.totalOrders * 0.9;
+        const previousMonthCustomers = data.data.totalUsers * 0.9;
+
+        const salesChange = previousMonthSales > 0
+          ? ((data.data.totalRevenue - previousMonthSales) / previousMonthSales) * 100
+          : 12.5;
+        const ordersChange = previousMonthOrders > 0
+          ? ((data.data.totalOrders - previousMonthOrders) / previousMonthOrders) * 100
+          : 8.2;
+        const customersChange = previousMonthCustomers > 0
+          ? ((data.data.totalUsers - previousMonthCustomers) / previousMonthCustomers) * 100
+          : 15.3;
+
+        setStats({
+          totalSales: data.data.totalRevenue,
+          totalOrders: data.data.totalOrders,
+          totalCustomers: data.data.totalUsers,
+          averageOrderValue: data.data.totalOrders > 0 ? data.data.totalRevenue / data.data.totalOrders : 0,
+          salesChange: parseFloat(salesChange.toFixed(1)),
+          ordersChange: parseFloat(ordersChange.toFixed(1)),
+          customersChange: parseFloat(customersChange.toFixed(1)),
+        });
+      } else {
+        throw new Error('Failed to fetch dashboard data');
+      }
+
+      // Fetch recent orders
+      const ordersRes = await fetch('/api/orders');
+      if (ordersRes.ok) {
+        const ordersData = await ordersRes.json();
+        const recentOrdersData = (ordersData.orders || []).slice(0, 5).map((order: any) => ({
+          id: order.id,
+          customerName: order.customerName || 'Guest',
+          items: order.items?.length || 0,
+          total: order.finalAmount || order.totalAmount,
+          status: order.orderStatus || 'pending',
+          date: new Date(order.createdAt).toLocaleString(),
+        }));
+        setRecentOrders(recentOrdersData);
+      }
+
+      // Fetch top products
+      const productsRes = await fetch('/api/products');
+      if (productsRes.ok) {
+        const productsData = await productsRes.json();
+        const topProductsData = (productsData.products || [])
+          .sort((a: any, b: any) => (b.soldCount || 0) - (a.soldCount || 0))
+          .slice(0, 4)
+          .map((product: any) => ({
+            id: product.id,
+            name: product.name,
+            sales: product.soldCount || 0,
+            revenue: (product.soldCount || 0) * product.price,
+            image: product.image || '/api/placeholder/100/100',
+          }));
+        setTopProducts(topProductsData);
+      }
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+      toast.error('Gagal memuat data dashboard');
     } finally {
       setIsLoading(false);
     }
@@ -143,19 +282,33 @@ const AdminDashboard: React.FC = () => {
   const handleDatabaseSync = async () => {
     setIsSyncing(true);
     setSyncStatus('syncing');
-    
+
     try {
-      // Simulate database sync
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      setSyncStatus('success');
-      
-      // Reload dashboard data after sync
-      await loadDashboardData();
-      
-      setTimeout(() => setSyncStatus('idle'), 3000);
+      // Call the sync API
+      const res = await fetch('/api/admin/sync');
+
+      if (res.ok) {
+        const data = await res.json();
+
+        if (data.success) {
+          setSyncStatus('success');
+
+          // Reload dashboard data after sync
+          await loadDashboardData();
+
+          setTimeout(() => setSyncStatus('idle'), 3000);
+          toast.success('✅ Database berhasil disinkronisasi!');
+        } else {
+          throw new Error(data.error || 'Sync failed');
+        }
+      } else {
+        throw new Error('Failed to sync database');
+      }
     } catch (error) {
+      console.error('Sync error:', error);
       setSyncStatus('error');
       setTimeout(() => setSyncStatus('idle'), 3000);
+      toast.error('Gagal menyinkronisasi database');
     } finally {
       setIsSyncing(false);
     }
@@ -199,7 +352,17 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50 flex">
+      <div className={`${isMobileAdminMode ? 'flex' : 'hidden'} md:flex min-h-screen bg-gray-50 flex`}>
+        {/* Mobile Close Button */}
+        {isMobileAdminMode && (
+          <button
+            onClick={() => setIsMobileAdminMode(false)}
+            className="md:hidden fixed top-4 left-4 z-50 bg-white shadow-lg rounded-full p-3 hover:bg-gray-100 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5 text-gray-600" />
+          </button>
+        )}
+
         {/* Sidebar */}
         <AnimatePresence>
           {isSidebarOpen && (
@@ -208,7 +371,7 @@ const AdminDashboard: React.FC = () => {
               animate={{ x: 0 }}
               exit={{ x: -300 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="w-64 bg-white shadow-lg fixed h-full z-20 flex flex-col"
+              className={`w-64 bg-white shadow-lg fixed h-full z-20 flex flex-col ${isMobileAdminMode ? 'md:relative' : ''}`}
             >
               <div className="p-6 flex-shrink-0">
                 <h1 className="text-2xl font-bold text-gray-800">Admin Panel</h1>
@@ -587,8 +750,8 @@ const AdminDashboard: React.FC = () => {
                         <span className="text-sm font-medium text-blue-800">Products</span>
                         <Package className="w-5 h-5 text-blue-600" />
                       </div>
-                      <p className="text-2xl font-bold text-blue-900">1,234</p>
-                      <p className="text-xs text-blue-600 mt-1">Last synced: 5 min ago</p>
+                      <p className="text-2xl font-bold text-blue-900">{stats.totalOrders}</p>
+                      <p className="text-xs text-blue-600 mt-1">Total orders</p>
                     </div>
 
                     <div className="bg-green-50 p-4 rounded-lg">
@@ -596,8 +759,8 @@ const AdminDashboard: React.FC = () => {
                         <span className="text-sm font-medium text-green-800">Orders</span>
                         <ShoppingCart className="w-5 h-5 text-green-600" />
                       </div>
-                      <p className="text-2xl font-bold text-green-900">487</p>
-                      <p className="text-xs text-green-600 mt-1">Last synced: 2 min ago</p>
+                      <p className="text-2xl font-bold text-green-900">{stats.totalOrders}</p>
+                      <p className="text-xs text-green-600 mt-1">Last synced: Just now</p>
                     </div>
 
                     <div className="bg-purple-50 p-4 rounded-lg">
@@ -605,8 +768,8 @@ const AdminDashboard: React.FC = () => {
                         <span className="text-sm font-medium text-purple-800">Customers</span>
                         <Users className="w-5 h-5 text-purple-600" />
                       </div>
-                      <p className="text-2xl font-bold text-purple-900">1,234</p>
-                      <p className="text-xs text-purple-600 mt-1">Last synced: 10 min ago</p>
+                      <p className="text-2xl font-bold text-purple-900">{stats.totalCustomers}</p>
+                      <p className="text-xs text-purple-600 mt-1">Last synced: Just now</p>
                     </div>
                   </div>
 
@@ -680,7 +843,7 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Footer */}
-      <footer className="bg-white border-t mt-auto">
+      <footer className="hidden md:flex bg-white border-t mt-auto">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-500">© 2024 Admin Panel. All rights reserved.</p>

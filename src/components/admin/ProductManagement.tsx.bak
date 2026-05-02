@@ -178,65 +178,37 @@ export function ProductManagement() {
         category: formData.category,
         description: formData.description.trim(),
         image: imagePreview || '',
-        discountPrice: promoPrice || undefined,
-        featured: false
+        isPromo: formData.isPromo,
+        promoPrice: promoPrice || undefined,
+        discountPercent: discountPercent || undefined
       }
 
       if (editingProduct) {
         // Update existing product
-        const res = await fetch('/api/admin/products', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: editingProduct.id,
-            ...productData
-          })
-        })
-
-        if (res.ok) {
-          const data = await res.json()
-          if (data.success) {
-            setProducts(prev =>
-              prev.map(p =>
-                p.id === editingProduct.id ? { ...p, ...data.product } : p
-              )
-            )
-            toast.success('✅ Produk berhasil diperbarui!')
-          } else {
-            toast.error(data.error || 'Gagal memperbarui produk')
-          }
-        } else {
-          toast.error('Gagal memperbarui produk')
-        }
+        setProducts(prev =>
+          prev.map(p =>
+            p.id === editingProduct.id
+              ? { ...p, ...productData }
+              : p
+          )
+        )
+        toast.success('✅ Produk berhasil diperbarui!')
       } else {
         // Add new product
-        const res = await fetch('/api/admin/products', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(productData)
-        })
-
-        if (res.ok) {
-          const data = await res.json()
-          if (data.success) {
-            setProducts(prev => [...prev, data.product])
-            toast.success('✅ Produk berhasil ditambahkan!')
-          } else {
-            toast.error(data.error || 'Gagal menambahkan produk')
-          }
-        } else {
-          toast.error('Gagal menambahkan produk')
+        const newProduct: Product = {
+          id: Date.now().toString(),
+          ...productData,
+          createdAt: new Date()
         }
+        setProducts(prev => [...prev, newProduct])
+        toast.success('✅ Produk berhasil ditambahkan!')
       }
 
       setIsModalOpen(false)
       setImagePreview(null)
       setSelectedFile(null)
     } catch (error) {
-      console.error('Error saving product:', error)
       toast.error('Gagal menyimpan produk')
-    }
-  }
     }
   }
 

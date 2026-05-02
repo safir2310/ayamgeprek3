@@ -148,7 +148,7 @@ export function POS({ onClose }: { onClose?: () => void }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
+    <div className="hidden md:flex min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex-col">
       {/* Header */}
       <header className="bg-gradient-to-r from-red-600 to-orange-500 text-white px-6 py-4 shadow-lg sticky top-0 z-40">
         <div className="flex items-center justify-between">
