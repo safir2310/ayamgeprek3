@@ -92,19 +92,42 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Find or create category
+    // Find or create category (check both name and slug for case-insensitive match)
+    const categoryName = category.toLowerCase().trim()
+    const categorySlug = categoryName.replace(/\s+/g, '-')
+
     let categoryRecord = await db.category.findFirst({
-      where: { name: category.toLowerCase() }
+      where: {
+        OR: [
+          { name: categoryName },
+          { slug: categorySlug }
+        ]
+      }
     })
 
     if (!categoryRecord) {
-      categoryRecord = await db.category.create({
-        data: {
-          name: category.toLowerCase(),
-          slug: category.toLowerCase().replace(/\s+/g, '-'),
-          icon: '📦'
+      // Try to create category, handle potential duplicate slug error
+      try {
+        categoryRecord = await db.category.create({
+          data: {
+            name: categoryName,
+            slug: categorySlug,
+            icon: '📦'
+          }
+        })
+      } catch (createError: any) {
+        // If unique constraint error, try to find by slug again
+        if (createError.code === 'P2002' || createError.code === 'P2003') {
+          categoryRecord = await db.category.findFirst({
+            where: { slug: categorySlug }
+          })
+          if (!categoryRecord) {
+            throw createError
+          }
+        } else {
+          throw createError
         }
-      })
+      }
     }
 
     // Create product
@@ -185,19 +208,42 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    // Find or create category
+    // Find or create category (check both name and slug for case-insensitive match)
+    const categoryName = category.toLowerCase().trim()
+    const categorySlug = categoryName.replace(/\s+/g, '-')
+
     let categoryRecord = await db.category.findFirst({
-      where: { name: category.toLowerCase() }
+      where: {
+        OR: [
+          { name: categoryName },
+          { slug: categorySlug }
+        ]
+      }
     })
 
     if (!categoryRecord) {
-      categoryRecord = await db.category.create({
-        data: {
-          name: category.toLowerCase(),
-          slug: category.toLowerCase().replace(/\s+/g, '-'),
-          icon: '📦'
+      // Try to create category, handle potential duplicate slug error
+      try {
+        categoryRecord = await db.category.create({
+          data: {
+            name: categoryName,
+            slug: categorySlug,
+            icon: '📦'
+          }
+        })
+      } catch (createError: any) {
+        // If unique constraint error, try to find by slug again
+        if (createError.code === 'P2002' || createError.code === 'P2003') {
+          categoryRecord = await db.category.findFirst({
+            where: { slug: categorySlug }
+          })
+          if (!categoryRecord) {
+            throw createError
+          }
+        } else {
+          throw createError
         }
-      })
+      }
     }
 
     // Update product
