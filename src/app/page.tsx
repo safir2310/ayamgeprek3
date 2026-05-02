@@ -1345,40 +1345,8 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Search Bar */}
-            <div className="flex-1 max-w-md">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-white/70" />
-                <Input
-                  type="text"
-                  placeholder="Cari produk..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-8 sm:h-9 pl-8 sm:pl-10 pr-3 sm:pr-4 bg-white/10 border-2 border-white/20 rounded-xl text-white placeholder:text-white/50 text-sm sm:text-base focus:bg-white/20 focus:border-white/30 focus:ring-0 transition-all"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all"
-                  >
-                    <X className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
-                  </button>
-                )}
-              </div>
-            </div>
-
             {/* Right Side Buttons */}
             <div className="flex items-center gap-1">
-              {user?.role === 'admin' && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-white hover:bg-white/20 h-7 w-7 sm:h-8 sm:w-8"
-                  onClick={() => setShowAdminDashboard(true)}
-                >
-                  <Store className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                </Button>
-              )}
               <Button
                 variant="ghost"
                 size="icon"
@@ -1422,20 +1390,6 @@ export default function HomePage() {
               >
                 <User className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </Button>
-            </div>
-          </div>
-
-          {/* Search Bar */}
-          <div className="mt-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Cari produk..."
-                className="pl-9 h-8 text-xs bg-white/90 border-0 focus:ring-1 focus:ring-orange-300"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
             </div>
           </div>
         </div>
@@ -2841,15 +2795,6 @@ export default function HomePage() {
         )}
       </main>
 
-      {/* Mobile Admin Floating Button */}
-      <button
-        onClick={() => setShowAdminPinModal(true)}
-        className="md:hidden fixed bottom-6 right-6 w-12 h-12 bg-gradient-to-r from-red-600 to-orange-500 rounded-full shadow-lg flex items-center justify-center text-white hover:from-red-700 hover:to-orange-600 transition-all z-40"
-        title="Admin Panel"
-      >
-        <Settings className="w-5 h-5" />
-      </button>
-
       {/* Chat Dialog */}
       {user && (
         <UserChatDialog
@@ -3089,18 +3034,6 @@ export default function HomePage() {
                       <p className="font-semibold text-sm">Notifikasi</p>
                     </div>
                     <div className="flex flex-wrap gap-2 mt-2 text-xs">
-                      {cartNotification > 0 && (
-                        <div
-                          className="flex items-center gap-1 bg-white/20 px-2 py-1 rounded-full cursor-pointer hover:bg-white/30 transition-colors"
-                          onClick={() => {
-                            setCurrentTab('products')
-                            setIsCartOpen(true)
-                          }}
-                        >
-                          <ShoppingCart className="h-3 w-3" />
-                          <span>{cartNotification} item di keranjang</span>
-                        </div>
-                      )}
                       {pendingOrders > 0 && (
                         <div
                           className="flex items-center gap-1 bg-white/20 px-2 py-1 rounded-full cursor-pointer hover:bg-white/30 transition-colors"
@@ -4478,57 +4411,6 @@ export default function HomePage() {
               </div>
             </CardContent>
           </Card>
-        </DialogContent>
-      </Dialog>
-
-      {/* Admin PIN Modal */}
-      <Dialog open={showAdminPinModal} onOpenChange={setShowAdminPinModal}>
-        <DialogContent className="max-w-sm p-6">
-          <DialogHeader className="pb-3">
-            <DialogTitle className="text-lg font-bold text-gray-800">🔐 Akses Admin</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Masukkan PIN Admin</label>
-              <Input
-                type="password"
-                placeholder="PIN (1234)"
-                value={adminPin}
-                onChange={(e) => setAdminPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                maxLength={4}
-                className="text-center text-2xl tracking-widest h-12"
-                autoFocus
-              />
-            </div>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
-              <p className="font-medium mb-1">📱 Cara Akses Admin di Mobile:</p>
-              <ul className="space-y-1 text-xs">
-                <li>• Ketuk logo 2x dalam 1 detik</li>
-                <li>• Tahan logo selama 2 detik</li>
-                <li>• Tambahkan ?admin=true di URL</li>
-              </ul>
-              <p className="mt-2 text-xs text-blue-600">PIN Default: <strong>1234</strong></p>
-            </div>
-            <div className="flex gap-2 pt-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => {
-                  setShowAdminPinModal(false)
-                  setAdminPin('')
-                }}
-              >
-                Batal
-              </Button>
-              <Button
-                className="flex-1 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
-                onClick={handleAdminPinSubmit}
-                disabled={adminPin.length !== 4}
-              >
-                Buka Admin
-              </Button>
-            </div>
-          </div>
         </DialogContent>
       </Dialog>
     </div>
