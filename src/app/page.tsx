@@ -2278,132 +2278,266 @@ export default function HomePage() {
 
       {/* Auth Modal */}
       <Dialog open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-center text-2xl font-bold bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent">
-              {isLogin ? 'Login' : 'Daftar'}
-            </DialogTitle>
-          </DialogHeader>
+        <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden">
+          {/* Header with gradient background */}
+          <div className="bg-gradient-to-r from-red-600 to-orange-500 px-6 py-6">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full mx-auto flex items-center justify-center mb-4">
+                {isLogin ? (
+                  <User className="w-8 h-8 text-white" />
+                ) : (
+                  <UserCircle className="w-8 h-8 text-white" />
+                )}
+              </div>
+              <DialogTitle className="text-2xl font-bold text-white text-center pb-0">
+                {isLogin ? 'Selamat Datang!' : 'Buat Akun Baru'}
+              </DialogTitle>
+              <p className="text-white/90 text-sm mt-2">
+                {isLogin ? 'Masuk untuk melanjutkan' : 'Isi formulir di bawah untuk mendaftar'}
+              </p>
+            </div>
+          </div>
 
-          {isLogin ? (
-            <>
-              <form onSubmit={handleAuth} className="space-y-4">
-                <div>
-                  <Label className="mb-1 block">Email</Label>
-                  <Input
-                    type="email"
-                    value={authData.email}
-                    onChange={(e) => setAuthData({ ...authData, email: e.target.value })}
-                    placeholder="email@example.com"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label className="mb-1 block">Password</Label>
-                  <Input
-                    type="password"
-                    value={authData.password}
-                    onChange={(e) => setAuthData({ ...authData, password: e.target.value })}
-                    placeholder="••••••••"
-                    required
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsForgotPasswordOpen(true)
-                    setIsAuthModalOpen(false)
-                  }}
-                  className="w-full text-sm text-red-600 hover:text-red-700 hover:underline text-left"
+          {/* Content */}
+          <div className="p-6 bg-white min-h-[500px]">
+            <AnimatePresence mode="wait">
+              {isLogin ? (
+                <motion.div
+                  key="login"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  Lupa Password?
-                </button>
-                <Button type="submit" className="w-full bg-gradient-to-r from-red-500 to-orange-500">
-                  Login
-                </Button>
-              </form>
-              <div className="mt-4">
-                <p className="text-sm text-center text-gray-600">
-                  Belum punya akun?{' '}
+                  <form onSubmit={handleAuth} className="space-y-5">
+                  {/* Email Field */}
+                  <div className="space-y-2">
+                    <Label htmlFor="login-email" className="text-sm font-semibold text-gray-700">
+                      Email Address
+                    </Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        id="login-email"
+                        type="email"
+                        value={authData.email}
+                        onChange={(e) => setAuthData({ ...authData, email: e.target.value })}
+                        placeholder="nama@email.com"
+                        required
+                        className="pl-10 h-11 border-gray-200 focus:border-red-500 focus:ring-red-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Password Field */}
+                  <div className="space-y-2">
+                    <Label htmlFor="login-password" className="text-sm font-semibold text-gray-700">
+                      Password
+                    </Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        id="login-password"
+                        type="password"
+                        value={authData.password}
+                        onChange={(e) => setAuthData({ ...authData, password: e.target.value })}
+                        placeholder="•••••••••••••"
+                        required
+                        className="pl-10 h-11 border-gray-200 focus:border-red-500 focus:ring-red-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Forgot Password */}
                   <button
                     type="button"
-                    onClick={() => setIsLogin(false)}
-                    className="text-red-600 hover:text-red-700 font-semibold hover:underline"
+                    onClick={() => {
+                      setIsForgotPasswordOpen(true)
+                      setIsAuthModalOpen(false)
+                    }}
+                    className="text-sm text-red-600 hover:text-red-700 font-medium hover:underline text-right w-full"
                   >
-                    Silahkan daftar disini
+                    Lupa Password?
                   </button>
-                </p>
-              </div>
-            </>
-          ) : (
-            <>
-              <form onSubmit={handleAuth} className="space-y-4">
-                <div>
-                  <Label className="mb-1 block">Nama Lengkap</Label>
-                  <Input
-                    value={authData.name}
-                    onChange={(e) => setAuthData({ ...authData, name: e.target.value })}
-                    placeholder="John Doe"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label className="mb-1 block">Email</Label>
-                  <Input
-                    type="email"
-                    value={authData.email}
-                    onChange={(e) => setAuthData({ ...authData, email: e.target.value })}
-                    placeholder="email@example.com"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label className="mb-1 block">No. HP</Label>
-                  <Input
-                    type="tel"
-                    value={authData.phone}
-                    onChange={(e) => setAuthData({ ...authData, phone: e.target.value })}
-                    placeholder="081234567890"
-                  />
-                </div>
-                <div>
-                  <Label className="mb-1 block">Alamat</Label>
-                  <Textarea
-                    value={authData.address}
-                    onChange={(e) => setAuthData({ ...authData, address: e.target.value })}
-                    placeholder="Alamat lengkap"
-                    rows={2}
-                  />
-                </div>
-                <div>
-                  <Label className="mb-1 block">Password</Label>
-                  <Input
-                    type="password"
-                    value={authData.password}
-                    onChange={(e) => setAuthData({ ...authData, password: e.target.value })}
-                    placeholder="••••••••"
-                    required
-                    minLength={6}
-                  />
-                </div>
-                <Button type="submit" className="w-full bg-gradient-to-r from-red-500 to-orange-500">
-                  Daftar
-                </Button>
-              </form>
-              <div className="mt-4">
-                <p className="text-sm text-center text-gray-600">
-                  Sudah punya akun?{' '}
-                  <button
-                    type="button"
-                    onClick={() => setIsLogin(true)}
-                    className="text-red-600 hover:text-red-700 font-semibold hover:underline"
+
+                  {/* Submit Button */}
+                  <Button 
+                    type="submit" 
+                    className="w-full h-11 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white font-semibold text-base shadow-lg shadow-red-500/30"
                   >
-                    Login disini
-                  </button>
-                </p>
-              </div>
-            </>
-          )}
+                    Masuk Sekarang
+                  </Button>
+                </form>
+
+                {/* Divider */}
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-200"></div>
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white px-3 text-gray-500 font-medium">atau</span>
+                  </div>
+                </div>
+
+                {/* Register Link */}
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">
+                    Belum punya akun?{' '}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsLogin(false)
+                        setAuthData({ email: '', password: '', name: '', phone: '', address: '' })
+                      }}
+                      className="text-red-600 hover:text-red-700 font-semibold hover:underline transition-colors"
+                    >
+                      Daftar Sekarang
+                    </button>
+                  </p>
+                </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="register"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <form onSubmit={handleAuth} className="space-y-4">
+                  {/* Name Field */}
+                  <div className="space-y-2">
+                    <Label htmlFor="register-name" className="text-sm font-semibold text-gray-700">
+                      Nama Lengkap
+                    </Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        id="register-name"
+                        value={authData.name}
+                        onChange={(e) => setAuthData({ ...authData, name: e.target.value })}
+                        placeholder="John Doe"
+                        required
+                        className="pl-10 h-11 border-gray-200 focus:border-red-500 focus:ring-red-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Email Field */}
+                  <div className="space-y-2">
+                    <Label htmlFor="register-email" className="text-sm font-semibold text-gray-700">
+                      Email Address
+                    </Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        id="register-email"
+                        type="email"
+                        value={authData.email}
+                        onChange={(e) => setAuthData({ ...authData, email: e.target.value })}
+                        placeholder="nama@email.com"
+                        required
+                        className="pl-10 h-11 border-gray-200 focus:border-red-500 focus:ring-red-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Phone Field */}
+                  <div className="space-y-2">
+                    <Label htmlFor="register-phone" className="text-sm font-semibold text-gray-700">
+                      Nomor HP
+                    </Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        id="register-phone"
+                        type="tel"
+                        value={authData.phone}
+                        onChange={(e) => setAuthData({ ...authData, phone: e.target.value })}
+                        placeholder="081234567890"
+                        className="pl-10 h-11 border-gray-200 focus:border-red-500 focus:ring-red-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Address Field */}
+                  <div className="space-y-2">
+                    <Label htmlFor="register-address" className="text-sm font-semibold text-gray-700">
+                      Alamat Lengkap
+                    </Label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                      <Textarea
+                        id="register-address"
+                        value={authData.address}
+                        onChange={(e) => setAuthData({ ...authData, address: e.target.value })}
+                        placeholder="Masukkan alamat lengkap Anda"
+                        rows={3}
+                        className="pl-10 border-gray-200 focus:border-red-500 focus:ring-red-500 resize-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Password Field */}
+                  <div className="space-y-2">
+                    <Label htmlFor="register-password" className="text-sm font-semibold text-gray-700">
+                      Password
+                    </Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        id="register-password"
+                        type="password"
+                        value={authData.password}
+                        onChange={(e) => setAuthData({ ...authData, password: e.target.value })}
+                        placeholder="•••••••••••••"
+                        required
+                        minLength={6}
+                        className="pl-10 h-11 border-gray-200 focus:border-red-500 focus:ring-red-500"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500">Minimal 6 karakter</p>
+                  </div>
+
+                  {/* Submit Button */}
+                  <Button 
+                    type="submit" 
+                    className="w-full h-11 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white font-semibold text-base shadow-lg shadow-red-500/30"
+                  >
+                    Buat Akun
+                  </Button>
+                </form>
+
+                {/* Divider */}
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-200"></div>
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white px-3 text-gray-500 font-medium">atau</span>
+                  </div>
+                </div>
+
+                {/* Login Link */}
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">
+                    Sudah punya akun?{' '}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsLogin(true)
+                        setAuthData({ email: '', password: '', name: '', phone: '', address: '' })
+                      }}
+                      className="text-red-600 hover:text-red-700 font-semibold hover:underline transition-colors"
+                    >
+                      Masuk Sekarang
+                    </button>
+                  </p>
+                </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </DialogContent>
       </Dialog>
 
