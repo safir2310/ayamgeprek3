@@ -40,6 +40,7 @@ import {
   UserCircle,
   Shield,
   Save,
+  Volume2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -317,6 +318,58 @@ export default function HomePage() {
       console.error('Auth check failed:', error)
     }
   }
+
+  // Play notification sound for testing
+  const playNotificationSound = (sound: string) => {
+    if (sound === 'silent') return
+
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+    const oscillator = audioContext.createOscillator()
+    const gainNode = audioContext.createGain()
+
+    oscillator.connect(gainNode)
+    gainNode.connect(audioContext.destination)
+
+    if (sound === 'default') {
+      // Default notification: Ding-ding!
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime)
+      oscillator.frequency.setValueAtTime(1200, audioContext.currentTime + 0.1)
+      oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.2)
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4)
+      oscillator.start(audioContext.currentTime)
+      oscillator.stop(audioContext.currentTime + 0.4)
+    } else if (sound === 'chime') {
+      // Chime: Three pleasant tones
+      const frequencies = [523.25, 659.25, 783.99] // C5, E5, G5
+      frequencies.forEach((freq, i) => {
+        const osc = audioContext.createOscillator()
+        const gain = audioContext.createGain()
+        osc.connect(gain)
+        gain.connect(audioContext.destination)
+        osc.frequency.setValueAtTime(freq, audioContext.currentTime + i * 0.15)
+        gain.gain.setValueAtTime(0.2, audioContext.currentTime + i * 0.15)
+        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.15 + 0.3)
+        osc.start(audioContext.currentTime + i * 0.15)
+        osc.stop(audioContext.currentTime + i * 0.15 + 0.3)
+      })
+    }
+  }
+
+  // Apply theme from user settings to document
+  useEffect(() => {
+    if (user && (user as any).theme) {
+      const theme = (user as any).theme
+      const root = document.documentElement
+      if (theme === 'dark') {
+        root.classList.add('dark')
+        root.classList.remove('light')
+      } else {
+        root.classList.add('light')
+        root.classList.remove('dark')
+      }
+    }
+  }, [user])
 
   useEffect(() => {
     try {
@@ -2410,22 +2463,23 @@ export default function HomePage() {
 
       {/* Edit Profile Dialog */}
       <Dialog open={isEditProfileOpen} onOpenChange={setIsEditProfileOpen}>
-        <DialogContent className="max-w-sm p-6">
-          <DialogHeader className="pb-3">
-            <DialogTitle className="text-lg font-bold text-gray-800">✏️ Edit Profil</DialogTitle>
+        <DialogContent className="max-w-xs p-4">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-base font-bold text-gray-800">✏️ Edit Profil</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSaveProfile} className="space-y-4">
+          <ScrollArea className="max-h-[70vh]">
+            <form onSubmit={handleSaveProfile} className="space-y-3 pr-1">
             {/* Profile Photo */}
             <div>
-              <Label className="block text-sm font-medium text-gray-700 mb-2">Foto Profil</Label>
-              <div className="flex items-center gap-4">
-                <Avatar className="w-20 h-20">
+              <Label className="block text-xs font-medium text-gray-700 mb-1">Foto Profil</Label>
+              <div className="flex items-center gap-3">
+                <Avatar className="w-16 h-16">
                   <AvatarImage src={profilePhotoPreview || undefined} />
-                  <AvatarFallback className="text-2xl bg-red-100 text-red-600 font-bold">
+                  <AvatarFallback className="text-lg bg-red-100 text-red-600 font-bold">
                     {editProfileData.name?.charAt(0).toUpperCase() || 'P'}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex-1 space-y-2">
+                <div className="flex-1 space-y-1">
                   <input
                     type="file"
                     accept="image/*"
@@ -2438,8 +2492,9 @@ export default function HomePage() {
                     variant="outline"
                     size="sm"
                     onClick={() => document.getElementById('profile-photo-input')?.click()}
+                    className="h-7 text-xs"
                   >
-                    Upload Foto
+                    Upload
                   </Button>
                   {profilePhotoPreview && (
                     <Button
@@ -2447,6 +2502,7 @@ export default function HomePage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => setProfilePhotoPreview(null)}
+                      className="h-7 text-xs px-2"
                     >
                       Hapus
                     </Button>
@@ -2457,55 +2513,58 @@ export default function HomePage() {
 
             {/* Name */}
             <div>
-              <Label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Nama</Label>
+              <Label htmlFor="name" className="block text-xs font-medium text-gray-700 mb-1">Nama</Label>
               <Input
                 id="name"
                 value={editProfileData.name}
                 onChange={(e) => setEditProfileData({ ...editProfileData, name: e.target.value })}
                 placeholder="Nama lengkap"
                 required
+                className="text-sm h-8"
               />
             </div>
 
             {/* Phone */}
             <div>
-              <Label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Nomor Telepon</Label>
+              <Label htmlFor="phone" className="block text-xs font-medium text-gray-700 mb-1">Telepon</Label>
               <Input
                 id="phone"
                 type="tel"
                 value={editProfileData.phone}
                 onChange={(e) => setEditProfileData({ ...editProfileData, phone: e.target.value })}
                 placeholder="08xxxxxxxxxx"
+                className="text-sm h-8"
               />
             </div>
 
             {/* Address */}
             <div>
-              <Label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Alamat</Label>
+              <Label htmlFor="address" className="block text-xs font-medium text-gray-700 mb-1">Alamat</Label>
               <Textarea
                 id="address"
                 value={editProfileData.address}
                 onChange={(e) => setEditProfileData({ ...editProfileData, address: e.target.value })}
                 placeholder="Alamat lengkap"
-                rows={3}
+                rows={2}
+                className="text-sm resize-none"
               />
             </div>
 
             {/* Theme */}
             <div>
-              <Label className="block text-sm font-medium text-gray-700 mb-2">Tema</Label>
-              <RadioGroup 
-                value={editProfileData.theme} 
+              <Label className="block text-xs font-medium text-gray-700 mb-1">Tema</Label>
+              <RadioGroup
+                value={editProfileData.theme}
                 onValueChange={(value: 'light' | 'dark') => setEditProfileData({ ...editProfileData, theme: value })}
               >
-                <div className="flex gap-3">
-                  <div className="flex items-center gap-2">
-                    <RadioGroupItem value="light" />
-                    <span className="text-sm">Light ☀️</span>
+                <div className="flex gap-2">
+                  <div className="flex items-center gap-1">
+                    <RadioGroupItem value="light" className="h-4 w-4" />
+                    <span className="text-xs">Light ☀️</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <RadioGroupItem value="dark" />
-                    <span className="text-sm">Dark 🌙</span>
+                  <div className="flex items-center gap-1">
+                    <RadioGroupItem value="dark" className="h-4 w-4" />
+                    <span className="text-xs">Dark 🌙</span>
                   </div>
                 </div>
               </RadioGroup>
@@ -2513,33 +2572,53 @@ export default function HomePage() {
 
             {/* Notification Sound */}
             <div>
-              <Label className="block text-sm font-medium text-gray-700 mb-2">Nada Notifikasi</Label>
-              <RadioGroup 
-                value={editProfileData.notificationSound}
-                onValueChange={(value) => setEditProfileData({ ...editProfileData, notificationSound: value })}
-              >
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <RadioGroupItem value="default" />
-                    <span className="text-sm">Default 🔔</span>
+              <Label className="block text-xs font-medium text-gray-700 mb-1">Nada Notifikasi</Label>
+              <div className="space-y-2">
+                <RadioGroup
+                  value={editProfileData.notificationSound}
+                  onValueChange={(value) => setEditProfileData({ ...editProfileData, notificationSound: value })}
+                >
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="default" className="h-4 w-4" />
+                      <span className="text-xs flex-1">Default 🔔</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => playNotificationSound('default')}
+                        className="h-6 w-6 p-0"
+                      >
+                        <Volume2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="chime" className="h-4 w-4" />
+                      <span className="text-xs flex-1">Chime 🔔</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => playNotificationSound('chime')}
+                        className="h-6 w-6 p-0"
+                      >
+                        <Volume2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="silent" className="h-4 w-4" />
+                      <span className="text-xs flex-1">Silent 🔕</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <RadioGroupItem value="chime" />
-                    <span className="text-sm">Chime 🔔</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <RadioGroupItem value="silent" />
-                    <span className="text-sm">Silent 🔕</span>
-                  </div>
-                </div>
-              </RadioGroup>
+                </RadioGroup>
+              </div>
             </div>
 
-            <div className="flex gap-3 pt-4 border-t">
+            <div className="flex gap-2 pt-2 border-t">
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1"
+                className="flex-1 h-8 text-xs"
                 onClick={() => {
                   setIsEditProfileOpen(false)
                   setProfilePhotoPreview(null)
@@ -2549,13 +2628,14 @@ export default function HomePage() {
               </Button>
               <Button
                 type="submit"
-                className="flex-1 bg-gradient-to-r from-red-500 to-orange-500"
+                className="flex-1 h-8 text-xs bg-gradient-to-r from-red-500 to-orange-500"
               >
-                <Save className="h-4 w-4 mr-2" />
+                <Save className="h-3 w-3 mr-1" />
                 Simpan
               </Button>
             </div>
-          </form>
+            </form>
+          </ScrollArea>
         </DialogContent>
       </Dialog>
 
