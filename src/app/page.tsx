@@ -243,6 +243,7 @@ const vouchers = [
 export default function HomePage() {
   const [mounted, setMounted] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [products, setProducts] = useState<any[]>([])
   const [isCartOpen, setIsCartOpen] = useState(false)
@@ -1203,8 +1204,9 @@ export default function HomePage() {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-gradient-to-r from-red-600 to-orange-500 shadow-md">
         <div className="container mx-auto px-4 py-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between gap-4">
+            {/* Logo Section */}
+            <div className="flex items-center gap-2 flex-shrink-0">
               <div
                 className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-md cursor-pointer select-none active:scale-95 transition-transform md:cursor-default relative"
                 onClick={handleLogoTap}
@@ -1341,6 +1343,73 @@ export default function HomePage() {
               </div>
             </div>
 
+            {/* Search Bar */}
+            <div className="flex-1 max-w-md hidden sm:block">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70" />
+                <Input
+                  type="text"
+                  placeholder="Cari produk..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full h-10 pl-10 pr-4 bg-white/10 border-2 border-white/20 rounded-xl text-white placeholder:text-white/50 focus:bg-white/20 focus:border-white/30 focus:ring-0 transition-all"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all"
+                  >
+                    <X className="h-4 w-4 text-white" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Mobile Search Button */}
+            <div className="sm:hidden">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/20 h-9 w-9"
+                onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+              >
+                <Search className="h-5 w-5" />
+              </Button>
+            </div>
+
+            {/* Mobile Search Overlay */}
+            <AnimatePresence>
+              {isMobileSearchOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="absolute top-full left-0 right-0 z-50 p-4 bg-gradient-to-r from-red-600 to-orange-500 sm:hidden"
+                >
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70" />
+                    <Input
+                      type="text"
+                      placeholder="Cari produk..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      autoFocus
+                      className="w-full h-12 pl-10 pr-10 bg-white/10 border-2 border-white/20 rounded-xl text-white placeholder:text-white/50 focus:bg-white/20 focus:border-white/30 focus:ring-0 text-lg"
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all"
+                      >
+                        <X className="h-5 w-5 text-white" />
+                      </button>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Right Side Buttons */}
             <div className="flex items-center gap-1.5">
               {user?.role === 'admin' && (
                 <Button
