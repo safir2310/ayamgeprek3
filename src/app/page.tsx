@@ -1746,24 +1746,24 @@ export default function HomePage() {
               </Card>
             </motion.div>
 
-            {/* Categories */}
-            <div className="mb-6">
+            {/* Categories - Sticky */}
+            <div className="sticky top-[128px] sm:top-[144px] z-30 bg-gradient-to-br from-red-50 via-orange-50 to-white shadow-sm mb-6">
               <ScrollArea className="w-full">
-                <div className="flex gap-3 pb-2">
+                <div className="flex gap-3 py-3 px-3">
                   {categories.map((category) => (
                     <motion.button
                       key={category.id}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setSelectedCategory(category.id)}
-                      className={`flex flex-col items-center gap-2 p-3 rounded-xl min-w-[70px] transition-all ${
+                      className={`flex flex-col items-center gap-2 p-2 sm:p-3 rounded-xl min-w-[65px] sm:min-w-[70px] transition-all ${
                         selectedCategory === category.id
                           ? 'bg-gradient-to-br from-red-500 to-orange-500 text-white shadow-lg'
                           : 'bg-white text-gray-700 shadow hover:shadow-md'
                       }`}
                     >
-                      <span className="text-2xl">{category.icon}</span>
-                      <span className="text-xs font-medium">{category.name}</span>
+                      <span className="text-xl sm:text-2xl">{category.icon}</span>
+                      <span className="text-[10px] sm:text-xs font-medium">{category.name}</span>
                     </motion.button>
                   ))}
                 </div>
@@ -1859,7 +1859,30 @@ export default function HomePage() {
 
         {currentTab === 'products' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <h2 className="text-2xl font-bold mb-4 text-gray-800">Semua Produk</h2>
+            {/* Categories - Sticky */}
+            <div className="sticky top-[128px] sm:top-[144px] z-30 bg-gradient-to-br from-red-50 via-orange-50 to-white shadow-sm mb-6">
+              <ScrollArea className="w-full">
+                <div className="flex gap-3 py-3 px-3">
+                  {categories.map((category) => (
+                    <motion.button
+                      key={category.id}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setSelectedCategory(category.id)}
+                      className={`flex flex-col items-center gap-2 p-2 sm:p-3 rounded-xl min-w-[65px] sm:min-w-[70px] transition-all ${
+                        selectedCategory === category.id
+                          ? 'bg-gradient-to-br from-red-500 to-orange-500 text-white shadow-lg'
+                          : 'bg-white text-gray-700 shadow hover:shadow-md'
+                      }`}
+                    >
+                      <span className="text-xl sm:text-2xl">{category.icon}</span>
+                      <span className="text-[10px] sm:text-xs font-medium">{category.name}</span>
+                    </motion.button>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredProducts.map((product, index) => (
                 <motion.div
