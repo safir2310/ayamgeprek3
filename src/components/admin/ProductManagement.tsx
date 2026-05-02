@@ -129,7 +129,6 @@ export function ProductManagement() {
       toast.error('Gagal menghapus produk')
     }
   }
-  }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -235,8 +234,6 @@ export function ProductManagement() {
     } catch (error) {
       console.error('Error saving product:', error)
       toast.error('Gagal menyimpan produk')
-    }
-  }
     }
   }
 
