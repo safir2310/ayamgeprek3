@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { verifyToken } from '@/lib/auth'
+import { getTokenFromRequest, verifyToken } from '@/lib/auth'
 
 // GET - Fetch all active point redemption options
 export async function GET(request: NextRequest) {
@@ -8,6 +8,9 @@ export async function GET(request: NextRequest) {
     const redemptions = await db.pointRedemption.findMany({
       where: { active: true },
       orderBy: { order: 'asc' },
+      include: {
+        product: true
+      }
     })
 
     return NextResponse.json({ redemptions })
@@ -23,12 +26,11 @@ export async function GET(request: NextRequest) {
 // POST - Redeem points for a voucher
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const token = getTokenFromRequest(request)
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized - Token tidak ditemukan' }, { status: 401 })
     }
 
-    const token = authHeader.substring(7)
     const decoded = verifyToken(token)
 
     if (!decoded || !decoded.userId) {
@@ -44,9 +46,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Fetch redemption option
+    // Fetch redemption option with product details
     const redemption = await db.pointRedemption.findUnique({
       where: { id: redemptionId },
+      include: {
+        product: true
+      }
     })
 
     if (!redemption || !redemption.active) {
@@ -67,15 +72,15 @@ export async function POST(request: NextRequest) {
 
     if (user.points < redemption.pointsRequired) {
       return NextResponse.json(
-        { error: 'Poin tidak mencukupi' },
+        { error: `Poin tidak mencukupi. Anda memiliki ${user.points} poin, butuhkan ${redemption.pointsRequired} poin.` },
         { status: 400 }
       )
     }
 
     // Generate unique voucher code
-    const voucherCode = `VOUCHER-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`
+    const voucherCode = `VOUCHER${Date.now()}${Math.random().toString(36).substring(2, 8).toUpperCase()}`
 
-    // Create point voucher
+    // Create point voucher with product details
     const pointVoucher = await db.pointVoucher.create({
       data: {
         code: voucherCode,
@@ -109,9 +114,12 @@ export async function POST(request: NextRequest) {
       success: true,
       voucherCode: pointVoucher.code,
       redemption: {
+        id: redemption.id,
         name: redemption.name,
         description: redemption.description,
         pointsUsed: redemption.pointsRequired,
+        productName: redemption.product?.name || 'Produk Gratis',
+        productImage: redemption.product?.image,
       },
     })
   } catch (error) {

@@ -267,6 +267,7 @@ export default function HomePage() {
   const [unreadChatCount, setUnreadChatCount] = useState(0)
   const [isRedeemModalOpen, setIsRedeemModalOpen] = useState(false)
   const [redeemedVoucherCode, setRedeemedVoucherCode] = useState('')
+  const [redeemedRedemption, setRedeemedRedemption] = useState<any>(null)
   const [pointRedemptions, setPointRedemptions] = useState<any[]>([])
   const [isRedeeming, setIsRedeeming] = useState(false)
   const [pointVoucher, setPointVoucher] = useState<any>(null)
@@ -1120,6 +1121,7 @@ export default function HomePage() {
 
       if (res.ok && data.success) {
         setRedeemedVoucherCode(data.voucherCode)
+        setRedeemedRedemption(data.redemption)
         setIsRedeemModalOpen(true)
         toast.success(`Berhasil menukar ${data.redemption.pointsUsed} poin!`)
         // Refresh user data
@@ -3546,18 +3548,58 @@ export default function HomePage() {
             <DialogTitle className="text-xl font-bold text-center">🎉 Penukaran Berhasil!</DialogTitle>
           </DialogHeader>
           <div className="text-center space-y-4">
-            <div className="bg-gradient-to-br from-red-50 to-orange-50 p-6 rounded-lg">
+            {/* Product Info */}
+            {redeemedRedemption && (
+              <div className="bg-gradient-to-br from-red-50 to-orange-50 p-6 rounded-lg">
+                <div className="flex items-center justify-center gap-4 mb-4">
+                  <div className="w-20 h-20 bg-gradient-to-br from-red-100 to-orange-100 rounded-lg flex items-center justify-center text-4xl">
+                    {redeemedRedemption.productImage || '🎁'}
+                  </div>
+                  <div className="text-left">
+                    <p className="text-xs text-gray-500 mb-1">Produk yang didapat:</p>
+                    <p className="font-semibold text-gray-800 text-lg">{redeemedRedemption.productName}</p>
+                  </div>
+                </div>
+                <div className="flex justify-center gap-4 text-sm text-gray-600">
+                  <div className="flex items-center gap-1">
+                    <Star className="h-4 w-4 text-amber-500" />
+                    <span>{redeemedRedemption.pointsUsed} Poin digunakan</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Voucher Code */}
+            <div className="bg-white border-2 border-dashed border-red-300 rounded-lg p-4">
               <p className="text-sm text-gray-600 mb-2">Kode Voucher Anda:</p>
-              <div className="bg-white border-2 border-dashed border-red-300 rounded-lg p-4">
-                <p className="text-2xl font-bold text-red-600 tracking-wider">
+              <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-lg p-4">
+                <p className="text-2xl font-bold text-red-600 tracking-wider break-all">
                   {redeemedVoucherCode}
                 </p>
               </div>
             </div>
-            <div className="text-sm text-gray-600 space-y-1">
-              <p>✅ Voucher sekali pakai</p>
-              <p>✅ Gunakan di keranjang saat checkout</p>
-              <p>✅ Produk gratis akan ditambahkan otomatis</p>
+            {/* Info */}
+            <div className="text-sm text-gray-600 space-y-2 bg-gray-50 p-4 rounded-lg">
+              <div className="flex items-start gap-2">
+                <CheckCircle className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                <div className="text-left">
+                  <p className="font-semibold text-gray-800">Voucher sekali pakai</p>
+                  <p className="text-xs text-gray-500">Voucher hanya dapat digunakan satu kali saja</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <ShoppingCart className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                <div className="text-left">
+                  <p className="font-semibold text-gray-800">Gunakan saat checkout</p>
+                  <p className="text-xs text-gray-500">Masukkan kode voucher di halaman keranjang saat checkout</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <Gift className="h-5 w-5 text-pink-500 flex-shrink-0 mt-0.5" />
+                <div className="text-left">
+                  <p className="font-semibold text-gray-800">Produk gratis otomatis</p>
+                  <p className="text-xs text-gray-500">Produk akan ditambahkan otomatis ke pesanan Anda</p>
+                </div>
+              </div>
             </div>
             <Button
               className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600"
