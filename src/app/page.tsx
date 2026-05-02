@@ -492,9 +492,13 @@ export default function HomePage() {
   const [showAdminDashboard, setShowAdminDashboard] = useState(false)
   const [adminTapCount, setAdminTapCount] = useState(0)
   const [adminTapTimeout, setAdminTapTimeout] = useState<NodeJS.Timeout | null>(null)
+  const [logoPressTimer, setLogoPressTimer] = useState<NodeJS.Timeout | null>(null)
+  const [isPressing, setIsPressing] = useState(false)
+  const [showAdminPinModal, setShowAdminPinModal] = useState(false)
+  const [adminPin, setAdminPin] = useState('')
   const [selectedVoucher, setSelectedVoucher] = useState<string>('')
 
-  // Mobile admin access - triple tap on logo
+  // Mobile admin access - double tap on logo (easier than triple tap)
   const handleLogoTap = () => {
     if (typeof window === 'undefined') return
 
@@ -509,12 +513,11 @@ export default function HomePage() {
       clearTimeout(adminTapTimeout)
     }
 
-    // Check if triple-tap within 1 second
+    // Check if double-tap within 1 second (changed from triple to double)
     const timeout = setTimeout(() => {
-      if (newTapCount >= 3) {
-        setShowAdminDashboard(true)
+      if (newTapCount >= 2) {
+        setShowAdminPinModal(true)
         setAdminTapCount(0)
-        toast.success('🔓 Admin panel terbuka!')
       } else {
         setAdminTapCount(0)
       }
@@ -523,14 +526,51 @@ export default function HomePage() {
     setAdminTapTimeout(timeout)
   }
 
+  // Long-press handler for admin access (2 seconds)
+  const handleLogoPressStart = () => {
+    if (typeof window === 'undefined') return
+    if (window.innerWidth >= 768) return
+
+    setIsPressing(true)
+    const timer = setTimeout(() => {
+      setShowAdminPinModal(true)
+      setIsPressing(false)
+    }, 2000)
+    setLogoPressTimer(timer)
+  }
+
+  const handleLogoPressEnd = () => {
+    setIsPressing(false)
+    if (logoPressTimer) {
+      clearTimeout(logoPressTimer)
+      setLogoPressTimer(null)
+    }
+  }
+
+  const handleAdminPinSubmit = () => {
+    // Default admin PIN: 1234
+    if (adminPin === '1234') {
+      setShowAdminPinModal(false)
+      setShowAdminDashboard(true)
+      setAdminPin('')
+      toast.success('🔓 Admin panel terbuka!')
+    } else {
+      toast.error('❌ PIN salah!')
+      setAdminPin('')
+    }
+  }
+
   // Cleanup admin tap timeout on unmount
   useEffect(() => {
     return () => {
       if (adminTapTimeout) {
         clearTimeout(adminTapTimeout)
       }
+      if (logoPressTimer) {
+        clearTimeout(logoPressTimer)
+      }
     }
-  }, [adminTapTimeout])
+  }, [])
 
   // Check URL parameter for admin access
   useEffect(() => {
@@ -916,8 +956,13 @@ export default function HomePage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div
-                className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-md cursor-pointer select-none active:scale-95 transition-transform md:cursor-default"
+                className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-md cursor-pointer select-none active:scale-95 transition-transform md:cursor-default relative"
                 onClick={handleLogoTap}
+                onTouchStart={handleLogoPressStart}
+                onMouseDown={handleLogoPressStart}
+                onTouchEnd={handleLogoPressEnd}
+                onMouseUp={handleLogoPressEnd}
+                onMouseLeave={handleLogoPressEnd}
               >
                 <svg viewBox="0 0 100 100" className="w-6 h-6">
                   <defs>
@@ -1002,6 +1047,10 @@ export default function HomePage() {
                   <circle cx="42" cy="30" r="1.5" fill="#F97316" opacity="0.5" />
                   <circle cx="58" cy="30" r="1.5" fill="#F97316" opacity="0.5" />
                 </svg>
+                {/* Press indicator */}
+                {isPressing && (
+                  <div className="absolute inset-0 bg-white/20 rounded-lg animate-pulse" />
+                )}
               </div>
               <div>
                 <h1 className="text-xs font-bold text-white tracking-wide">AYAM GEPREK SAMBAL IJO</h1>
@@ -1012,11 +1061,11 @@ export default function HomePage() {
                   <MapPin className="h-2.5 w-2.5" />
                   <span className="truncate max-w-[150px]">Jl. Medan - Banda Aceh, Simpang Camat, Gampong Tijue, 24151</span>
                 </button>
-                {/* Mobile Admin Tap Indicator */}
+                {/* Mobile Admin Tap Indicator - Changed to 2 for double-tap */}
                 {adminTapCount > 0 && (
                   <div className="md:hidden flex items-center gap-1 mt-1">
                     <div className="flex gap-0.5">
-                      {[1, 2, 3].map((i) => (
+                      {[1, 2].map((i) => (
                         <div
                           key={i}
                           className={`w-4 h-0.5 rounded-full transition-colors ${
@@ -1026,8 +1075,17 @@ export default function HomePage() {
                       ))}
                     </div>
                     <span className="text-[8px] text-white/80">
-                      {3 - adminTapCount} lagi...
+                      {2 - adminTapCount} lagi...
                     </span>
+                  </div>
+                )}
+                {/* Long-press hint */}
+                {isPressing && (
+                  <div className="md:hidden flex items-center gap-1 mt-1">
+                    <div className="w-16 h-1 bg-white/60 rounded-full overflow-hidden">
+                      <div className="h-full bg-white animate-[width_2s_ease-in-out_forwards]" style={{ width: '100%' }} />
+                    </div>
+                    <span className="text-[8px] text-white/80">Tahan...</span>
                   </div>
                 )}
               </div>
@@ -1786,6 +1844,15 @@ export default function HomePage() {
           </motion.div>
         )}
       </main>
+
+      {/* Mobile Admin Floating Button */}
+      <button
+        onClick={() => setShowAdminPinModal(true)}
+        className="md:hidden fixed bottom-6 right-6 w-12 h-12 bg-gradient-to-r from-red-600 to-orange-500 rounded-full shadow-lg flex items-center justify-center text-white hover:from-red-700 hover:to-orange-600 transition-all z-40"
+        title="Admin Panel"
+      >
+        <Settings className="w-5 h-5" />
+      </button>
 
       {/* Chat Dialog */}
       {user && (
@@ -3018,6 +3085,57 @@ export default function HomePage() {
               </div>
             </CardContent>
           </Card>
+        </DialogContent>
+      </Dialog>
+
+      {/* Admin PIN Modal */}
+      <Dialog open={showAdminPinModal} onOpenChange={setShowAdminPinModal}>
+        <DialogContent className="max-w-sm p-6">
+          <DialogHeader className="pb-3">
+            <DialogTitle className="text-lg font-bold text-gray-800">🔐 Akses Admin</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Masukkan PIN Admin</label>
+              <Input
+                type="password"
+                placeholder="PIN (1234)"
+                value={adminPin}
+                onChange={(e) => setAdminPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                maxLength={4}
+                className="text-center text-2xl tracking-widest h-12"
+                autoFocus
+              />
+            </div>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
+              <p className="font-medium mb-1">📱 Cara Akses Admin di Mobile:</p>
+              <ul className="space-y-1 text-xs">
+                <li>• Ketuk logo 2x dalam 1 detik</li>
+                <li>• Tahan logo selama 2 detik</li>
+                <li>• Tambahkan ?admin=true di URL</li>
+              </ul>
+              <p className="mt-2 text-xs text-blue-600">PIN Default: <strong>1234</strong></p>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setShowAdminPinModal(false)
+                  setAdminPin('')
+                }}
+              >
+                Batal
+              </Button>
+              <Button
+                className="flex-1 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
+                onClick={handleAdminPinSubmit}
+                disabled={adminPin.length !== 4}
+              >
+                Buka Admin
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
