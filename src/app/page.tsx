@@ -1201,26 +1201,28 @@ export default function HomePage() {
                   </Badge>
                 )}
               </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/20 relative h-8 w-8"
-                onClick={() => {
-                  if (user) {
-                    setIsChatOpen(true)
-                  } else {
-                    toast.info('Silakan login untuk menggunakan fitur chat')
-                    setIsAuthModalOpen(true)
-                  }
-                }}
-              >
-                <MessageCircle className="h-4 w-4" />
-                {unreadChatCount > 0 && (
-                  <Badge className="absolute -top-0.5 -right-0.5 h-4 w-4 flex items-center justify-center bg-red-500 text-white text-[9px] font-bold animate-pulse">
-                    {unreadChatCount > 9 ? '9+' : unreadChatCount}
-                  </Badge>
-                )}
-              </Button>
+              {user?.role !== 'admin' && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:bg-white/20 relative h-8 w-8"
+                  onClick={() => {
+                    if (user) {
+                      setIsChatOpen(true)
+                    } else {
+                      toast.info('Silakan login untuk menggunakan fitur chat')
+                      setIsAuthModalOpen(true)
+                    }
+                  }}
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  {unreadChatCount > 0 && (
+                    <Badge className="absolute -top-0.5 -right-0.5 h-4 w-4 flex items-center justify-center bg-red-500 text-white text-[9px] font-bold animate-pulse">
+                      {unreadChatCount > 9 ? '9+' : unreadChatCount}
+                    </Badge>
+                  )}
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
