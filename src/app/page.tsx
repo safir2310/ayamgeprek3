@@ -33,6 +33,9 @@ import {
   Percent,
   MessageCircle,
   Gift,
+  Mail,
+  Lock,
+  UserCircle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
