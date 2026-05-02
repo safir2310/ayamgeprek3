@@ -3225,29 +3225,47 @@ export default function HomePage() {
 
       {/* Cart Sidebar */}
       <Dialog open={isCartOpen} onOpenChange={setIsCartOpen}>
-        <DialogContent className="sm:max-w-md max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ShoppingCart className="h-5 w-5 text-red-600" />
-              Keranjang Belanja
-            </DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="max-h-[50vh] px-1">
+        <DialogContent className="sm:max-w-[420px] max-h-[95vh] p-0 overflow-hidden border-0 shadow-2xl">
+          <div className="bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 px-6 py-5">
+            <DialogHeader className="space-y-0">
+              <DialogTitle className="flex items-center gap-3 text-white text-xl">
+                <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                  <ShoppingCart className="h-6 w-6" />
+                </div>
+                Keranjang Belanja
+                {cart.length > 0 && (
+                  <Badge className="bg-white/20 text-white border-0 ml-2">
+                    {cart.length} item
+                  </Badge>
+                )}
+              </DialogTitle>
+            </DialogHeader>
+          </div>
+          <ScrollArea className="max-h-[55vh] px-4">
             {cart.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <ShoppingCart className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                <p>Keranjang kosong</p>
+              <div className="flex flex-col items-center justify-center py-16 text-slate-500">
+                <div className="w-24 h-24 bg-gradient-to-br from-slate-100 to-slate-200 rounded-3xl flex items-center justify-center mb-6 shadow-lg">
+                  <ShoppingCart className="h-12 w-12 text-slate-400" />
+                </div>
+                <p className="text-lg font-medium text-slate-600 mb-2">Keranjang kosong</p>
+                <p className="text-sm">Mulai belanja untuk mengisi keranjang Anda</p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {cart.map((item) => (
-                  <div key={item.productId} className="flex gap-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-16 h-16 bg-gradient-to-br from-red-50 to-orange-50 rounded-lg flex items-center justify-center overflow-hidden">
+              <div className="space-y-3 py-4">
+                {cart.map((item, index) => (
+                  <motion.div
+                    key={item.productId}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="flex gap-4 p-4 bg-gradient-to-br from-slate-50 to-white dark:from-slate-800 dark:to-slate-700 rounded-2xl border border-slate-100 dark:border-slate-600 hover:shadow-lg transition-all group"
+                  >
+                    <div className="w-20 h-20 bg-gradient-to-br from-pink-50 to-violet-50 dark:from-pink-950/20 dark:to-violet-950/20 rounded-xl flex items-center justify-center overflow-hidden shadow-inner relative">
                       {item.image ? (
                         <img
                           src={item.image}
                           alt={item.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement
                             target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23f3f4f6" rx="8"/%3E%3Ctext x="50" y="50" font-size="40" text-anchor="middle" fill="%23dc2626" text="📦" dy="15"/%3E%3C/svg%3E'
@@ -3256,63 +3274,86 @@ export default function HomePage() {
                       ) : (
                         <span className="text-3xl">📦</span>
                       )}
+                      {item.isFree && (
+                        <Badge className="absolute top-2 left-2 bg-emerald-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full shadow-lg">
+                          GRATIS
+                        </Badge>
+                      )}
                     </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-sm">{item.name}</h4>
-                      <p className="text-red-600 font-bold">
-                        Rp {(item.discountPrice || item.price).toLocaleString()}
-                      </p>
+                    <div className="flex-1 flex flex-col justify-between">
+                      <div>
+                        <h4 className="font-semibold text-slate-800 dark:text-white text-base leading-tight">{item.name}</h4>
+                        <div className="flex items-center gap-2 mt-1">
+                          <p className="text-pink-600 dark:text-pink-400 font-bold text-lg">
+                            Rp {(item.discountPrice || item.price).toLocaleString()}
+                          </p>
+                          {item.discountPrice && item.discountPrice < item.price && (
+                            <p className="text-slate-400 text-sm line-through">
+                              Rp {item.price.toLocaleString()}
+                            </p>
+                          )}
+                        </div>
+                      </div>
                       <div className="flex items-center gap-2 mt-2">
                         <Button
                           size="icon"
                           variant="outline"
-                          className="h-7 w-7"
+                          className="h-8 w-8 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-950"
                           onClick={() => updateCartQuantity(item.productId, item.quantity - 1)}
                         >
-                          <Minus className="h-3 w-3" />
+                          <Minus className="h-4 w-4 text-slate-600 dark:text-slate-300" />
                         </Button>
-                        <span className="font-medium w-8 text-center">{item.quantity}</span>
+                        <span className="font-semibold text-slate-800 dark:text-white w-9 text-center">{item.quantity}</span>
                         <Button
                           size="icon"
                           variant="outline"
-                          className="h-7 w-7"
+                          className="h-8 w-8 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-950"
                           onClick={() => updateCartQuantity(item.productId, item.quantity + 1)}
                         >
-                          <Plus className="h-3 w-3" />
+                          <Plus className="h-4 w-4 text-slate-600 dark:text-slate-300" />
                         </Button>
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="h-7 w-7 ml-auto text-red-600 hover:text-red-700"
+                          className="h-8 w-8 ml-auto rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
                           onClick={() => removeFromCart(item.productId)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             )}
           </ScrollArea>
           {cart.length > 0 && (
-            <div className="border-t pt-4 mt-4">
-              <div className="space-y-2 mb-4">
+            <div className="bg-slate-50 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 p-6 space-y-4">
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-600 dark:text-slate-400">Subtotal</span>
+                  <span className="font-medium text-slate-800 dark:text-white">Rp {cartTotal.toLocaleString()}</span>
+                </div>
                 {selectedVoucher && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Diskon Voucher</span>
-                    <span>-Rp {discountAmount.toLocaleString()}</span>
+                  <div className="flex justify-between text-sm items-center">
+                    <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+                      <Gift className="h-4 w-4" />
+                      Diskon Voucher
+                    </span>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">-Rp {discountAmount.toLocaleString()}</span>
                   </div>
                 )}
-                <div className="flex justify-between font-bold">
-                  <span>Total</span>
-                  <span className="text-xl text-red-600">Rp {finalAmount.toLocaleString()}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-bold text-slate-800 dark:text-white">Total</span>
+                  <span className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-violet-600 bg-clip-text text-transparent">
+                    Rp {finalAmount.toLocaleString()}
+                  </span>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <Button
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 h-12 rounded-xl border-2 hover:bg-red-50 dark:hover:bg-red-950"
                   onClick={() => {
                     clearCart()
                     toast.success('Keranjang dikosongkan')
@@ -3322,14 +3363,14 @@ export default function HomePage() {
                   Kosongkan
                 </Button>
                 <Button
-                  className="flex-1 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600"
+                  className="flex-1 h-12 rounded-xl bg-gradient-to-r from-pink-600 to-violet-600 hover:from-pink-700 hover:to-violet-700 shadow-lg shadow-pink-500/25 font-semibold"
                   onClick={() => {
                     setIsCartOpen(false)
                     handleOpenCheckout()
                   }}
                 >
-                  <ArrowRight className="h-4 w-4 mr-2" />
-                  Checkout Sekarang
+                  Checkout
+                  <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </div>
             </div>
@@ -3339,52 +3380,83 @@ export default function HomePage() {
 
       {/* Checkout Modal */}
       <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
-        <DialogContent className="sm:max-w-md max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Checkout</DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="max-h-[60vh] pr-4">
-            <div className="space-y-4">
+        <DialogContent className="sm:max-w-[480px] max-h-[95vh] p-0 overflow-hidden border-0 shadow-2xl">
+          <div className="bg-gradient-to-r from-pink-600 via-violet-600 to-purple-600 px-6 py-5">
+            <DialogHeader className="space-y-0">
+              <DialogTitle className="flex items-center gap-3 text-white text-xl">
+                <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                  <CreditCard className="h-6 w-6" />
+                </div>
+                Checkout
+              </DialogTitle>
+              <p className="text-purple-100 text-sm mt-1 pl-11">Lengkapi data untuk pesanan Anda</p>
+            </DialogHeader>
+          </div>
+          <ScrollArea className="max-h-[60vh] px-4">
+            <div className="space-y-5 py-4">
               {/* Order Summary */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-semibold mb-3">Ringkasan Pesanan</h4>
-                <div className="space-y-2">
+              <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-600">
+                <h4 className="font-bold text-slate-800 dark:text-white text-lg mb-4 flex items-center gap-2">
+                  <Package className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+                  Ringkasan Pesanan
+                </h4>
+                <div className="space-y-3">
                   {cart.map((item) => (
-                    <div key={item.productId} className="flex justify-between text-sm">
-                      <span>
-                        {item.name} x{item.quantity}
-                        {item.isFree && <Badge className="ml-2 bg-green-500 text-white">GRATIS</Badge>}
+                    <div key={item.productId} className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <span className="text-sm text-slate-800 dark:text-white font-medium">
+                          {item.name} x{item.quantity}
+                        </span>
+                        {item.isFree && (
+                          <Badge className="ml-2 bg-emerald-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                            GRATIS
+                          </Badge>
+                        )}
+                      </div>
+                      <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-4">
+                        Rp {((item.discountPrice || item.price) * item.quantity).toLocaleString()}
                       </span>
-                      <span>Rp {((item.discountPrice || item.price) * item.quantity).toLocaleString()}</span>
                     </div>
                   ))}
                   {pointVoucher && (
-                    <div className="flex justify-between text-sm text-green-600 bg-green-50 p-2 rounded">
-                      <span>🎁 {pointVoucher.productName} (Gratis)</span>
-                      <span>Rp 0</span>
+                    <div className="flex justify-between items-center bg-emerald-50 dark:bg-emerald-950/30 p-3 rounded-xl border border-emerald-200 dark:border-emerald-800">
+                      <span className="text-sm text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
+                        <Gift className="h-4 w-4" />
+                        {pointVoucher.productName} (Gratis)
+                      </span>
+                      <span className="text-sm font-bold text-emerald-700 dark:text-emerald-300">Rp 0</span>
                     </div>
                   )}
                 </div>
-                <Separator className="my-3" />
-                <div className="flex justify-between font-bold">
-                  <span>Subtotal</span>
-                  <span>Rp {cartTotal.toLocaleString()}</span>
-                </div>
-                {selectedVoucher && !pointVoucher && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Diskon Voucher</span>
-                    <span>-Rp {discountAmount.toLocaleString()}</span>
+                <Separator className="my-4 bg-slate-200 dark:bg-slate-600" />
+                <div className="space-y-2">
+                  <div className="flex justify-between font-medium text-slate-700 dark:text-slate-300">
+                    <span>Subtotal</span>
+                    <span>Rp {cartTotal.toLocaleString()}</span>
                   </div>
-                )}
-                <div className="flex justify-between font-bold text-lg text-red-600">
-                  <span>Total</span>
-                  <span>Rp {finalAmount.toLocaleString()}</span>
+                  {selectedVoucher && !pointVoucher && (
+                    <div className="flex justify-between font-semibold text-emerald-600 dark:text-emerald-400">
+                      <span className="flex items-center gap-2">
+                        <Gift className="h-4 w-4" />
+                        Diskon Voucher
+                      </span>
+                      <span>-Rp {discountAmount.toLocaleString()}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center pt-2">
+                    <span className="text-xl font-bold text-slate-800 dark:text-white">Total</span>
+                    <span className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-violet-600 bg-clip-text text-transparent">
+                      Rp {finalAmount.toLocaleString()}
+                    </span>
+                  </div>
                 </div>
               </div>
 
               {/* Point Voucher */}
-              <div>
-                <Label className="mb-2 block">Voucher Poin (Opsional)</Label>
+              <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-4 rounded-2xl border border-amber-200 dark:border-amber-800">
+                <Label className="mb-3 block text-sm font-semibold text-amber-800 dark:text-amber-200">
+                  🎁 Voucher Poin (Opsional)
+                </Label>
                 <div className="flex gap-2">
                   <Input
                     placeholder="Masukkan kode voucher poin"
@@ -3398,130 +3470,162 @@ export default function HomePage() {
                       }
                     }}
                     disabled={!!pointVoucher || isApplyingVoucher}
+                    className="h-11"
                   />
                   {pointVoucher && (
                     <Button
                       variant="outline"
                       size="icon"
                       onClick={() => setPointVoucher(null)}
+                      className="h-11 w-11 rounded-xl border-2"
                     >
-                      <XCircle className="h-4 w-4" />
+                      <XCircle className="h-4 w-4 text-red-500" />
                     </Button>
                   )}
                 </div>
                 {isApplyingVoucher && (
-                  <p className="text-xs text-gray-500 mt-1">Memvalidasi voucher...</p>
+                  <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 mt-2">
+                    <RefreshCw className="h-3 w-3 animate-spin" />
+                    Memvalidasi voucher...
+                  </div>
                 )}
                 {pointVoucher && (
-                  <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
-                    <p className="text-sm text-green-700">
-                      ✅ {pointVoucher.productName} akan ditambahkan gratis!
+                  <div className="mt-3 p-3 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl border border-emerald-200 dark:border-emerald-800">
+                    <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4" />
+                      {pointVoucher.productName} akan ditambahkan gratis!
                     </p>
                   </div>
                 )}
               </div>
 
               {/* Regular Voucher */}
-              <div>
-                <Label className="mb-2 block">Voucher Diskon (Opsional)</Label>
+              <div className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 p-4 rounded-2xl border border-violet-200 dark:border-violet-800">
+                <Label className="mb-3 block text-sm font-semibold text-violet-800 dark:text-violet-200">
+                  🎫 Voucher Diskon (Opsional)
+                </Label>
                 <div className="flex gap-2">
                   <Input
                     placeholder="Masukkan kode voucher diskon"
                     value={selectedVoucher}
                     onChange={(e) => setSelectedVoucher(e.target.value.toUpperCase())}
                     disabled={!!pointVoucher}
+                    className="h-11"
                   />
                   {selectedVoucher && (
                     <Button
                       variant="outline"
                       size="icon"
                       onClick={() => setSelectedVoucher('')}
+                      className="h-11 w-11 rounded-xl border-2"
                     >
-                      <XCircle className="h-4 w-4" />
+                      <XCircle className="h-4 w-4 text-red-500" />
                     </Button>
                   )}
                 </div>
                 {selectedVoucher && cartTotal < 50000 && (
-                  <p className="text-xs text-orange-600 mt-1">
+                  <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 mt-2 p-2 bg-amber-50 dark:bg-amber-950/50 rounded-lg">
+                    <AlertCircle className="h-3 w-3" />
                     Minimum belanja Rp 50.000 untuk menggunakan voucher
-                  </p>
+                  </div>
                 )}
               </div>
 
               {/* Customer Info */}
-              <div className="space-y-3">
-                <div>
-                  <Label className="mb-1 block">Nama Penerima</Label>
-                  <Input
-                    value={checkoutData.customerName}
-                    onChange={(e) => setCheckoutData({ ...checkoutData, customerName: e.target.value })}
-                    placeholder="Nama lengkap"
-                  />
-                </div>
-                <div>
-                  <Label className="mb-1 block">No. HP</Label>
-                  <Input
-                    type="tel"
-                    value={checkoutData.customerPhone}
-                    onChange={(e) => setCheckoutData({ ...checkoutData, customerPhone: e.target.value })}
-                    placeholder="081234567890"
-                  />
-                </div>
-                <div>
-                  <Label className="mb-1 block">Alamat Pengiriman</Label>
-                  <Textarea
-                    value={checkoutData.customerAddress}
-                    onChange={(e) => setCheckoutData({ ...checkoutData, customerAddress: e.target.value })}
-                    placeholder="Alamat lengkap pengiriman"
-                    rows={2}
-                  />
-                </div>
-                <div>
-                  <Label className="mb-1 block">Catatan (Opsional)</Label>
-                  <Textarea
-                    value={checkoutData.notes}
-                    onChange={(e) => setCheckoutData({ ...checkoutData, notes: e.target.value })}
-                    placeholder="Catatan untuk pesanan"
-                    rows={2}
-                  />
+              <div className="bg-gradient-to-br from-slate-50 to-white dark:from-slate-800 dark:to-slate-700/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-600">
+                <h4 className="font-bold text-slate-800 dark:text-white text-base mb-4 flex items-center gap-2">
+                  <User className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  Informasi Penerima
+                </h4>
+                <div className="space-y-4">
+                  <div>
+                    <Label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Nama Penerima</Label>
+                    <Input
+                      value={checkoutData.customerName}
+                      onChange={(e) => setCheckoutData({ ...checkoutData, customerName: e.target.value })}
+                      placeholder="Nama lengkap"
+                      className="h-11"
+                    />
+                  </div>
+                  <div>
+                    <Label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">No. HP</Label>
+                    <Input
+                      type="tel"
+                      value={checkoutData.customerPhone}
+                      onChange={(e) => setCheckoutData({ ...checkoutData, customerPhone: e.target.value })}
+                      placeholder="081234567890"
+                      className="h-11"
+                    />
+                  </div>
+                  <div>
+                    <Label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Alamat Pengiriman</Label>
+                    <Textarea
+                      value={checkoutData.customerAddress}
+                      onChange={(e) => setCheckoutData({ ...checkoutData, customerAddress: e.target.value })}
+                      placeholder="Alamat lengkap pengiriman"
+                      rows={2}
+                      className="resize-none"
+                    />
+                  </div>
+                  <div>
+                    <Label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Catatan (Opsional)</Label>
+                    <Textarea
+                      value={checkoutData.notes}
+                      onChange={(e) => setCheckoutData({ ...checkoutData, notes: e.target.value })}
+                      placeholder="Catatan untuk pesanan"
+                      rows={2}
+                      className="resize-none"
+                    />
+                  </div>
                 </div>
               </div>
 
               {/* Payment Method */}
-              <div>
-                <Label className="mb-2 block">Metode Pembayaran</Label>
+              <div className="bg-gradient-to-br from-pink-50 to-violet-50 dark:from-pink-950/30 dark:to-violet-950/30 p-5 rounded-2xl border border-pink-200 dark:border-pink-800">
+                <Label className="mb-4 block text-sm font-semibold text-pink-800 dark:text-pink-200">
+                  💳 Metode Pembayaran
+                </Label>
                 <RadioGroup
                   value={checkoutData.paymentMethod}
                   onValueChange={(value) => setCheckoutData({ ...checkoutData, paymentMethod: value })}
+                  className="space-y-3"
                 >
-                  <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
-                    <RadioGroupItem value="COD" id="cod" />
-                    <Label htmlFor="cod" className="flex-1 cursor-pointer">
+                  <div className={`flex items-center space-x-3 p-4 border-2 rounded-xl transition-all cursor-pointer ${
+                    checkoutData.paymentMethod === 'COD' 
+                      ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-500 dark:border-emerald-400' 
+                      : 'border-slate-200 dark:border-slate-600 hover:border-emerald-300 dark:hover:border-emerald-600 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20'
+                  }`}>
+                    <RadioGroupItem value="COD" id="cod" className="border-2" />
+                    <Label htmlFor="cod" className="flex-1 cursor-pointer space-y-1">
                       <div className="flex items-center gap-2">
-                        <CreditCard className="h-5 w-5 text-green-600" />
-                        <span className="font-medium">COD (Bayar di Tempat)</span>
+                        <CreditCard className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                        <span className="font-semibold text-slate-800 dark:text-white">COD (Bayar di Tempat)</span>
                       </div>
-                      <p className="text-xs text-gray-500">Bayar saat barang sampai</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Bayar saat barang sampai</p>
                     </Label>
                   </div>
-                  <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
-                    <RadioGroupItem value="QRIS" id="qris" />
-                    <Label htmlFor="qris" className="flex-1 cursor-pointer">
+                  <div className={`flex items-center space-x-3 p-4 border-2 rounded-xl transition-all cursor-pointer ${
+                    checkoutData.paymentMethod === 'QRIS' 
+                      ? 'bg-violet-50 dark:bg-violet-950/30 border-violet-500 dark:border-violet-400' 
+                      : 'border-slate-200 dark:border-slate-600 hover:border-violet-300 dark:hover:border-violet-600 hover:bg-violet-50/50 dark:hover:bg-violet-950/20'
+                  }`}>
+                    <RadioGroupItem value="QRIS" id="qris" className="border-2" />
+                    <Label htmlFor="qris" className="flex-1 cursor-pointer space-y-1">
                       <div className="flex items-center gap-2">
-                        <QrCode className="h-5 w-5 text-blue-600" />
-                        <span className="font-medium">QRIS</span>
+                        <QrCode className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+                        <span className="font-semibold text-slate-800 dark:text-white">QRIS</span>
                       </div>
-                      <p className="text-xs text-gray-500">Scan QR Code untuk bayar</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Scan QR Code untuk bayar</p>
                     </Label>
                   </div>
                 </RadioGroup>
               </div>
 
               <Button
-                className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600"
+                className="w-full h-12 rounded-xl bg-gradient-to-r from-pink-600 to-violet-600 hover:from-pink-700 hover:to-violet-700 shadow-lg shadow-pink-500/25 font-semibold text-base"
                 onClick={handleCheckout}
               >
-                <CheckCircle className="h-4 w-4 mr-2" />
+                <CheckCircle className="h-5 w-5 mr-2" />
                 Konfirmasi Order
               </Button>
             </div>
