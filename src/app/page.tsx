@@ -1343,6 +1343,27 @@ export default function HomePage() {
                   </div>
                 )}
               </div>
+              {/* Search Tabs */}
+              <div className="mt-2 flex items-center gap-2">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/70" />
+                  <Input
+                    type="text"
+                    placeholder="Cari produk..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full h-7 pl-7 pr-2 bg-white/15 border border-white/20 rounded-lg text-white placeholder:text-white/50 text-[10px] focus:bg-white/20 focus:border-white/30 focus:ring-0 transition-all"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-1.5 top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all"
+                    >
+                      <X className="h-2.5 w-2.5 text-white" />
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Right Side Buttons */}
