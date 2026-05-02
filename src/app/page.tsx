@@ -490,7 +490,58 @@ export default function HomePage() {
     notes: '',
   })
   const [showAdminDashboard, setShowAdminDashboard] = useState(false)
+  const [adminTapCount, setAdminTapCount] = useState(0)
+  const [adminTapTimeout, setAdminTapTimeout] = useState<NodeJS.Timeout | null>(null)
   const [selectedVoucher, setSelectedVoucher] = useState<string>('')
+
+  // Mobile admin access - triple tap on logo
+  const handleLogoTap = () => {
+    if (typeof window === 'undefined') return
+
+    // Only enable on mobile
+    if (window.innerWidth >= 768) return
+
+    const newTapCount = adminTapCount + 1
+    setAdminTapCount(newTapCount)
+
+    // Clear existing timeout
+    if (adminTapTimeout) {
+      clearTimeout(adminTapTimeout)
+    }
+
+    // Check if triple-tap within 1 second
+    const timeout = setTimeout(() => {
+      if (newTapCount >= 3) {
+        setShowAdminDashboard(true)
+        setAdminTapCount(0)
+        toast.success('🔓 Admin panel terbuka!')
+      } else {
+        setAdminTapCount(0)
+      }
+    }, 1000)
+
+    setAdminTapTimeout(timeout)
+  }
+
+  // Cleanup admin tap timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (adminTapTimeout) {
+        clearTimeout(adminTapTimeout)
+      }
+    }
+  }, [adminTapTimeout])
+
+  // Check URL parameter for admin access
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.get('admin') === 'true') {
+      setShowAdminDashboard(true)
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+  }, [])
 
   async function fetchOrdersFromApi(signal?: AbortSignal) {
     if (!user || !token) return
@@ -864,7 +915,10 @@ export default function HomePage() {
         <div className="container mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-md">
+              <div
+                className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-md cursor-pointer select-none active:scale-95 transition-transform md:cursor-default"
+                onClick={handleLogoTap}
+              >
                 <svg viewBox="0 0 100 100" className="w-6 h-6">
                   <defs>
                     <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -958,6 +1012,24 @@ export default function HomePage() {
                   <MapPin className="h-2.5 w-2.5" />
                   <span className="truncate max-w-[150px]">Jl. Medan - Banda Aceh, Simpang Camat, Gampong Tijue, 24151</span>
                 </button>
+                {/* Mobile Admin Tap Indicator */}
+                {adminTapCount > 0 && (
+                  <div className="md:hidden flex items-center gap-1 mt-1">
+                    <div className="flex gap-0.5">
+                      {[1, 2, 3].map((i) => (
+                        <div
+                          key={i}
+                          className={`w-4 h-0.5 rounded-full transition-colors ${
+                            i <= adminTapCount ? 'bg-white' : 'bg-white/30'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-[8px] text-white/80">
+                      {3 - adminTapCount} lagi...
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 

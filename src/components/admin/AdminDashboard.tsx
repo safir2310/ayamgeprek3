@@ -32,6 +32,7 @@ import {
   Layers,
   CheckSquare,
   MessageCircle,
+  ArrowLeft,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -76,7 +77,7 @@ interface TopProduct {
   image: string;
 }
 
-const AdminDashboard: React.FC = () => {
+const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [activePage, setActivePage] = useState<string>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
@@ -96,6 +97,13 @@ const AdminDashboard: React.FC = () => {
   const [isMobileAdminMode, setIsMobileAdminMode] = useState(false);
   const [tapCount, setTapCount] = useState(0);
   const [tapTimeout, setTapTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  // Auto-enable mobile mode when accessed from main page
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setIsMobileAdminMode(true);
+    }
+  }, []);
 
   // Early return for POS page
   if (activePage === 'pos') {
@@ -159,45 +167,14 @@ const AdminDashboard: React.FC = () => {
     };
   }, [tapTimeout]);
 
-  // Early return for mobile - show message unless admin mode is active
-  if (typeof window !== 'undefined' && window.innerWidth < 768 && !isMobileAdminMode) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-white flex items-center justify-center p-4">
-        <Card className="max-w-md w-full p-8 text-center shadow-xl border-0">
-          <div
-            className="w-20 h-20 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 cursor-pointer select-none transition-transform active:scale-95"
-            onClick={handleLogoTap}
-          >
-            <Store className="w-10 h-10 text-white" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Admin Panel</h2>
-          <p className="text-gray-600 mb-6">
-            Admin panel hanya dapat diakses melalui desktop/tablet
-          </p>
-          <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-lg p-4 text-left text-sm text-gray-600 space-y-2 border border-orange-200">
-            <p>📱 <strong>Mobile:</strong> Ketuk logo 3x dalam 1 detik</p>
-            <p>🔗 <strong>URL:</strong> Tambahkan ?admin=true di URL</p>
-            <p>💻 <strong>Desktop/Tablet:</strong> Buka di layar yang lebih besar</p>
-          </div>
-          {tapCount > 0 && (
-            <div className="mt-4">
-              <div className="flex justify-center gap-2 mb-2">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className={`w-8 h-1 rounded-full transition-colors ${
-                      i <= tapCount ? 'bg-red-500' : 'bg-gray-200'
-                    }`}
-                  />
-                ))}
-              </div>
-              <p className="text-xs text-gray-500">{3 - tapCount} ketuk lagi...</p>
-            </div>
-          )}
-        </Card>
-      </div>
-    );
-  }
+  // Handle mobile close/back
+  const handleMobileClose = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      setIsMobileAdminMode(false);
+    }
+  };
 
   useEffect(() => {
     loadDashboardData();
@@ -284,7 +261,6 @@ const AdminDashboard: React.FC = () => {
     setSyncStatus('syncing');
 
     try {
-      // Call the sync API
       const res = await fetch('/api/admin/sync');
 
       if (res.ok) {
@@ -292,10 +268,7 @@ const AdminDashboard: React.FC = () => {
 
         if (data.success) {
           setSyncStatus('success');
-
-          // Reload dashboard data after sync
           await loadDashboardData();
-
           setTimeout(() => setSyncStatus('idle'), 3000);
           toast.success('✅ Database berhasil disinkronisasi!');
         } else {
@@ -352,11 +325,11 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <>
-      <div className={`${isMobileAdminMode ? 'flex' : 'hidden'} md:flex min-h-screen bg-gray-50 flex`}>
+      <div className="flex min-h-screen bg-gray-50 flex">
         {/* Mobile Close Button */}
         {isMobileAdminMode && (
           <button
-            onClick={() => setIsMobileAdminMode(false)}
+            onClick={handleMobileClose}
             className="md:hidden fixed top-4 left-4 z-50 bg-white shadow-lg rounded-full p-3 hover:bg-gray-100 transition-colors"
           >
             <ArrowLeft className="w-5 h-5 text-gray-600" />
@@ -371,13 +344,13 @@ const AdminDashboard: React.FC = () => {
               animate={{ x: 0 }}
               exit={{ x: -300 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className={`w-64 bg-white shadow-lg fixed h-full z-20 flex flex-col ${isMobileAdminMode ? 'md:relative' : ''}`}
+              className={`w-64 bg-white shadow-lg fixed h-full z-20 flex flex-col md:relative`}
             >
               <div className="p-6 flex-shrink-0">
                 <h1 className="text-2xl font-bold text-gray-800">Admin Panel</h1>
                 <p className="text-sm text-gray-500 mt-1">Management System</p>
               </div>
-              
+
               <nav className="mt-6 flex-1 overflow-y-auto">
                 {sidebarItems.map((item) => {
                   const Icon = item.icon;
@@ -385,7 +358,13 @@ const AdminDashboard: React.FC = () => {
                   return (
                     <button
                       key={item.id}
-                      onClick={() => setActivePage(item.id)}
+                      onClick={() => {
+                        setActivePage(item.id);
+                        // Close sidebar on mobile after selecting item
+                        if (isMobileAdminMode) {
+                          setIsSidebarOpen(false);
+                        }
+                      }}
                       className={`w-full flex items-center px-6 py-3 transition-colors ${
                         isActive
                           ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600'
@@ -402,6 +381,14 @@ const AdminDashboard: React.FC = () => {
           )}
         </AnimatePresence>
 
+        {/* Mobile sidebar overlay */}
+        {isSidebarOpen && isMobileAdminMode && (
+          <div
+            className="md:hidden fixed inset-0 bg-black/50 z-10"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+
         {/* Main Content */}
         <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-0'}`}>
           {/* Header */}
@@ -413,7 +400,7 @@ const AdminDashboard: React.FC = () => {
               >
                 {isSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
-              
+
               <div className="flex items-center space-x-4">
                 <button
                   onClick={loadDashboardData}
@@ -430,7 +417,7 @@ const AdminDashboard: React.FC = () => {
           </header>
 
           {/* Dashboard Content */}
-          <div className="p-6">
+          <div className="p-4 md:p-6">
             {activePage === 'dashboard' && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
