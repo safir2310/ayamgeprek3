@@ -61,6 +61,13 @@ export function ProductManagement() {
     }
   }
 
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+    loadProducts()
+  }, [])
+
   useEffect(() => {
     loadProducts()
   }, [])

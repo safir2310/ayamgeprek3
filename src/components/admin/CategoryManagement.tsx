@@ -32,10 +32,6 @@ export function CategoryManagement() {
 
   const icons = ['📦', '🍗', '🍟', '🧃', '🍕', '🍰', '🍦', '☕', '🥤', '🍿', '🧸', '📱', '👕', '🧴', '🧊']
 
-  useEffect(() => {
-    loadCategories()
-  }, [])
-
   const loadCategories = () => {
     // Mock categories - will be replaced with API call
     setCategories([
@@ -73,6 +69,11 @@ export function CategoryManagement() {
       },
     ])
   }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadCategories()
+  }, [])
 
   const filteredCategories = categories.filter(category =>
     category.name.toLowerCase().includes(searchQuery.toLowerCase())

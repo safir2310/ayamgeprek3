@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, Plus, Edit, Trash2, Users, X, Save, Mail, Phone, Calendar, ShoppingBag, TrendingUp } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -38,64 +38,37 @@ export function CustomerManagement() {
     isMember: false,
   })
 
-  const loadCustomers = () => {
-    // Mock customers - will be replaced with API call
-    setCustomers([
-      {
-        id: '1',
-        name: 'Budi Santoso',
-        email: 'budi@email.com',
-        phone: '08123456789',
-        address: 'Jl. Merdeka No. 10',
-        memberCard: 'MEM-001',
-        totalOrders: 15,
-        totalSpent: 750000,
-        lastOrderDate: new Date('2024-01-14'),
-        createdAt: new Date('2023-06-15'),
-        isMember: true,
-      },
-      {
-        id: '2',
-        name: 'Siti Rahayu',
-        email: 'siti@email.com',
-        phone: '08198765432',
-        address: 'Jl. Sudirman No. 25',
-        memberCard: 'MEM-002',
-        totalOrders: 28,
-        totalSpent: 1200000,
-        lastOrderDate: new Date('2024-01-15'),
-        createdAt: new Date('2023-05-20'),
-        isMember: true,
-      },
-      {
-        id: '3',
-        name: 'Ahmad Wijaya',
-        email: 'ahmad@email.com',
-        phone: '08234567890',
-        address: '',
-        totalOrders: 5,
-        totalSpent: 250000,
-        lastOrderDate: new Date('2024-01-10'),
-        createdAt: new Date('2023-12-01'),
-        isMember: false,
-      },
-    ])
-  }
+  const loadCustomers = useCallback(async () => {
+    try {
+      const params = new URLSearchParams()
+      if (memberFilter && memberFilter !== 'all') {
+        params.set('member', memberFilter)
+      }
+      if (searchQuery) {
+        params.set('search', searchQuery)
+      }
+
+      const res = await fetch(`/api/admin/customers?${params.toString()}`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.success) {
+          setCustomers(data.customers || [])
+        } else {
+          toast.error(data.error || 'Gagal memuat pelanggan')
+        }
+      }
+    } catch (error) {
+      console.error('Error loading customers:', error)
+      toast.error('Gagal memuat pelanggan')
+    }
+  }, [memberFilter, searchQuery])
 
   useEffect(() => {
     loadCustomers()
-  }, [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadCustomers])
 
-  const filteredCustomers = customers.filter(customer => {
-    const matchesSearch =
-      customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      customer.phone.includes(searchQuery) ||
-      (customer.email && customer.email.toLowerCase().includes(searchQuery.toLowerCase()))
-    const matchesMember = memberFilter === 'all' ||
-      (memberFilter === 'member' && customer.isMember) ||
-      (memberFilter === 'non-member' && !customer.isMember)
-    return matchesSearch && matchesMember
-  })
+  const filteredCustomers = customers // Filter is now handled on the server side
 
   const handleAdd = () => {
     setEditingCustomer(null)
@@ -125,10 +98,20 @@ export function CustomerManagement() {
     if (!confirm('Apakah Anda yakin ingin menghapus pelanggan ini?')) return
 
     try {
-      // Mock delete - will be replaced with API call
-      setCustomers(prev => prev.filter(c => c.id !== id))
-      toast.success('✅ Pelanggan berhasil dihapus!')
+      const res = await fetch(`/api/admin/customers?id=${id}`, {
+        method: 'DELETE'
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        setCustomers(prev => prev.filter(c => c.id !== id))
+        toast.success('✅ Pelanggan berhasil dihapus!')
+      } else {
+        toast.error(data.error || 'Gagal menghapus pelanggan')
+      }
     } catch (error) {
+      console.error('Error deleting customer:', error)
       toast.error('Gagal menghapus pelanggan')
     }
   }
@@ -142,41 +125,50 @@ export function CustomerManagement() {
     }
 
     try {
-      const customerData = {
-        name: formData.name.trim(),
-        email: formData.email.trim(),
-        phone: formData.phone.trim(),
-        address: formData.address.trim(),
-        isMember: formData.isMember,
-      }
-
       if (editingCustomer) {
         // Update existing customer
-        setCustomers(prev =>
-          prev.map(c =>
-            c.id === editingCustomer.id
-              ? { ...c, ...customerData }
-              : c
+        const res = await fetch('/api/admin/customers', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: editingCustomer.id,
+            ...formData
+          })
+        })
+
+        const data = await res.json()
+
+        if (data.success) {
+          setCustomers(prev =>
+            prev.map(c =>
+              c.id === editingCustomer.id ? data.customer : c
+            )
           )
-        )
-        toast.success('✅ Pelanggan berhasil diperbarui!')
+          toast.success('✅ Pelanggan berhasil diperbarui!')
+        } else {
+          toast.error(data.error || 'Gagal memperbarui pelanggan')
+        }
       } else {
         // Add new customer
-        const newCustomer: Customer = {
-          id: Date.now().toString(),
-          ...customerData,
-          memberCard: formData.isMember ? `MEM-${Date.now().toString().slice(-6)}` : undefined,
-          totalOrders: 0,
-          totalSpent: 0,
-          createdAt: new Date(),
-          isMember: formData.isMember,
+        const res = await fetch('/api/admin/customers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        })
+
+        const data = await res.json()
+
+        if (data.success) {
+          setCustomers(prev => [data.customer, ...prev])
+          toast.success('✅ Pelanggan berhasil ditambahkan!')
+        } else {
+          toast.error(data.error || 'Gagal menambahkan pelanggan')
         }
-        setCustomers(prev => [...prev, newCustomer])
-        toast.success('✅ Pelanggan berhasil ditambahkan!')
       }
 
       setIsModalOpen(false)
     } catch (error) {
+      console.error('Error saving customer:', error)
       toast.error('Gagal menyimpan pelanggan')
     }
   }

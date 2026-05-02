@@ -55,6 +55,7 @@ interface DashboardStats {
   totalSales: number;
   totalOrders: number;
   totalCustomers: number;
+  totalProducts: number;
   averageOrderValue: number;
   salesChange: number;
   ordersChange: number;
@@ -86,6 +87,7 @@ const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     totalSales: 0,
     totalOrders: 0,
     totalCustomers: 0,
+    totalProducts: 0,
     averageOrderValue: 0,
     salesChange: 0,
     ordersChange: 0,
@@ -98,7 +100,6 @@ const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [isMobileAdminMode, setIsMobileAdminMode] = useState(false);
   const [tapCount, setTapCount] = useState(0);
   const [tapTimeout, setTapTimeout] = useState<NodeJS.Timeout | null>(null);
-  const [showAdminDashboard, setShowAdminDashboard] = useState(false);
 
   // Handle triple-tap on mobile logo to access admin
   const handleLogoTap = useCallback(() => {
@@ -169,6 +170,7 @@ const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           totalSales: data.data.totalRevenue,
           totalOrders: data.data.totalOrders,
           totalCustomers: data.data.totalUsers,
+          totalProducts: data.data.totalProducts,
           averageOrderValue: data.data.totalOrders > 0 ? data.data.totalRevenue / data.data.totalOrders : 0,
           salesChange: parseFloat(salesChange.toFixed(1)),
           ordersChange: parseFloat(ordersChange.toFixed(1)),
@@ -276,11 +278,10 @@ const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     };
   }, [tapTimeout]);
 
-  // Load dashboard data
+  // Load dashboard data on mount
   useEffect(() => {
-    if (!showAdminDashboard) return;
     loadDashboardData();
-  }, [showAdminDashboard, loadDashboardData]);
+  }, [loadDashboardData]);
 
   // Early return for POS page
   if (activePage === 'pos') {
@@ -864,7 +865,7 @@ const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                           <Package className="w-5 h-5 text-pink-600 dark:text-pink-400" />
                         </div>
                       </div>
-                      <p className="text-3xl font-bold text-pink-900 dark:text-pink-100">{stats.totalOrders}</p>
+                      <p className="text-3xl font-bold text-pink-900 dark:text-pink-100">{stats.totalProducts}</p>
                       <p className="text-xs text-pink-600 dark:text-pink-400 mt-1">Last synced: Just now</p>
                     </div>
                   </div>

@@ -146,12 +146,40 @@ export function POS({ onClose }: { onClose?: () => void }) {
     setIsProcessing(true)
 
     try {
-      // Mock checkout - will be replaced with API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Create order in database
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          cart: cart.map(item => ({
+            productId: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.image
+          })),
+          customerName: customerName.trim(),
+          customerPhone: customerPhone.trim() || '-',
+          customerAddress: 'In-store purchase',
+          paymentMethod: 'Cash',
+          notes: 'POS Order',
+        }),
+      })
 
-      toast.success('✅ Transaksi berhasil!')
-      clearCart()
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        toast.success(`✅ Transaksi berhasil! Order: ${data.order.orderNumber}`)
+        clearCart()
+        // Reload products to update stock
+        await loadProducts()
+      } else {
+        toast.error(data.error || 'Gagal melakukan transaksi')
+      }
     } catch (error) {
+      console.error('Checkout error:', error)
       toast.error('Gagal melakukan transaksi')
     } finally {
       setIsProcessing(false)
