@@ -2287,20 +2287,20 @@ export default function HomePage() {
           <DialogHeader className="sr-only">
             <DialogTitle>{isLogin ? 'Login' : 'Daftar'}</DialogTitle>
           </DialogHeader>
-          {/* Premium Gradient Background - Oren Muda ke Oren Tua */}
-          <div className="absolute inset-0 bg-gradient-to-br from-orange-200 via-orange-400 to-orange-700 -z-10"></div>
-          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-yellow-400/10 to-transparent -z-10"></div>
+          {/* Premium Background - Putih dengan Kombinasi Oren */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white via-orange-50 to-orange-100 -z-10"></div>
+          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-orange-200/30 to-transparent -z-10"></div>
 
           {/* Decorative Glow */}
-          <div className="absolute -top-32 -left-32 w-64 h-64 bg-orange-400/30 rounded-full blur-3xl -z-10"></div>
-          <div className="absolute -bottom-32 -right-32 w-64 h-64 bg-orange-600/30 rounded-full blur-3xl -z-10"></div>
+          <div className="absolute -top-32 -left-32 w-64 h-64 bg-orange-400/20 rounded-full blur-3xl -z-10"></div>
+          <div className="absolute -bottom-32 -right-32 w-64 h-64 bg-orange-500/15 rounded-full blur-3xl -z-10"></div>
 
           {/* Premium Close Button */}
           <button
             onClick={() => setIsAuthModalOpen(false)}
-            className="absolute top-4 right-4 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-white/30 hover:bg-white/50 backdrop-blur-sm border border-white/40 transition-all duration-300"
+            className="absolute top-4 right-4 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-orange-100 hover:bg-orange-200 backdrop-blur-sm border border-orange-200 transition-all duration-300"
           >
-            <X className="w-4 h-4 text-orange-800 hover:text-orange-950 transition-colors" />
+            <X className="w-4 h-4 text-orange-600 hover:text-orange-800 transition-colors" />
           </button>
 
           <div className="relative p-5 sm:p-6">
@@ -2313,10 +2313,10 @@ export default function HomePage() {
                 className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 sm:mb-5 relative"
               >
                 {/* Glow Effect */}
-                <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl blur-lg opacity-40"></div>
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl blur-md opacity-30"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-orange-400 to-orange-500 rounded-2xl blur-lg opacity-40"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-orange-300 to-red-400 rounded-2xl blur-md opacity-30"></div>
                 {/* Main Icon */}
-                <div className="relative w-full h-full bg-gradient-to-br from-orange-500 via-red-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-orange-500/50 border border-white/30">
+                <div className="relative w-full h-full bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center shadow-2xl shadow-orange-500/40 border border-white/40">
                   {isLogin ? (
                     <motion.div
                       initial={{ rotate: -180 }}
@@ -2342,10 +2342,10 @@ export default function HomePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
               >
-                <h2 className="text-xl sm:text-2xl font-bold text-orange-950 mb-1.5 sm:mb-2 tracking-tight">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1.5 sm:mb-2 tracking-tight">
                   {isLogin ? 'Welcome Back' : 'Create Account'}
                 </h2>
-                <p className="text-orange-800/80 text-xs sm:text-sm font-light">
+                <p className="text-gray-600 text-xs sm:text-sm font-light">
                   {isLogin
                     ? 'Sign in to access your account'
                     : 'Start your journey with us today'
