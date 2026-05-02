@@ -272,6 +272,7 @@ export default function HomePage() {
   const [isVerifying, setIsVerifying] = useState(false)
   const [isResetting, setIsResetting] = useState(false)
   const [showNotificationBanner, setShowNotificationBanner] = useState(true)
+  const [hasInitialRender, setHasInitialRender] = useState(false)
 
   const {
     user,
@@ -304,6 +305,7 @@ export default function HomePage() {
   useEffect(() => {
     try {
       setMounted(true)
+      setHasInitialRender(true)
       checkAuth()
     } catch (error) {
       console.error('Error during mount:', error)
@@ -661,7 +663,7 @@ export default function HomePage() {
 
   // Poll for unread messages
   useEffect(() => {
-    if (!user) return
+    if (!user || isChatOpen) return
 
     // Fetch initial count
     fetchUnreadChatCount()
@@ -672,7 +674,7 @@ export default function HomePage() {
     }, 5000)
 
     return () => clearInterval(interval)
-  }, [user])
+  }, [user, isChatOpen])
 
   // Clear unread count when chat is opened
   useEffect(() => {
@@ -680,6 +682,14 @@ export default function HomePage() {
       setUnreadChatCount(0)
     }
   }, [isChatOpen, user])
+
+  // Refresh unread count when chat is closed (after initial render)
+  useEffect(() => {
+    if (!isChatOpen && user && hasInitialRender) {
+      // Fetch immediately after closing chat
+      fetchUnreadChatCount()
+    }
+  }, [isChatOpen, user, hasInitialRender])
 
   const handlePaymentProofUpload = async (file: File) => {
     if (!qrisData) return
