@@ -873,7 +873,7 @@ export default function HomePage() {
 
   // Fetch orders when user changes or tab changes to orders
   useEffect(() => {
-    if (user && currentTab === 'orders') {
+    if (user && currentTab === 'orders' && !showAdminDashboard) {
       const controller = new AbortController()
       const signal = controller.signal
 
@@ -884,14 +884,14 @@ export default function HomePage() {
         controller.abort()
       }
     }
-  }, [user, currentTab])
+  }, [user, currentTab, showAdminDashboard])
 
   // Fetch point redemptions when tab changes to redeem
   useEffect(() => {
-    if (currentTab === 'redeem') {
+    if (currentTab === 'redeem' && !showAdminDashboard) {
       setTimeout(() => fetchPointRedemptions(), 0)
     }
-  }, [currentTab])
+  }, [currentTab, showAdminDashboard])
 
   if (!mounted || !_hasHydrated) {
     return (
