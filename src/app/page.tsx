@@ -989,7 +989,14 @@ export default function HomePage() {
                 variant="ghost"
                 size="icon"
                 className="text-white hover:bg-white/20 h-8 w-8"
-                onClick={() => user ? setIsChatOpen(true) : setIsAuthModalOpen(true)}
+                onClick={() => {
+                  if (user) {
+                    setIsChatOpen(true)
+                  } else {
+                    toast.info('Silakan login untuk menggunakan fitur chat')
+                    setIsAuthModalOpen(true)
+                  }
+                }}
               >
                 <MessageCircle className="h-4 w-4" />
               </Button>

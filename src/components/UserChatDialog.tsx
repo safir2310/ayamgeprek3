@@ -157,7 +157,7 @@ export function UserChatDialog({ isOpen, onClose, userId, userName }: {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`p-0 gap-0 right-0 top-auto translate-y-0 transition-all ${
+      <DialogContent className={`p-0 gap-0 max-w-md w-full !z-[9999] ${
         isMinimized ? 'max-h-12' : 'max-h-[600px]'
       }`}>
         <DialogTitle className="sr-only">Chat dengan Admin</DialogTitle>
