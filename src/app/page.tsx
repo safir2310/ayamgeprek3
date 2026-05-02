@@ -9,6 +9,8 @@ import {
   ShoppingCart,
   Bell,
   User,
+  UserPlus,
+  X,
   Home,
   Package,
   Flame,
