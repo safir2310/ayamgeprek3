@@ -1049,14 +1049,23 @@ export default function HomePage() {
 
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0)
 
-  // Calculate discount
+  // Calculate discount from validated voucher
   let discountAmount = 0
-  if (selectedVoucher) {
+  if (selectedVoucher && !pointVoucher) {
     const voucher = vouchers.find((v) => v.code === selectedVoucher)
-    if (voucher && cartTotal >= 50000) {
-      discountAmount = typeof voucher.value === 'number' && voucher.value > 100
-        ? voucher.value
-        : Math.floor(cartTotal * (voucher.value / 100))
+    if (voucher) {
+      // Check minimum purchase from voucher data
+      if (cartTotal >= voucher.minPurchase) {
+        if (voucher.discountType === 'fixed') {
+          discountAmount = voucher.discountValue
+        } else if (voucher.discountType === 'percentage') {
+          discountAmount = Math.floor(cartTotal * (voucher.discountValue / 100))
+        }
+        // Apply max discount if set
+        if (voucher.maxDiscount && discountAmount > voucher.maxDiscount) {
+          discountAmount = voucher.maxDiscount
+        }
+      }
     }
   }
 
@@ -1126,41 +1135,6 @@ export default function HomePage() {
       toast.error('Terjadi kesalahan koneksi')
     } finally {
       setIsRedeeming(false)
-    }
-  }
-
-  // Handle validate point voucher
-  const handleApplyPointVoucher = async (code: string) => {
-    if (!user || !token) {
-      toast.error('Silakan login terlebih dahulu')
-      return
-    }
-
-    setIsApplyingVoucher(true)
-    try {
-      const res = await fetch('/api/point-voucher', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ code }),
-      })
-
-      const data = await res.json()
-
-      if (res.ok && data.success) {
-        setPointVoucher(data.voucher)
-        toast.success(`Voucher berhasil! ${data.voucher.productName} akan ditambahkan ke keranjang`)
-      } else {
-        toast.error(data.error || 'Gagal memvalidasi voucher')
-        setPointVoucher(null)
-      }
-    } catch (error) {
-      toast.error('Terjadi kesalahan koneksi')
-      setPointVoucher(null)
-    } finally {
-      setIsApplyingVoucher(false)
     }
   }
 
@@ -3364,32 +3338,76 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Point Voucher */}
+              {/* Voucher Section */}
               <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-4 rounded-2xl border border-amber-200 dark:border-amber-800">
                 <Label className="mb-3 block text-sm font-semibold text-amber-800 dark:text-amber-200">
-                  🎁 Voucher Poin (Opsional)
+                  🎁 Kode Voucher
                 </Label>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Masukkan kode voucher poin"
-                    value={pointVoucher ? pointVoucher.code : ''}
-                    onChange={(e) => {
+                    placeholder="Masukkan kode voucher"
+                    value={selectedVoucher || (pointVoucher ? pointVoucher.code : '')}
+                    onChange={async (e) => {
                       const code = e.target.value.toUpperCase().trim()
-                      if (code.length >= 10) {
-                        handleApplyPointVoucher(code)
-                      } else if (code === '') {
+
+                      if (code === '') {
+                        setSelectedVoucher('')
                         setPointVoucher(null)
+                        return
+                      }
+
+                      setSelectedVoucher(code)
+
+                      if (code.length >= 6 && user && token) {
+                        setIsApplyingVoucher(true)
+                        try {
+                          const res = await fetch('/api/voucher/validate', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              Authorization: `Bearer ${token}`,
+                            },
+                            body: JSON.stringify({
+                              code,
+                              userId: user.id,
+                              cartTotal,
+                            }),
+                          })
+
+                          const data = await res.json()
+
+                          if (res.ok && data.success) {
+                            if (data.type === 'point_voucher') {
+                              setPointVoucher(data.voucher)
+                              toast.success(`✅ Voucher poin valid! ${data.voucher.productName} akan ditambahkan gratis`)
+                            } else if (data.type === 'discount_voucher') {
+                              toast.success(`✅ Voucher diskon valid! ${data.voucher.name}`)
+                            }
+                          } else {
+                            toast.error(data.error || 'Voucher tidak valid')
+                            setPointVoucher(null)
+                          }
+                        } catch (error) {
+                          toast.error('Gagal memvalidasi voucher')
+                          setPointVoucher(null)
+                        } finally {
+                          setIsApplyingVoucher(false)
+                        }
                       }
                     }}
-                    disabled={!!pointVoucher || isApplyingVoucher}
+                    disabled={isApplyingVoucher || !!pointVoucher}
                     className="h-11"
                   />
-                  {pointVoucher && (
+                  {(selectedVoucher || pointVoucher) && (
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => setPointVoucher(null)}
+                      onClick={() => {
+                        setSelectedVoucher('')
+                        setPointVoucher(null)
+                      }}
                       className="h-11 w-11 rounded-xl border-2"
+                      disabled={isApplyingVoucher}
                     >
                       <XCircle className="h-4 w-4 text-red-500" />
                     </Button>
@@ -3405,40 +3423,16 @@ export default function HomePage() {
                   <div className="mt-3 p-3 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl border border-emerald-200 dark:border-emerald-800">
                     <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium flex items-center gap-2">
                       <CheckCircle className="h-4 w-4" />
-                      {pointVoucher.productName} akan ditambahkan gratis!
+                      {pointVoucher.productName} akan ditambahkan gratis! ({pointVoucher.pointsRequired} poin)
                     </p>
                   </div>
                 )}
-              </div>
-
-              {/* Regular Voucher */}
-              <div className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 p-4 rounded-2xl border border-violet-200 dark:border-violet-800">
-                <Label className="mb-3 block text-sm font-semibold text-violet-800 dark:text-violet-200">
-                  🎫 Voucher Diskon (Opsional)
-                </Label>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Masukkan kode voucher diskon"
-                    value={selectedVoucher}
-                    onChange={(e) => setSelectedVoucher(e.target.value.toUpperCase())}
-                    disabled={!!pointVoucher}
-                    className="h-11"
-                  />
-                  {selectedVoucher && (
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setSelectedVoucher('')}
-                      className="h-11 w-11 rounded-xl border-2"
-                    >
-                      <XCircle className="h-4 w-4 text-red-500" />
-                    </Button>
-                  )}
-                </div>
-                {selectedVoucher && cartTotal < 50000 && (
-                  <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 mt-2 p-2 bg-amber-50 dark:bg-amber-950/50 rounded-lg">
-                    <AlertCircle className="h-3 w-3" />
-                    Minimum belanja Rp 50.000 untuk menggunakan voucher
+                {selectedVoucher && !pointVoucher && vouchers.some(v => v.code === selectedVoucher) && (
+                  <div className="mt-3 p-3 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl border border-emerald-200 dark:border-emerald-800">
+                    <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4" />
+                      Voucher diskon berhasil diterapkan!
+                    </p>
                   </div>
                 )}
               </div>
