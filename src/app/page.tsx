@@ -1382,35 +1382,20 @@ export default function HomePage() {
               { id: 'promo', icon: Flame, label: 'Promo' },
               { id: 'orders', icon: FileText, label: 'Pesanan' },
               { id: 'account', icon: User, label: 'Akun' },
-              { id: 'logout', icon: LogOut, label: 'Logout', action: true },
-            ].map((item) => {
-              if (item.id === 'logout') {
-                return (
-                  <button
-                    key={item.id}
-                    onClick={handleLogout}
-                    className="flex flex-col items-center gap-1 p-2 rounded-lg transition-all text-gray-500 hover:text-red-600 hover:bg-red-50"
-                  >
-                    <item.icon className="h-6 w-6" />
-                    <span className="text-xs font-medium">{item.label}</span>
-                  </button>
-                )
-              }
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setCurrentTab(item.id)}
-                  className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all ${
-                    currentTab === item.id
-                      ? 'text-red-600 bg-red-50'
-                      : 'text-gray-500 hover:text-red-600'
-                  }`}
-                >
-                  <item.icon className="h-6 w-6" />
-                  <span className="text-xs font-medium">{item.label}</span>
-                </button>
-              )
-            })}
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setCurrentTab(item.id)}
+                className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all ${
+                  currentTab === item.id
+                    ? 'text-red-600 bg-red-50'
+                    : 'text-gray-500 hover:text-red-600'
+                }`}
+              >
+                <item.icon className="h-6 w-6" />
+                <span className="text-xs font-medium">{item.label}</span>
+              </button>
+            ))}
           </div>
         </div>
       </nav>
