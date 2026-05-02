@@ -2937,19 +2937,19 @@ export default function HomePage() {
 
       {/* Edit Profile Dialog */}
       <Dialog open={isEditProfileOpen} onOpenChange={setIsEditProfileOpen}>
-        <DialogContent className="max-w-xs p-4">
+        <DialogContent className="max-w-[18rem] p-3">
           <DialogHeader className="pb-2">
-            <DialogTitle className="text-base font-bold text-gray-800">✏️ Edit Profil</DialogTitle>
+            <DialogTitle className="text-sm font-bold text-gray-800">✏️ Edit Profil</DialogTitle>
           </DialogHeader>
-          <ScrollArea className="max-h-[70vh]">
-            <form onSubmit={handleSaveProfile} className="space-y-3 pr-1">
+          <ScrollArea className="max-h-[60vh]">
+            <form onSubmit={handleSaveProfile} className="space-y-2.5 pr-1">
             {/* Profile Photo */}
             <div>
-              <Label className="block text-xs font-medium text-gray-700 mb-1">Foto Profil</Label>
-              <div className="flex items-center gap-3">
-                <Avatar className="w-16 h-16">
+              <Label className="block text-[10px] font-medium text-gray-700 mb-1">Foto Profil</Label>
+              <div className="flex items-center gap-2">
+                <Avatar className="w-12 h-12">
                   <AvatarImage src={profilePhotoPreview || undefined} />
-                  <AvatarFallback className="text-lg bg-red-100 text-red-600 font-bold">
+                  <AvatarFallback className="text-xs bg-red-100 text-red-600 font-bold">
                     {editProfileData.name?.charAt(0).toUpperCase() || 'P'}
                   </AvatarFallback>
                 </Avatar>
@@ -2966,7 +2966,7 @@ export default function HomePage() {
                     variant="outline"
                     size="sm"
                     onClick={() => document.getElementById('profile-photo-input')?.click()}
-                    className="h-7 text-xs"
+                    className="h-6 text-[10px] px-2"
                   >
                     Upload
                   </Button>
@@ -2976,7 +2976,7 @@ export default function HomePage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => setProfilePhotoPreview(null)}
-                      className="h-7 text-xs px-2"
+                      className="h-6 text-[10px] px-1.5"
                     >
                       Hapus
                     </Button>
@@ -2987,58 +2987,58 @@ export default function HomePage() {
 
             {/* Name */}
             <div>
-              <Label htmlFor="name" className="block text-xs font-medium text-gray-700 mb-1">Nama</Label>
+              <Label htmlFor="name" className="block text-[10px] font-medium text-gray-700 mb-1">Nama</Label>
               <Input
                 id="name"
                 value={editProfileData.name}
                 onChange={(e) => setEditProfileData({ ...editProfileData, name: e.target.value })}
                 placeholder="Nama lengkap"
                 required
-                className="text-sm h-8"
+                className="text-xs h-7"
               />
             </div>
 
             {/* Phone */}
             <div>
-              <Label htmlFor="phone" className="block text-xs font-medium text-gray-700 mb-1">Telepon</Label>
+              <Label htmlFor="phone" className="block text-[10px] font-medium text-gray-700 mb-1">Telepon</Label>
               <Input
                 id="phone"
                 type="tel"
                 value={editProfileData.phone}
                 onChange={(e) => setEditProfileData({ ...editProfileData, phone: e.target.value })}
                 placeholder="08xxxxxxxxxx"
-                className="text-sm h-8"
+                className="text-xs h-7"
               />
             </div>
 
             {/* Address */}
             <div>
-              <Label htmlFor="address" className="block text-xs font-medium text-gray-700 mb-1">Alamat</Label>
+              <Label htmlFor="address" className="block text-[10px] font-medium text-gray-700 mb-1">Alamat</Label>
               <Textarea
                 id="address"
                 value={editProfileData.address}
                 onChange={(e) => setEditProfileData({ ...editProfileData, address: e.target.value })}
                 placeholder="Alamat lengkap"
                 rows={2}
-                className="text-sm resize-none"
+                className="text-xs resize-none h-16"
               />
             </div>
 
             {/* Theme */}
             <div>
-              <Label className="block text-xs font-medium text-gray-700 mb-1">Tema</Label>
+              <Label className="block text-[10px] font-medium text-gray-700 mb-1">Tema</Label>
               <RadioGroup
                 value={editProfileData.theme}
                 onValueChange={(value: 'light' | 'dark') => setEditProfileData({ ...editProfileData, theme: value })}
               >
                 <div className="flex gap-2">
                   <div className="flex items-center gap-1">
-                    <RadioGroupItem value="light" className="h-4 w-4" />
-                    <span className="text-xs">Light ☀️</span>
+                    <RadioGroupItem value="light" className="h-3.5 w-3.5" />
+                    <span className="text-[10px]">Light ☀️</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <RadioGroupItem value="dark" className="h-4 w-4" />
-                    <span className="text-xs">Dark 🌙</span>
+                    <RadioGroupItem value="dark" className="h-3.5 w-3.5" />
+                    <span className="text-[10px]">Dark 🌙</span>
                   </div>
                 </div>
               </RadioGroup>
@@ -3046,42 +3046,42 @@ export default function HomePage() {
 
             {/* Notification Sound */}
             <div>
-              <Label className="block text-xs font-medium text-gray-700 mb-1">Nada Notifikasi</Label>
-              <div className="space-y-2">
+              <Label className="block text-[10px] font-medium text-gray-700 mb-1">Nada Notifikasi</Label>
+              <div className="space-y-1.5">
                 <RadioGroup
                   value={editProfileData.notificationSound}
                   onValueChange={(value) => setEditProfileData({ ...editProfileData, notificationSound: value })}
                 >
                   <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem value="default" className="h-4 w-4" />
-                      <span className="text-xs flex-1">Default 🔔</span>
+                    <div className="flex items-center gap-1.5">
+                      <RadioGroupItem value="default" className="h-3.5 w-3.5" />
+                      <span className="text-[10px] flex-1">Default 🔔</span>
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
                         onClick={() => playNotificationSound('default')}
-                        className="h-6 w-6 p-0"
+                        className="h-5 w-5 p-0"
                       >
-                        <Volume2 className="h-3 w-3" />
+                        <Volume2 className="h-2.5 w-2.5" />
                       </Button>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem value="chime" className="h-4 w-4" />
-                      <span className="text-xs flex-1">Chime 🔔</span>
+                    <div className="flex items-center gap-1.5">
+                      <RadioGroupItem value="chime" className="h-3.5 w-3.5" />
+                      <span className="text-[10px] flex-1">Chime 🔔</span>
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
                         onClick={() => playNotificationSound('chime')}
-                        className="h-6 w-6 p-0"
+                        className="h-5 w-5 p-0"
                       >
-                        <Volume2 className="h-3 w-3" />
+                        <Volume2 className="h-2.5 w-2.5" />
                       </Button>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem value="silent" className="h-4 w-4" />
-                      <span className="text-xs flex-1">Silent 🔕</span>
+                    <div className="flex items-center gap-1.5">
+                      <RadioGroupItem value="silent" className="h-3.5 w-3.5" />
+                      <span className="text-[10px] flex-1">Silent 🔕</span>
                     </div>
                   </div>
                 </RadioGroup>
@@ -3092,7 +3092,7 @@ export default function HomePage() {
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1 h-8 text-xs"
+                className="flex-1 h-7 text-[10px]"
                 onClick={() => {
                   setIsEditProfileOpen(false)
                   setProfilePhotoPreview(null)
@@ -3102,9 +3102,9 @@ export default function HomePage() {
               </Button>
               <Button
                 type="submit"
-                className="flex-1 h-8 text-xs bg-gradient-to-r from-red-500 to-orange-500"
+                className="flex-1 h-7 text-[10px] bg-gradient-to-r from-red-500 to-orange-500"
               >
-                <Save className="h-3 w-3 mr-1" />
+                <Save className="h-2.5 w-2.5 mr-1" />
                 Simpan
               </Button>
             </div>
