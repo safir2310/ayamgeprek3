@@ -273,6 +273,7 @@ export default function HomePage() {
   const [isResetting, setIsResetting] = useState(false)
   const [showNotificationBanner, setShowNotificationBanner] = useState(true)
   const [hasInitialRender, setHasInitialRender] = useState(false)
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false)
 
   const {
     user,
@@ -388,15 +389,21 @@ export default function HomePage() {
     }
   }
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
+    setIsLogoutConfirmOpen(true)
+  }
+
+  const confirmLogout = async () => {
     try {
       await fetch('/api/auth/me', { method: 'DELETE' })
       logout()
       toast.success('Logout berhasil')
       setOrders([])
+      setIsLogoutConfirmOpen(false)
     } catch (error) {
       logout()
       setOrders([])
+      setIsLogoutConfirmOpen(false)
     }
   }
 
@@ -1970,6 +1977,39 @@ export default function HomePage() {
           userName={user.name}
         />
       )}
+
+      {/* Logout Confirmation Dialog */}
+      <Dialog open={isLogoutConfirmOpen} onOpenChange={setIsLogoutConfirmOpen}>
+        <DialogContent className="max-w-sm p-6">
+          <DialogHeader className="pb-3">
+            <DialogTitle className="text-lg font-bold text-gray-800">👋 Konfirmasi Logout</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-sm text-gray-700 leading-relaxed">
+                Apakah Anda yakin ingin logout? Anda tidak akan lagi dapat mengakses akun dan melakukan transaksi.
+              </p>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setIsLogoutConfirmOpen(false)}
+              >
+                Batal
+              </Button>
+              <Button
+                variant="destructive"
+                className="flex-1 bg-red-600 hover:bg-red-700"
+                onClick={confirmLogout}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Notification Banner */}
       <AnimatePresence>
