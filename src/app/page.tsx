@@ -1313,12 +1313,12 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-red-50 via-orange-50 to-white">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-gradient-to-r from-red-600 to-orange-500 shadow-md">
-        <div className="container mx-auto px-3 py-1.5 sm:px-4 sm:py-2">
+        <div className="container mx-auto px-3 py-2.5 sm:px-4 sm:py-3">
           <div className="flex items-center justify-between gap-3 sm:gap-4">
             {/* Logo Section */}
             <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
               <div
-                className="w-7 h-7 sm:w-8 sm:h-8 bg-white rounded-lg flex items-center justify-center shadow-md cursor-pointer select-none active:scale-95 transition-transform md:cursor-default relative"
+                className="w-9 h-9 sm:w-10 sm:h-10 bg-white rounded-lg flex items-center justify-center shadow-md cursor-pointer select-none active:scale-95 transition-transform md:cursor-default relative"
                 onClick={handleLogoTap}
                 onTouchStart={handleLogoPressStart}
                 onMouseDown={handleLogoPressStart}
@@ -1326,7 +1326,7 @@ export default function HomePage() {
                 onMouseUp={handleLogoPressEnd}
                 onMouseLeave={handleLogoPressEnd}
               >
-                <svg viewBox="0 0 100 100" className="w-5 h-5 sm:w-6 sm:h-6">
+                <svg viewBox="0 0 100 100" className="w-7 h-7 sm:w-8 sm:h-8">
                   <defs>
                     <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="#DC2626" stopOpacity={1} />
@@ -1458,12 +1458,12 @@ export default function HomePage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20 relative h-7 w-7 sm:h-8 sm:w-8"
+                className="text-white hover:bg-white/20 relative h-9 w-9 sm:h-10 sm:w-10"
                 onClick={() => setIsCartOpen(true)}
               >
-                <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
                 {cartCount > 0 && (
-                  <Badge className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 sm:h-4 sm:w-4 flex items-center justify-center bg-yellow-400 text-red-900 text-[8px] sm:text-[9px] font-bold">
+                  <Badge className="absolute -top-0.5 -right-0.5 h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center bg-yellow-400 text-red-900 text-[9px] sm:text-[10px] font-bold">
                     {cartCount}
                   </Badge>
                 )}
@@ -1472,7 +1472,7 @@ export default function HomePage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-white hover:bg-white/20 relative h-7 w-7 sm:h-8 sm:w-8"
+                  className="text-white hover:bg-white/20 relative h-9 w-9 sm:h-10 sm:w-10"
                   onClick={() => {
                     if (user) {
                       setIsChatOpen(true)
@@ -1482,9 +1482,9 @@ export default function HomePage() {
                     }
                   }}
                 >
-                  <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
                   {unreadChatCount > 0 && (
-                    <Badge className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 sm:h-4 sm:w-4 flex items-center justify-center bg-red-500 text-white text-[8px] sm:text-[9px] font-bold animate-pulse">
+                    <Badge className="absolute -top-0.5 -right-0.5 h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center bg-red-500 text-white text-[9px] sm:text-[10px] font-bold animate-pulse">
                       {unreadChatCount > 9 ? '9+' : unreadChatCount}
                     </Badge>
                   )}
@@ -1493,10 +1493,10 @@ export default function HomePage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20 h-7 w-7 sm:h-8 sm:w-8"
+                className="text-white hover:bg-white/20 h-9 w-9 sm:h-10 sm:w-10"
                 onClick={() => (user ? handleLogout() : setIsAuthModalOpen(true))}
               >
-                <User className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <User className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </div>
           </div>
@@ -1505,7 +1505,7 @@ export default function HomePage() {
 
       {/* Search Bar - Below Header (Home & Products tabs only) */}
       {(currentTab === 'home' || currentTab === 'products') && (
-        <div className="sticky top-[57px] sm:top-[65px] z-40 bg-white shadow-sm">
+        <div className="sticky top-[68px] sm:top-[76px] z-40 bg-white shadow-sm">
           <div className="container mx-auto px-3 py-3 sm:px-4 sm:py-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -3174,7 +3174,7 @@ export default function HomePage() {
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-[72px] left-2 right-2 md:left-1/2 md:-translate-x-1/2 md:right-auto md:w-[400px] z-50"
+            className="fixed bottom-[84px] left-2 right-2 md:left-1/2 md:-translate-x-1/2 md:right-auto md:w-[400px] z-50"
           >
             <Card className="bg-gradient-to-r from-red-600 to-orange-500 text-white shadow-2xl border-0">
               <CardContent className="p-3">
@@ -3225,7 +3225,7 @@ export default function HomePage() {
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-slate-200 dark:border-slate-700 dark:bg-slate-900/95 shadow-lg z-40">
         <div className="container mx-auto px-1 max-w-md">
-          <div className="flex items-center justify-around py-2">
+          <div className="flex items-center justify-around py-3">
             {[
               { id: 'home', icon: Home, label: 'Beranda' },
               { id: 'products', icon: Package, label: 'Belanja', notification: cartNotification },
@@ -3236,24 +3236,24 @@ export default function HomePage() {
               <button
                 key={item.id}
                 onClick={() => setCurrentTab(item.id)}
-                className="relative flex flex-col items-center gap-0.5 px-1.5 py-2 rounded-lg transition-all"
+                className="relative flex flex-col items-center gap-0.5 px-2.5 py-3 rounded-lg transition-all"
               >
                 {item.notification > 0 && (
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="absolute -top-0 -right-0 bg-gradient-to-r from-red-600 to-orange-500 text-white text-[9px] font-bold rounded-full h-3.5 min-w-[17px] flex items-center justify-center shadow-md"
+                    className="absolute -top-0 -right-0 bg-gradient-to-r from-red-600 to-orange-500 text-white text-[10px] font-bold rounded-full h-4 min-w-[18px] flex items-center justify-center shadow-md"
                   >
                     {item.notification > 9 ? '9+' : item.notification}
                   </motion.div>
                 )}
                 <item.icon
-                  className={`h-5 w-5 sm:h-6 sm:w-6 ${
+                  className={`h-6 w-6 sm:h-7 sm:w-7 ${
                     currentTab === item.id ? 'text-red-600' : 'text-slate-400'
                   }`}
                 />
                 <span
-                  className={`text-[9px] sm:text-[10px] font-medium ${
+                  className={`text-[10px] sm:text-[11px] font-medium ${
                     currentTab === item.id ? 'text-red-600' : 'text-slate-400'
                   }`}
                 >
