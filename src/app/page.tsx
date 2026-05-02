@@ -2282,9 +2282,11 @@ export default function HomePage() {
       </Dialog>
 
       {/* Auth Modal */}
-      {/* Auth Modal */}
       <Dialog open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen}>
-        <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden rounded-3xl border-0 shadow-2xl shadow-black/10">
+        <DialogContent className="w-[95vw] sm:w-full sm:max-w-[380px] p-0 overflow-hidden rounded-3xl border-0 shadow-2xl shadow-black/10">
+          <DialogHeader className="sr-only">
+            <DialogTitle>{isLogin ? 'Login' : 'Daftar'}</DialogTitle>
+          </DialogHeader>
           {/* Premium Gradient Background */}
           <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 -z-10"></div>
           <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-purple-500/5 to-transparent -z-10"></div>
@@ -2301,14 +2303,14 @@ export default function HomePage() {
             <X className="w-4 h-4 text-white/70 hover:text-white transition-colors" />
           </button>
 
-          <div className="relative p-6 sm:p-8">
+          <div className="relative p-5 sm:p-6">
             {/* Premium Logo/Icon Section */}
-            <div className="text-center mb-6">
+            <div className="text-center mb-4 sm:mb-5">
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: "spring", duration: 0.6, bounce: 0.3 }}
-                className="w-16 h-16 mx-auto mb-5 relative"
+                className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 sm:mb-5 relative"
               >
                 {/* Glow Effect */}
                 <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl blur-lg opacity-40"></div>
@@ -2321,7 +2323,7 @@ export default function HomePage() {
                       animate={{ rotate: 0 }}
                       transition={{ delay: 0.3, type: "spring" }}
                     >
-                      <User className="w-7 h-7 text-white" />
+                      <User className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                     </motion.div>
                   ) : (
                     <motion.div
@@ -2329,7 +2331,7 @@ export default function HomePage() {
                       animate={{ rotate: 0 }}
                       transition={{ delay: 0.3, type: "spring" }}
                     >
-                      <UserPlus className="w-7 h-7 text-white" />
+                      <UserPlus className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                     </motion.div>
                   )}
                 </div>
@@ -2340,10 +2342,10 @@ export default function HomePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
               >
-                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2 tracking-tight">
+                <h2 className="text-xl sm:text-2xl font-bold text-white mb-1.5 sm:mb-2 tracking-tight">
                   {isLogin ? 'Welcome Back' : 'Create Account'}
                 </h2>
-                <p className="text-white/60 text-sm sm:text-base font-light">
+                <p className="text-white/60 text-xs sm:text-sm font-light">
                   {isLogin
                     ? 'Sign in to access your account'
                     : 'Start your journey with us today'
@@ -2361,21 +2363,21 @@ export default function HomePage() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
                   transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-                  className="space-y-4 sm:space-y-5"
+                  className="space-y-3 sm:space-y-4"
                 >
-                  <form onSubmit={handleAuth} className="space-y-4 sm:space-y-5">
+                  <form onSubmit={handleAuth} className="space-y-3 sm:space-y-4">
                     {/* Premium Email Field */}
                     <motion.div
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.5 }}
                     >
-                      <Label htmlFor="login-email" className="text-sm font-medium text-white/80 mb-2.5 block">
+                      <Label htmlFor="login-email" className="text-xs sm:text-sm font-medium text-white/80 mb-2 block">
                         Email Address
                       </Label>
                       <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
-                          <Mail className="w-5 h-5 text-white/40 group-focus-within:text-white transition-colors" />
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                          <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-white/40 group-focus-within:text-white transition-colors" />
                         </div>
                         <Input
                           id="login-email"
@@ -2395,8 +2397,8 @@ export default function HomePage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.6 }}
                     >
-                      <div className="flex items-center justify-between mb-2.5">
-                        <Label htmlFor="login-password" className="text-sm font-medium text-white/80">
+                      <div className="flex items-center justify-between mb-2">
+                        <Label htmlFor="login-password" className="text-xs sm:text-sm font-medium text-white/80">
                           Password
                         </Label>
                         <button
@@ -2405,14 +2407,14 @@ export default function HomePage() {
                             setIsForgotPasswordOpen(true)
                             setIsAuthModalOpen(false)
                           }}
-                          className="text-xs text-white/60 hover:text-red-300 font-medium hover:underline transition-colors"
+                          className="text-[10px] sm:text-xs text-white/60 hover:text-red-300 font-medium hover:underline transition-colors"
                         >
                           Forgot password?
                         </button>
                       </div>
                       <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
-                          <Lock className="w-5 h-5 text-white/40 group-focus-within:text-white transition-colors" />
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                          <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-white/40 group-focus-within:text-white transition-colors" />
                         </div>
                         <Input
                           id="login-password"
@@ -2421,7 +2423,7 @@ export default function HomePage() {
                           onChange={(e) => setAuthData({ ...authData, password: e.target.value })}
                           placeholder="•••••••"
                           required
-                          className="h-12 sm:h-13 pl-12 pr-4 bg-white/5 backdrop-blur-md border-2 border-white/10 text-white placeholder:text-white/30 focus:border-red-400 focus:bg-white/10 focus:ring-4 focus:ring-red-500/20 transition-all duration-300 text-sm sm:text-base"
+                          className="h-11 sm:h-12 pl-10 sm:pl-12 pr-4 bg-white/5 backdrop-blur-md border-2 border-white/10 text-white placeholder:text-white/30 focus:border-red-400 focus:bg-white/10 focus:ring-4 focus:ring-red-500/20 transition-all duration-300 text-sm sm:text-base"
                         />
                       </div>
                     </motion.div>
@@ -2434,7 +2436,7 @@ export default function HomePage() {
                     >
                       <Button
                         type="submit"
-                        className="w-full h-12 sm:h-13 bg-gradient-to-r from-red-600 via-orange-500 to-red-600 hover:from-red-700 hover:via-orange-600 hover:to-red-700 text-white font-semibold text-base sm:text-base shadow-2xl shadow-red-500/40 hover:shadow-red-500/60 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] border border-white/20"
+                        className="w-full h-11 sm:h-12 bg-gradient-to-r from-red-600 via-orange-500 to-red-600 hover:from-red-700 hover:via-orange-600 hover:to-red-700 text-white font-semibold text-sm sm:text-base shadow-2xl shadow-red-500/40 hover:shadow-red-500/60 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] border border-white/20"
                       >
                         <span className="relative z-10">Sign In</span>
                       </Button>
@@ -2446,11 +2448,11 @@ export default function HomePage() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.8 }}
-                    className="relative my-5 sm:my-6"
+                    className="relative my-4 sm:my-5"
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3 sm:gap-4">
                       <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                      <span className="text-xs text-white/40 font-medium uppercase tracking-wider">Or continue with</span>
+                      <span className="text-[10px] sm:text-xs text-white/40 font-medium uppercase tracking-wider">Or continue with</span>
                       <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
                     </div>
                   </motion.div>
@@ -2462,7 +2464,7 @@ export default function HomePage() {
                     transition={{ delay: 0.9 }}
                     className="text-center"
                   >
-                    <p className="text-sm text-white/70">
+                    <p className="text-xs sm:text-sm text-white/70">
                       Don't have an account?{' '}
                       <button
                         type="button"
@@ -2473,7 +2475,7 @@ export default function HomePage() {
                         className="text-white font-semibold hover:text-red-300 hover:underline transition-all inline-flex items-center gap-1.5 group"
                       >
                         Create Account
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
                       </button>
                     </p>
                   </motion.div>
@@ -2485,21 +2487,21 @@ export default function HomePage() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-                  className="space-y-4 sm:space-y-4"
+                  className="space-y-3 sm:space-y-4"
                 >
-                  <form onSubmit={handleAuth} className="space-y-4 sm:space-y-4">
+                  <form onSubmit={handleAuth} className="space-y-3 sm:space-y-4">
                     {/* Premium Name Field */}
                     <motion.div
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.5 }}
                     >
-                      <Label htmlFor="register-name" className="text-sm font-medium text-white/80 mb-2.5 block">
+                      <Label htmlFor="register-name" className="text-xs sm:text-sm font-medium text-white/80 mb-2 block">
                         Full Name
                       </Label>
                       <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
-                          <User className="w-5 h-5 text-white/40 group-focus-within:text-white transition-colors" />
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                          <User className="w-4 h-4 sm:w-5 sm:h-5 text-white/40 group-focus-within:text-white transition-colors" />
                         </div>
                         <Input
                           id="register-name"
@@ -2507,7 +2509,7 @@ export default function HomePage() {
                           onChange={(e) => setAuthData({ ...authData, name: e.target.value })}
                           placeholder="John Doe"
                           required
-                          className="h-11 sm:h-12 pl-12 pr-4 bg-white/5 backdrop-blur-md border-2 border-white/10 text-white placeholder:text-white/30 focus:border-red-400 focus:bg-white/10 focus:ring-4 focus:ring-red-500/20 transition-all duration-300 text-sm"
+                          className="h-10 sm:h-11 pl-10 sm:pl-12 pr-4 bg-white/5 backdrop-blur-md border-2 border-white/10 text-white placeholder:text-white/30 focus:border-red-400 focus:bg-white/10 focus:ring-4 focus:ring-red-500/20 transition-all duration-300 text-xs sm:text-sm"
                         />
                       </div>
                     </motion.div>
@@ -2518,12 +2520,12 @@ export default function HomePage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.55 }}
                     >
-                      <Label htmlFor="register-email" className="text-sm font-medium text-white/80 mb-2.5 block">
+                      <Label htmlFor="register-email" className="text-xs sm:text-sm font-medium text-white/80 mb-2 block">
                         Email Address
                       </Label>
                       <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
-                          <Mail className="w-5 h-5 text-white/40 group-focus-within:text-white transition-colors" />
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                          <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-white/40 group-focus-within:text-white transition-colors" />
                         </div>
                         <Input
                           id="register-email"
@@ -2532,7 +2534,7 @@ export default function HomePage() {
                           onChange={(e) => setAuthData({ ...authData, email: e.target.value })}
                           placeholder="your@email.com"
                           required
-                          className="h-11 sm:h-12 pl-12 pr-4 bg-white/5 backdrop-blur-md border-2 border-white/10 text-white placeholder:text-white/30 focus:border-red-400 focus:bg-white/10 focus:ring-4 focus:ring-red-500/20 transition-all duration-300 text-sm"
+                          className="h-10 sm:h-11 pl-10 sm:pl-12 pr-4 bg-white/5 backdrop-blur-md border-2 border-white/10 text-white placeholder:text-white/30 focus:border-red-400 focus:bg-white/10 focus:ring-4 focus:ring-red-500/20 transition-all duration-300 text-xs sm:text-sm"
                         />
                       </div>
                     </motion.div>
@@ -2543,12 +2545,12 @@ export default function HomePage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.6 }}
                     >
-                      <Label htmlFor="register-phone" className="text-sm font-medium text-white/80 mb-2.5 block">
+                      <Label htmlFor="register-phone" className="text-xs sm:text-sm font-medium text-white/80 mb-2 block">
                         Phone Number
                       </Label>
                       <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
-                          <Phone className="w-5 h-5 text-white/40 group-focus-within:text-white transition-colors" />
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                          <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-white/40 group-focus-within:text-white transition-colors" />
                         </div>
                         <Input
                           id="register-phone"
@@ -2556,7 +2558,7 @@ export default function HomePage() {
                           value={authData.phone}
                           onChange={(e) => setAuthData({ ...authData, phone: e.target.value })}
                           placeholder="081234567890"
-                          className="h-11 sm:h-12 pl-12 pr-4 bg-white/5 backdrop-blur-md border-2 border-white/10 text-white placeholder:text-white/30 focus:border-red-400 focus:bg-white/10 focus:ring-4 focus:ring-red-500/20 transition-all duration-300 text-sm"
+                          className="h-10 sm:h-11 pl-10 sm:pl-12 pr-4 bg-white/5 backdrop-blur-md border-2 border-white/10 text-white placeholder:text-white/30 focus:border-red-400 focus:bg-white/10 focus:ring-4 focus:ring-red-500/20 transition-all duration-300 text-xs sm:text-sm"
                         />
                       </div>
                     </motion.div>
@@ -2567,20 +2569,20 @@ export default function HomePage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.65 }}
                     >
-                      <Label htmlFor="register-address" className="text-sm font-medium text-white/80 mb-2.5 block">
+                      <Label htmlFor="register-address" className="text-xs sm:text-sm font-medium text-white/80 mb-2 block">
                         Full Address
                       </Label>
                       <div className="relative group">
-                        <div className="absolute top-3 left-0 pl-3.5 flex items-start pointer-events-none z-10">
-                          <MapPin className="w-5 h-5 text-white/40 group-focus-within:text-white transition-colors" />
+                        <div className="absolute top-2.5 left-0 pl-3 flex items-start pointer-events-none z-10">
+                          <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-white/40 group-focus-within:text-white transition-colors" />
                         </div>
                         <Textarea
                           id="register-address"
                           value={authData.address}
                           onChange={(e) => setAuthData({ ...authData, address: e.target.value })}
                           placeholder="Enter your full address"
-                          rows={2.5}
-                          className="pl-12 pr-4 py-3 bg-white/5 backdrop-blur-md border-2 border-white/10 text-white placeholder:text-white/30 focus:border-red-400 focus:bg-white/10 focus:ring-4 focus:ring-red-500/20 transition-all duration-300 text-sm resize-none"
+                          rows={2}
+                          className="pl-10 sm:pl-12 pr-4 py-2.5 bg-white/5 backdrop-blur-md border-2 border-white/10 text-white placeholder:text-white/30 focus:border-red-400 focus:bg-white/10 focus:ring-4 focus:ring-red-500/20 transition-all duration-300 text-xs sm:text-sm resize-none"
                         />
                       </div>
                     </motion.div>
@@ -2591,12 +2593,12 @@ export default function HomePage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.7 }}
                     >
-                      <Label htmlFor="register-password" className="text-sm font-medium text-white/80 mb-2.5 block">
+                      <Label htmlFor="register-password" className="text-xs sm:text-sm font-medium text-white/80 mb-2 block">
                         Password
                       </Label>
                       <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
-                          <Lock className="w-5 h-5 text-white/40 group-focus-within:text-white transition-colors" />
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                          <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-white/40 group-focus-within:text-white transition-colors" />
                         </div>
                         <Input
                           id="register-password"
@@ -2606,10 +2608,10 @@ export default function HomePage() {
                           placeholder="Create password"
                           required
                           minLength={6}
-                          className="h-11 sm:h-12 pl-12 pr-4 bg-white/5 backdrop-blur-md border-2 border-white/10 text-white placeholder:text-white/30 focus:border-red-400 focus:bg-white/10 focus:ring-4 focus:ring-red-500/20 transition-all duration-300 text-sm"
+                          className="h-10 sm:h-11 pl-10 sm:pl-12 pr-4 bg-white/5 backdrop-blur-md border-2 border-white/10 text-white placeholder:text-white/30 focus:border-red-400 focus:bg-white/10 focus:ring-4 focus:ring-red-500/20 transition-all duration-300 text-xs sm:text-sm"
                         />
                       </div>
-                      <p className="text-xs text-white/50 mt-1.5">Minimum 6 characters</p>
+                      <p className="text-[10px] sm:text-xs text-white/50 mt-1">Minimum 6 characters</p>
                     </motion.div>
 
                     {/* Premium Submit Button */}
@@ -2620,7 +2622,7 @@ export default function HomePage() {
                     >
                       <Button
                         type="submit"
-                        className="w-full h-11 sm:h-12 bg-gradient-to-r from-red-600 via-orange-500 to-red-600 hover:from-red-700 hover:via-orange-600 hover:to-red-700 text-white font-semibold text-base sm:text-base shadow-2xl shadow-red-500/40 hover:shadow-red-500/60 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] border border-white/20"
+                        className="w-full h-10 sm:h-11 bg-gradient-to-r from-red-600 via-orange-500 to-red-600 hover:from-red-700 hover:via-orange-600 hover:to-red-700 text-white font-semibold text-xs sm:text-sm shadow-2xl shadow-red-500/40 hover:shadow-red-500/60 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] border border-white/20"
                       >
                         <span className="relative z-10">Create Account</span>
                       </Button>
@@ -2632,11 +2634,11 @@ export default function HomePage() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.8 }}
-                    className="relative my-5"
+                    className="relative my-4 sm:my-5"
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3 sm:gap-4">
                       <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                      <span className="text-xs text-white/40 font-medium uppercase tracking-wider">Or continue with</span>
+                      <span className="text-[10px] sm:text-xs text-white/40 font-medium uppercase tracking-wider">Or continue with</span>
                       <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
                     </div>
                   </motion.div>
@@ -2648,7 +2650,7 @@ export default function HomePage() {
                     transition={{ delay: 0.85 }}
                     className="text-center"
                   >
-                    <p className="text-sm text-white/70">
+                    <p className="text-xs sm:text-sm text-white/70">
                       Already have an account?{' '}
                       <button
                         type="button"
@@ -2659,7 +2661,7 @@ export default function HomePage() {
                         className="text-white font-semibold hover:text-red-300 hover:underline transition-all inline-flex items-center gap-1.5 group"
                       >
                         Sign In
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
                       </button>
                     </p>
                   </motion.div>
