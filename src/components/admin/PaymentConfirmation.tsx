@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Eye, CheckCircle, XCircle, Clock, Download, RefreshCw, Calendar, User, CreditCard } from 'lucide-react'
+import { Search, Eye, CheckCircle, XCircle, Clock, Download, RefreshCw, Calendar, User, CreditCard, Star, Award } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -23,6 +23,8 @@ interface PaymentRequest {
   updatedAt: string
   items: { name: string; quantity: number; price: number }[]
   transactionDate?: string
+  userId?: string
+  pointsEarned?: number
 }
 
 export function PaymentConfirmation() {
@@ -35,13 +37,16 @@ export function PaymentConfirmation() {
 
   useEffect(() => {
     loadPayments()
-  }, [])
+  }, [statusFilter])
 
   const loadPayments = async () => {
     setIsLoading(true)
     try {
-      // Fetch payments from API
-      const res = await fetch('/api/payments')
+      // Fetch payments from API with status filter
+      const url = statusFilter === 'all'
+        ? '/api/payments'
+        : `/api/payments?status=${statusFilter}`
+      const res = await fetch(url)
 
       if (res.ok) {
         const data = await res.json()
@@ -88,16 +93,19 @@ export function PaymentConfirmation() {
         setPayments(prev =>
           prev.map(p =>
             p.id === paymentId
-              ? { ...p, paymentStatus: status, updatedAt: new Date().toISOString() }
+              ? { ...p, paymentStatus: status, updatedAt: new Date().toISOString(), pointsEarned: data.pointsAwarded || 0 }
               : p
           )
         )
 
-        toast.success(
-          status === 'verified'
-            ? `✅ Pembayaran ${data.orderNumber} berhasil dikonfirmasi!`
-            : `❌ Pembayaran ${data.orderNumber} ditolak!`
-        )
+        if (status === 'verified') {
+          toast.success(
+            `✅ Pembayaran ${data.orderNumber} berhasil dikonfirmasi! ${data.pointsAwarded ? `+${data.pointsAwarded} poin` : ''}`,
+            { duration: 5000 }
+          )
+        } else {
+          toast.error(`❌ Pembayaran ${data.orderNumber} ditolak!`)
+        }
 
         setIsDetailModalOpen(false)
         loadPayments()
@@ -419,6 +427,32 @@ export function PaymentConfirmation() {
                 </CardContent>
               </Card>
 
+              {/* Points Awarded - Only show if verified */}
+              {selectedPayment.paymentStatus === 'verified' && selectedPayment.pointsEarned && selectedPayment.pointsEarned > 0 && (
+                <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200">
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Award className="h-5 w-5 text-amber-600" />
+                      Poin Diperoleh
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">Pelanggan mendapatkan poin</p>
+                        <p className="text-xs text-gray-500">1 poin setiap Rp 100</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-3xl font-bold text-amber-600">
+                          +{selectedPayment.pointsEarned}
+                        </p>
+                        <p className="text-sm text-amber-700 font-medium">Poin</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Payment Proof */}
               <Card>
                 <CardHeader>
@@ -465,6 +499,37 @@ export function PaymentConfirmation() {
                     Terima Pembayaran
                   </Button>
                 </div>
+              )}
+
+              {/* Status Info - Show for non-pending payments */}
+              {selectedPayment.paymentStatus !== 'pending' && (
+                <Card className={selectedPayment.paymentStatus === 'verified' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      {selectedPayment.paymentStatus === 'verified' ? (
+                        <>
+                          <CheckCircle className="h-8 w-8 text-green-600" />
+                          <div>
+                            <p className="font-semibold text-green-800">Pembayaran Terverifikasi</p>
+                            <p className="text-sm text-green-700">
+                              Pesanan telah dikonfirmasi dan poin telah ditambahkan ke akun pelanggan.
+                            </p>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="h-8 w-8 text-red-600" />
+                          <div>
+                            <p className="font-semibold text-red-800">Pembayaran Ditolak</p>
+                            <p className="text-sm text-red-700">
+                              Pesanan telah dibatalkan dan tidak ada poin yang ditambahkan.
+                            </p>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               )}
             </div>
           )}
