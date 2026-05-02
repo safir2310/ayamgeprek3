@@ -240,6 +240,7 @@ export default function HomePage() {
   const [mounted, setMounted] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const [products, setProducts] = useState<any[]>([])
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [isLogin, setIsLogin] = useState(true)
@@ -307,6 +308,32 @@ export default function HomePage() {
       setMounted(true) // Ensure mounted is set even on error
     }
   }, [])
+
+  // Fetch products from database
+  const fetchProducts = async () => {
+    try {
+      const params = new URLSearchParams()
+      if (selectedCategory && selectedCategory !== 'all') {
+        params.set('category', selectedCategory)
+      }
+      if (searchQuery) {
+        params.set('search', searchQuery)
+      }
+
+      const res = await fetch(`/api/products?${params.toString()}`)
+      const data = await res.json()
+
+      if (data.success) {
+        setProducts(data.products)
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error)
+    }
+  }
+
+  useEffect(() => {
+    fetchProducts()
+  }, [selectedCategory, searchQuery])
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -669,11 +696,7 @@ export default function HomePage() {
     }
   }
 
-  const filteredProducts = mockProducts.filter((product) => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = selectedCategory === 'all' || product.category.toLowerCase().includes(selectedCategory.toLowerCase())
-    return matchesSearch && matchesCategory
-  })
+  const filteredProducts = products
 
   const cartTotal = cart.reduce((sum, item) => {
     const price = item.discountPrice || item.price
@@ -1251,8 +1274,20 @@ export default function HomePage() {
                   >
                     <Card className="overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer">
                       <div className="relative">
-                        <div className="aspect-square bg-gradient-to-br from-red-100 to-orange-100 flex items-center justify-center text-6xl">
-                          {product.image}
+                        <div className="aspect-square bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center overflow-hidden">
+                          {product.image ? (
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement
+                                target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23f3f4f6" rx="8"/%3E%3Ctext x="50" y="50" font-size="40" text-anchor="middle" fill="%23dc2626" text="📦" dy="15"/%3E%3C/svg%3E'
+                              }}
+                            />
+                          ) : (
+                            <span className="text-6xl">📦</span>
+                          )}
                         </div>
                         {product.discountPercent && (
                           <Badge className="absolute top-2 right-2 bg-red-600 text-white font-bold">
@@ -1286,8 +1321,10 @@ export default function HomePage() {
                               productId: product.id,
                               name: product.name,
                               price: product.price,
-                              discountPrice: product.discountPrice || undefined,
+                              discountPrice: product.discountPrice,
                               quantity: 1,
+                              image: product.image,
+                              category: product.category,
                             })
                             toast.success(`${product.name} ditambahkan ke keranjang`)
                           }}
@@ -1728,8 +1765,20 @@ export default function HomePage() {
               <div className="space-y-4">
                 {cart.map((item) => (
                   <div key={item.productId} className="flex gap-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-16 h-16 bg-gradient-to-br from-red-100 to-orange-100 rounded-lg flex items-center justify-center text-3xl">
-                      📦
+                    <div className="w-16 h-16 bg-gradient-to-br from-red-50 to-orange-50 rounded-lg flex items-center justify-center overflow-hidden">
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement
+                            target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23f3f4f6" rx="8"/%3E%3Ctext x="50" y="50" font-size="40" text-anchor="middle" fill="%23dc2626" text="📦" dy="15"/%3E%3C/svg%3E'
+                          }}
+                        />
+                      ) : (
+                        <span className="text-3xl">📦</span>
+                      )}
                     </div>
                     <div className="flex-1">
                       <h4 className="font-semibold text-sm">{item.name}</h4>

@@ -9,6 +9,8 @@ export interface CartItem {
   quantity: number
   image?: string
   barcode?: string
+  category?: string
+  isFree?: boolean
 }
 
 export interface User {
