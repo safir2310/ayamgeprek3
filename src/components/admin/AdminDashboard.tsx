@@ -284,7 +284,7 @@ const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   // Early return for POS page
   if (activePage === 'pos') {
     return (
-      <div className="hidden md:flex">
+      <div className="w-full">
         <POS onClose={() => setActivePage('dashboard')} />
       </div>
     );

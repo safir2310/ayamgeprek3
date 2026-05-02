@@ -148,11 +148,11 @@ export function POS({ onClose }: { onClose?: () => void }) {
   }
 
   return (
-    <div className="hidden md:flex min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
       {/* Header */}
-      <header className="bg-gradient-to-r from-red-600 to-orange-500 text-white px-6 py-4 shadow-lg sticky top-0 z-40">
+      <header className="bg-gradient-to-r from-red-600 to-orange-500 text-white px-4 md:px-6 py-4 shadow-lg sticky top-0 z-40">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
             <Button
               variant="ghost"
               size="icon"
@@ -162,7 +162,7 @@ export function POS({ onClose }: { onClose?: () => void }) {
               <X className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-xl font-bold">Point of Sale</h1>
+              <h1 className="text-lg md:text-xl font-bold">Point of Sale</h1>
               <p className="text-xs text-white/80">Ayam Geprek Sambal Ijo</p>
             </div>
           </div>
@@ -175,12 +175,12 @@ export function POS({ onClose }: { onClose?: () => void }) {
         </div>
       </header>
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         {/* Products Section */}
-        <div className="flex-1 flex flex-col p-6 overflow-hidden">
+        <div className="flex-1 flex flex-col p-4 md:p-6 overflow-hidden">
           {/* Search & Filters */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="flex-1 relative">
+          <div className="flex flex-col gap-4 mb-6">
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
               <Input
                 placeholder="Cari produk..."
@@ -189,7 +189,7 @@ export function POS({ onClose }: { onClose?: () => void }) {
                 className="pl-10"
               />
             </div>
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-2 flex-wrap overflow-x-auto pb-1">
               {categories.map(category => (
                 <Button
                   key={category}
@@ -210,7 +210,7 @@ export function POS({ onClose }: { onClose?: () => void }) {
 
           {/* Products Grid */}
           <div className="flex-1 overflow-y-auto">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
               {filteredProducts.map((product, index) => (
                 <motion.div
                   key={product.id}
@@ -221,14 +221,14 @@ export function POS({ onClose }: { onClose?: () => void }) {
                   className="cursor-pointer"
                 >
                   <Card className="h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                    <CardContent className="p-4">
-                      <div className="aspect-square bg-gradient-to-br from-red-50 to-orange-50 rounded-lg flex items-center justify-center text-5xl mb-3">
+                    <CardContent className="p-3 md:p-4">
+                      <div className="aspect-square bg-gradient-to-br from-red-50 to-orange-50 rounded-lg flex items-center justify-center text-4xl md:text-5xl mb-2 md:mb-3">
                         {product.image || '📦'}
                       </div>
-                      <h3 className="font-semibold text-sm mb-1 line-clamp-2">{product.name}</h3>
+                      <h3 className="font-semibold text-xs md:text-sm mb-1 line-clamp-2">{product.name}</h3>
                       <div className="flex items-center justify-between">
-                        <p className="text-red-600 font-bold">Rp {product.price.toLocaleString()}</p>
-                        <Badge variant={product.stock > 0 ? 'default' : 'secondary'}>
+                        <p className="text-red-600 font-bold text-xs md:text-sm">Rp {product.price.toLocaleString()}</p>
+                        <Badge variant={product.stock > 0 ? 'default' : 'secondary'} className="text-xs">
                           {product.stock > 0 ? `${product.stock} stok` : 'Habis'}
                         </Badge>
                       </div>
@@ -241,7 +241,7 @@ export function POS({ onClose }: { onClose?: () => void }) {
         </div>
 
         {/* Cart Section */}
-        <div className="w-full sm:w-96 bg-white shadow-xl border-l flex flex-col">
+        <div className="w-full md:w-96 bg-white shadow-xl border-t md:border-l md:border-t-0 flex flex-col h-[60vh] md:h-auto">
           <div className="p-4 border-b">
             <h2 className="text-lg font-bold flex items-center gap-2">
               <ShoppingBag className="h-5 w-5 text-red-600" />
@@ -257,12 +257,14 @@ export function POS({ onClose }: { onClose?: () => void }) {
                 placeholder="Nama Pelanggan"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
+                className="text-sm"
               />
             </div>
             <Input
               placeholder="No. Telepon (Opsional)"
               value={customerPhone}
               onChange={(e) => setCustomerPhone(e.target.value)}
+              className="text-sm"
             />
           </div>
 
@@ -289,12 +291,12 @@ export function POS({ onClose }: { onClose?: () => void }) {
                     transition={{ delay: index * 0.05 }}
                     className="flex gap-3 p-3 bg-gray-50 rounded-lg mb-3"
                   >
-                    <div className="w-16 h-16 bg-gradient-to-br from-red-100 to-orange-100 rounded-lg flex items-center justify-center text-3xl flex-shrink-0">
+                    <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-red-100 to-orange-100 rounded-lg flex items-center justify-center text-2xl md:text-3xl flex-shrink-0">
                       {item.image || '📦'}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-sm truncate">{item.name}</h4>
-                      <p className="text-red-600 font-bold text-sm">Rp {item.price.toLocaleString()}</p>
+                      <h4 className="font-semibold text-xs md:text-sm truncate">{item.name}</h4>
+                      <p className="text-red-600 font-bold text-xs md:text-sm">Rp {item.price.toLocaleString()}</p>
                       <div className="flex items-center gap-2 mt-2">
                         <Button
                           variant="outline"
@@ -324,7 +326,7 @@ export function POS({ onClose }: { onClose?: () => void }) {
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
-                      <p className="font-bold text-red-600">
+                      <p className="font-bold text-red-600 text-xs md:text-sm">
                         Rp {(item.price * item.quantity).toLocaleString()}
                       </p>
                     </div>
@@ -354,7 +356,7 @@ export function POS({ onClose }: { onClose?: () => void }) {
               <div className="flex gap-2">
                 <Button
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 text-sm md:text-base"
                   onClick={clearCart}
                   disabled={isProcessing}
                 >
@@ -362,7 +364,7 @@ export function POS({ onClose }: { onClose?: () => void }) {
                   Hapus
                 </Button>
                 <Button
-                  className="flex-1 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
+                  className="flex-1 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-sm md:text-base"
                   onClick={handleCheckout}
                   disabled={isProcessing}
                 >
