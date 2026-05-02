@@ -39,6 +39,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
@@ -2284,9 +2285,12 @@ export default function HomePage() {
               {isLogin ? 'Login' : 'Daftar'}
             </DialogTitle>
           </DialogHeader>
-
-          {isLogin ? (
-            <>
+          <Tabs value={isLogin ? 'login' : 'register'} onValueChange={(v) => setIsLogin(v === 'login')}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="login">Login</TabsTrigger>
+              <TabsTrigger value="register">Daftar</TabsTrigger>
+            </TabsList>
+            <TabsContent value="login">
               <form onSubmit={handleAuth} className="space-y-4">
                 <div>
                   <Label className="mb-1 block">Email</Label>
@@ -2325,13 +2329,9 @@ export default function HomePage() {
               <div className="mt-4 space-y-3">
                 <p className="text-sm text-center text-gray-600">
                   Belum punya akun?{' '}
-                  <button
-                    type="button"
-                    onClick={() => setIsLogin(false)}
-                    className="text-red-600 hover:text-red-700 font-semibold hover:underline"
-                  >
-                    Daftar disini
-                  </button>
+                  <span className="text-red-600 font-semibold">
+                    Silahkan daftar disini
+                  </span>
                 </p>
                 <div className="p-3 bg-gray-100 rounded text-sm">
                   <p className="font-semibold mb-1">Demo Account:</p>
@@ -2339,9 +2339,8 @@ export default function HomePage() {
                   <p className="text-xs">User: customer@gmail.com / user123</p>
                 </div>
               </div>
-            </>
-          ) : (
-            <>
+            </TabsContent>
+            <TabsContent value="register">
               <form onSubmit={handleAuth} className="space-y-4">
                 <div>
                   <Label className="mb-1 block">Nama Lengkap</Label>
@@ -2395,20 +2394,8 @@ export default function HomePage() {
                   Daftar
                 </Button>
               </form>
-              <div className="mt-4">
-                <p className="text-sm text-center text-gray-600">
-                  Sudah punya akun?{' '}
-                  <button
-                    type="button"
-                    onClick={() => setIsLogin(true)}
-                    className="text-red-600 hover:text-red-700 font-semibold hover:underline"
-                  >
-                    Login disini
-                  </button>
-                </p>
-              </div>
-            </>
-          )}
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
 
