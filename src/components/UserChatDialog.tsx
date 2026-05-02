@@ -157,15 +157,15 @@ export function UserChatDialog({ isOpen, onClose, userId, userName }: {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`p-0 gap-0 max-w-sm w-[350px] !z-[9999] rounded-2xl ${
-        isMinimized ? 'max-h-[60px]' : 'max-h-[550px]'
+      <DialogContent className={`p-0 gap-0 max-w-sm w-[280px] !z-[9999] rounded-2xl ${
+        isMinimized ? 'max-h-[50px]' : 'max-h-[400px]'
       }`}
         showCloseButton={false}
       >
         <DialogTitle className="sr-only">Chat dengan Admin</DialogTitle>
 
         {/* Header */}
-        <div className="bg-gradient-to-br from-red-600 via-red-500 to-orange-500 px-4 py-3 flex items-center justify-between relative overflow-hidden">
+        <div className="bg-gradient-to-br from-red-600 via-red-500 to-orange-500 px-3 py-2 flex items-center justify-between relative overflow-hidden">
           {/* Decorative pattern */}
           <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
           <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
@@ -178,8 +178,8 @@ export function UserChatDialog({ isOpen, onClose, userId, userName }: {
               <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></div>
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-sm leading-tight">CS Ayam Geprek</h3>
-              <p className="text-[10px] text-white/80 leading-tight">Online • Respon cepat</p>
+              <h3 className="font-semibold text-xs leading-tight">CS Ayam Geprek</h3>
+              <p className="text-[9px] text-white/80 leading-tight">Online • Respon cepat</p>
             </div>
           </div>
 
@@ -188,17 +188,17 @@ export function UserChatDialog({ isOpen, onClose, userId, userName }: {
               size="icon"
               variant="ghost"
               onClick={() => setIsMinimized(!isMinimized)}
-              className="text-white hover:bg-white/20 h-7 w-7 rounded-lg"
+              className="text-white hover:bg-white/20 h-6 w-6 rounded-lg"
             >
-              {isMinimized ? <Maximize2 className="h-3.5 w-3.5" /> : <Minimize2 className="h-3.5 w-3.5" />}
+              {isMinimized ? <Maximize2 className="h-3 w-3" /> : <Minimize2 className="h-3 w-3" />}
             </Button>
             <Button
               size="icon"
               variant="ghost"
               onClick={onClose}
-              className="text-white hover:bg-white/20 h-7 w-7 rounded-lg"
+              className="text-white hover:bg-white/20 h-6 w-6 rounded-lg"
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-3 w-3" />
             </Button>
           </div>
         </div>
@@ -206,7 +206,7 @@ export function UserChatDialog({ isOpen, onClose, userId, userName }: {
         {/* Messages */}
         {!isMinimized && (
           <>
-            <div className="p-3 bg-gray-50/50">
+            <div className="p-2 bg-gray-50/50">
               {isLoading ? (
                 <div className="text-center py-12">
                   <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-red-500 to-orange-500 rounded-full animate-pulse mb-3">
@@ -215,16 +215,16 @@ export function UserChatDialog({ isOpen, onClose, userId, userName }: {
                   <p className="text-xs text-gray-500 font-medium">Memuat percakapan...</p>
                 </div>
               ) : messages.length === 0 ? (
-                <div className="text-center py-8 px-4">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-red-100 to-orange-100 rounded-2xl mb-4">
-                    <MessageCircle className="h-8 w-8 text-red-500" />
+                <div className="text-center py-6 px-3">
+                  <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-red-100 to-orange-100 rounded-2xl mb-3">
+                    <MessageCircle className="h-6 w-6 text-red-500" />
                   </div>
-                  <p className="text-sm font-semibold text-gray-700 mb-1">Halo! Ada yang bisa kami bantu?</p>
-                  <p className="text-xs text-gray-500 leading-relaxed">Silakan tanyakan apa saja tentang produk atau pesanan Anda</p>
+                  <p className="text-xs font-semibold text-gray-700 mb-1">Halo! Ada yang bisa kami bantu?</p>
+                  <p className="text-[10px] text-gray-500 leading-relaxed">Silakan tanyakan apa saja tentang produk atau pesanan Anda</p>
                 </div>
               ) : (
-                <ScrollArea className="h-[340px] pr-2">
-                  <div className="space-y-3" ref={scrollRef}>
+                <ScrollArea className="h-[250px] pr-2">
+                  <div className="space-y-2" ref={scrollRef}>
                     <AnimatePresence mode="popLayout">
                       {messages.map((message, index) => (
                         <motion.div
@@ -243,9 +243,9 @@ export function UserChatDialog({ isOpen, onClose, userId, userName }: {
                                 : 'bg-white text-gray-900 border border-gray-200 rounded-bl-lg'
                             }`}
                           >
-                            <p className="text-[13px] leading-relaxed break-words">{message.message}</p>
+                            <p className="text-xs leading-relaxed break-words">{message.message}</p>
                             <div
-                              className={`text-[10px] mt-1.5 flex items-center gap-1 ${
+                              className={`text-[9px] mt-1 flex items-center gap-1 ${
                                 message.senderType === 'user' ? 'text-red-100' : 'text-gray-400'
                               }`}
                             >
@@ -269,7 +269,7 @@ export function UserChatDialog({ isOpen, onClose, userId, userName }: {
             </div>
 
             {/* Message Input */}
-            <div className="p-3 bg-white border-t border-gray-100">
+            <div className="p-2 bg-white border-t border-gray-100">
               <form onSubmit={handleSendMessage} className="flex gap-2">
                 <div className="flex-1 relative">
                   <Input
@@ -277,7 +277,7 @@ export function UserChatDialog({ isOpen, onClose, userId, userName }: {
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Tulis pesan..."
                     disabled={isSending || isLoading}
-                    className="pr-10 h-10 text-sm border-gray-200 focus:border-red-400 focus:ring-red-400/20 bg-gray-50/50"
+                    className="pr-10 h-9 text-xs border-gray-200 focus:border-red-400 focus:ring-red-400/20 bg-gray-50/50"
                   />
                   {newMessage && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -288,12 +288,12 @@ export function UserChatDialog({ isOpen, onClose, userId, userName }: {
                 <Button
                   type="submit"
                   disabled={isSending || isLoading || !newMessage.trim()}
-                  className="h-10 w-10 p-0 bg-gradient-to-br from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 rounded-xl shadow-md shadow-red-500/20 flex items-center justify-center"
+                  className="h-9 w-9 p-0 bg-gradient-to-br from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 rounded-xl shadow-md shadow-red-500/20 flex items-center justify-center"
                 >
                   {isSending ? (
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                   ) : (
-                    <Send className="h-4 w-4" />
+                    <Send className="h-3.5 w-3.5" />
                   )}
                 </Button>
               </form>
