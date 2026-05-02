@@ -1661,7 +1661,7 @@ export default function HomePage() {
 
       {/* Search Bar - Below Header (Home & Products tabs only) */}
       {(currentTab === 'home' || currentTab === 'products') && (
-        <div className="sticky top-[76px] sm:top-[88px] z-40 bg-white shadow-sm">
+        <div className="bg-white shadow-sm">
           <div className="container mx-auto px-3 py-3 sm:px-4 sm:py-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -1902,8 +1902,8 @@ export default function HomePage() {
               </Card>
             </motion.div>
 
-            {/* Categories - Sticky */}
-            <div className="sticky top-[136px] sm:top-[156px] z-30 bg-gradient-to-br from-red-50 via-orange-50 to-white shadow-sm mb-6">
+            {/* Categories */}
+            <div className="bg-gradient-to-br from-red-50 via-orange-50 to-white shadow-sm mb-6">
               <ScrollArea className="w-full">
                 <div className="flex gap-3 py-3 px-3">
                   {categories.map((category) => (
@@ -2015,8 +2015,8 @@ export default function HomePage() {
 
         {currentTab === 'products' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            {/* Categories - Sticky */}
-            <div className="sticky top-[136px] sm:top-[156px] z-30 bg-gradient-to-br from-red-50 via-orange-50 to-white shadow-sm mb-6">
+            {/* Categories */}
+            <div className="bg-gradient-to-br from-red-50 via-orange-50 to-white shadow-sm mb-6">
               <ScrollArea className="w-full">
                 <div className="flex gap-3 py-3 px-3">
                   {categories.map((category) => (
