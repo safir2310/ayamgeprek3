@@ -1203,12 +1203,12 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-red-50 via-orange-50 to-white">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-gradient-to-r from-red-600 to-orange-500 shadow-md">
-        <div className="container mx-auto px-4 py-2">
-          <div className="flex items-center justify-between gap-4">
+        <div className="container mx-auto px-3 py-1.5 sm:px-4 sm:py-2">
+          <div className="flex items-center justify-between gap-3 sm:gap-4">
             {/* Logo Section */}
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
               <div
-                className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-md cursor-pointer select-none active:scale-95 transition-transform md:cursor-default relative"
+                className="w-7 h-7 sm:w-8 sm:h-8 bg-white rounded-lg flex items-center justify-center shadow-md cursor-pointer select-none active:scale-95 transition-transform md:cursor-default relative"
                 onClick={handleLogoTap}
                 onTouchStart={handleLogoPressStart}
                 onMouseDown={handleLogoPressStart}
@@ -1216,7 +1216,7 @@ export default function HomePage() {
                 onMouseUp={handleLogoPressEnd}
                 onMouseLeave={handleLogoPressEnd}
               >
-                <svg viewBox="0 0 100 100" className="w-6 h-6">
+                <svg viewBox="0 0 100 100" className="w-5 h-5 sm:w-6 sm:h-6">
                   <defs>
                     <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="#DC2626" stopOpacity={1} />
@@ -1305,13 +1305,13 @@ export default function HomePage() {
                 )}
               </div>
               <div>
-                <h1 className="text-xs font-bold text-white tracking-wide">AYAM GEPREK SAMBAL IJO</h1>
+                <h1 className="text-[10px] sm:text-xs font-bold text-white tracking-wide leading-tight">AYAM GEPREK SAMBAL IJO</h1>
                 <button
                   onClick={() => setIsAddressModalOpen(true)}
-                  className="flex items-center gap-1 text-white/90 text-[10px] hover:text-white transition-colors cursor-pointer"
+                  className="flex items-center gap-1 text-white/90 text-[9px] sm:text-[10px] hover:text-white transition-colors cursor-pointer"
                 >
-                  <MapPin className="h-2.5 w-2.5" />
-                  <span className="truncate max-w-[150px]">Jl. Medan - Banda Aceh, Simpang Camat, Gampong Tijue, 24151</span>
+                  <MapPin className="h-2 w-2 sm:h-2.5 sm:w-2.5" />
+                  <span className="truncate max-w-[100px] sm:max-w-[150px]">Jl. Medan - Banda Aceh, Simpang Camat, Gampong Tijue, 24151</span>
                 </button>
                 {/* Mobile Admin Tap Indicator - Changed to 2 for double-tap */}
                 {adminTapCount > 0 && (
@@ -1346,46 +1346,46 @@ export default function HomePage() {
             {/* Search Bar */}
             <div className="flex-1 max-w-md">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-white/70" />
                 <Input
                   type="text"
                   placeholder="Cari produk..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-9 pl-10 pr-4 bg-white/10 border-2 border-white/20 rounded-xl text-white placeholder:text-white/50 focus:bg-white/20 focus:border-white/30 focus:ring-0 transition-all"
+                  className="w-full h-8 sm:h-9 pl-8 sm:pl-10 pr-3 sm:pr-4 bg-white/10 border-2 border-white/20 rounded-xl text-white placeholder:text-white/50 text-sm sm:text-base focus:bg-white/20 focus:border-white/30 focus:ring-0 transition-all"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all"
                   >
-                    <X className="h-4 w-4 text-white" />
+                    <X className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
                   </button>
                 )}
               </div>
             </div>
 
             {/* Right Side Buttons */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1">
               {user?.role === 'admin' && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-white hover:bg-white/20 h-8 w-8"
+                  className="text-white hover:bg-white/20 h-7 w-7 sm:h-8 sm:w-8"
                   onClick={() => setShowAdminDashboard(true)}
                 >
-                  <Store className="h-4 w-4" />
+                  <Store className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </Button>
               )}
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20 relative h-8 w-8"
+                className="text-white hover:bg-white/20 relative h-7 w-7 sm:h-8 sm:w-8"
                 onClick={() => setIsCartOpen(true)}
               >
-                <ShoppingCart className="h-4 w-4" />
+                <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 {cartCount > 0 && (
-                  <Badge className="absolute -top-0.5 -right-0.5 h-4 w-4 flex items-center justify-center bg-yellow-400 text-red-900 text-[9px] font-bold">
+                  <Badge className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 sm:h-4 sm:w-4 flex items-center justify-center bg-yellow-400 text-red-900 text-[8px] sm:text-[9px] font-bold">
                     {cartCount}
                   </Badge>
                 )}
@@ -1394,7 +1394,7 @@ export default function HomePage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-white hover:bg-white/20 relative h-8 w-8"
+                  className="text-white hover:bg-white/20 relative h-7 w-7 sm:h-8 sm:w-8"
                   onClick={() => {
                     if (user) {
                       setIsChatOpen(true)
@@ -1404,9 +1404,9 @@ export default function HomePage() {
                     }
                   }}
                 >
-                  <MessageCircle className="h-4 w-4" />
+                  <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   {unreadChatCount > 0 && (
-                    <Badge className="absolute -top-0.5 -right-0.5 h-4 w-4 flex items-center justify-center bg-red-500 text-white text-[9px] font-bold animate-pulse">
+                    <Badge className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 sm:h-4 sm:w-4 flex items-center justify-center bg-red-500 text-white text-[8px] sm:text-[9px] font-bold animate-pulse">
                       {unreadChatCount > 9 ? '9+' : unreadChatCount}
                     </Badge>
                   )}
@@ -1415,10 +1415,10 @@ export default function HomePage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20 h-8 w-8"
+                className="text-white hover:bg-white/20 h-7 w-7 sm:h-8 sm:w-8"
                 onClick={() => (user ? handleLogout() : setIsAuthModalOpen(true))}
               >
-                <User className="h-4 w-4" />
+                <User className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </Button>
             </div>
           </div>
@@ -1440,7 +1440,7 @@ export default function HomePage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 container mx-auto px-4 py-6 pb-24">
+      <main className="flex-1 container mx-auto px-3 py-4 pb-20 sm:px-4 sm:py-6">
         {currentTab === 'home' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             {/* Member Card */}
@@ -1792,31 +1792,31 @@ export default function HomePage() {
                             }}
                           />
                         ) : (
-                          <span className="text-6xl">📦</span>
+                          <span className="text-6xl sm:text-7xl">📦</span>
                         )}
                       </div>
                       {product.discountPercent && (
-                        <Badge className="absolute top-2 right-2 bg-red-600 text-white font-bold">
+                        <Badge className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold">
                           -{product.discountPercent}%
                         </Badge>
                       )}
                     </div>
-                    <CardContent className="p-3">
-                      <h3 className="font-semibold text-sm mb-1">{product.name}</h3>
+                    <CardContent className="p-2 sm:p-3">
+                      <h3 className="font-semibold text-sm sm:text-base mb-1 line-clamp-2">{product.name}</h3>
                       <div className="flex items-center justify-between mb-2">
                         <div>
-                          <p className="font-bold text-red-600">
+                          <p className="font-bold text-red-600 text-base sm:text-lg">
                             Rp {(product.discountPrice || product.price).toLocaleString()}
                           </p>
                           {product.discountPrice && (
-                            <p className="text-xs text-gray-400 line-through">
+                            <p className="text-xs sm:text-sm text-gray-400 line-through">
                               Rp {product.price.toLocaleString()}
                             </p>
                           )}
                         </div>
                       </div>
                       <Button
-                        className="w-full bg-gradient-to-r from-red-500 to-orange-500"
+                        className="w-full bg-gradient-to-r from-red-500 to-orange-500 text-xs sm:text-sm h-9 sm:h-10"
                         onClick={() => {
                           addToCart({
                             productId: product.id,
@@ -1830,7 +1830,7 @@ export default function HomePage() {
                           toast.success(`${product.name} ditambahkan ke keranjang`)
                         }}
                       >
-                        <Plus className="h-4 w-4 mr-1" />
+                        <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                         Tambah
                       </Button>
                     </CardContent>
@@ -1859,15 +1859,15 @@ export default function HomePage() {
             <div className="grid md:grid-cols-2 gap-4">
               {vouchers.map((voucher) => (
                 <Card key={voucher.code} className="border-dashed border-2 border-red-300">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white">
-                        <Percent className="h-8 w-8" />
+                  <CardContent className="p-2.5 sm:p-4">
+                    <div className="flex items-center gap-2 sm:gap-4">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white">
+                        <Percent className="h-5 w-5 sm:h-8 sm:w-8" />
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-bold text-lg">{voucher.name}</h4>
-                        <p className="text-sm text-gray-600">{voucher.description}</p>
-                        <Badge className="mt-2">{voucher.code}</Badge>
+                        <h4 className="font-bold text-base sm:text-lg">{voucher.name}</h4>
+                        <p className="text-sm sm:text-base text-gray-600">{voucher.description}</p>
+                        <Badge className="mt-1.5 sm:mt-2 text-xs">{voucher.code}</Badge>
                       </div>
                     </div>
                   </CardContent>
@@ -1900,11 +1900,11 @@ export default function HomePage() {
               <div className="space-y-4">
                 {orders.map((order) => (
                   <Card key={order.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-5 w-5 text-red-600" />
-                          <span className="font-semibold">{order.orderNumber}</span>
+                    <CardContent className="p-3 sm:p-4">
+                      <div className="flex items-center justify-between mb-2 sm:mb-3">
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
+                          <span className="font-semibold text-sm sm:text-base">{order.orderNumber}</span>
                         </div>
                         <Badge
                           className={
@@ -3138,8 +3138,8 @@ export default function HomePage() {
 
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-slate-200 dark:border-slate-700 dark:bg-slate-900/95 shadow-lg z-40">
-        <div className="container mx-auto px-2 max-w-md">
-          <div className="flex items-center justify-around py-1.5">
+        <div className="container mx-auto px-1 max-w-md">
+          <div className="flex items-center justify-around py-1">
             {[
               { id: 'home', icon: Home, label: 'Beranda' },
               { id: 'products', icon: Package, label: 'Belanja', notification: cartNotification },
@@ -3150,24 +3150,24 @@ export default function HomePage() {
               <button
                 key={item.id}
                 onClick={() => setCurrentTab(item.id)}
-                className="relative flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-all"
+                className="relative flex flex-col items-center gap-0 px-1.5 py-1 rounded-lg transition-all"
               >
                 {item.notification > 0 && (
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="absolute -top-0.5 -right-0.5 bg-gradient-to-r from-red-600 to-orange-500 text-white text-[10px] font-bold rounded-full h-4 min-w-[18px] flex items-center justify-center shadow-md"
+                    className="absolute -top-0 -right-0 bg-gradient-to-r from-red-600 to-orange-500 text-white text-[9px] font-bold rounded-full h-3 min-w-[15px] flex items-center justify-center shadow-md"
                   >
                     {item.notification > 9 ? '9+' : item.notification}
                   </motion.div>
                 )}
                 <item.icon
-                  className={`h-5 w-5 ${
+                  className={`h-4 w-4 sm:h-5 sm:w-5 ${
                     currentTab === item.id ? 'text-red-600' : 'text-slate-400'
                   }`}
                 />
                 <span
-                  className={`text-[10px] font-medium ${
+                  className={`text-[8px] sm:text-[9px] font-medium ${
                     currentTab === item.id ? 'text-red-600' : 'text-slate-400'
                   }`}
                 >
