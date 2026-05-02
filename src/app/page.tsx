@@ -2287,20 +2287,19 @@ export default function HomePage() {
           <DialogHeader className="sr-only">
             <DialogTitle>{isLogin ? 'Login' : 'Daftar'}</DialogTitle>
           </DialogHeader>
-          {/* Premium Background - Putih dengan Kombinasi Oren */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white via-orange-50 to-orange-100 -z-10"></div>
-          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-orange-200/30 to-transparent -z-10"></div>
+          {/* Premium Background - Putih */}
+          <div className="absolute inset-0 bg-white -z-10"></div>
 
           {/* Decorative Glow */}
-          <div className="absolute -top-32 -left-32 w-64 h-64 bg-orange-400/20 rounded-full blur-3xl -z-10"></div>
-          <div className="absolute -bottom-32 -right-32 w-64 h-64 bg-orange-500/15 rounded-full blur-3xl -z-10"></div>
+          <div className="absolute -top-32 -left-32 w-64 h-64 bg-orange-400/10 rounded-full blur-3xl -z-10"></div>
+          <div className="absolute -bottom-32 -right-32 w-64 h-64 bg-orange-500/8 rounded-full blur-3xl -z-10"></div>
 
           {/* Premium Close Button */}
           <button
             onClick={() => setIsAuthModalOpen(false)}
-            className="absolute top-4 right-4 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-orange-100 hover:bg-orange-200 backdrop-blur-sm border border-orange-200 transition-all duration-300"
+            className="absolute top-4 right-4 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 backdrop-blur-sm border border-gray-200 transition-all duration-300"
           >
-            <X className="w-4 h-4 text-orange-600 hover:text-orange-800 transition-colors" />
+            <X className="w-4 h-4 text-gray-500 hover:text-gray-700 transition-colors" />
           </button>
 
           <div className="relative p-5 sm:p-6">
@@ -2316,7 +2315,7 @@ export default function HomePage() {
                 <div className="absolute inset-0 bg-gradient-to-br from-orange-400 to-orange-500 rounded-2xl blur-lg opacity-40"></div>
                 <div className="absolute inset-0 bg-gradient-to-br from-orange-300 to-red-400 rounded-2xl blur-md opacity-30"></div>
                 {/* Main Icon */}
-                <div className="relative w-full h-full bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center shadow-2xl shadow-orange-500/40 border border-white/40">
+                <div className="relative w-full h-full bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center shadow-2xl shadow-orange-500/40 border border-white">
                   {isLogin ? (
                     <motion.div
                       initial={{ rotate: -180 }}
@@ -2345,7 +2344,7 @@ export default function HomePage() {
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1.5 sm:mb-2 tracking-tight">
                   {isLogin ? 'Welcome Back' : 'Create Account'}
                 </h2>
-                <p className="text-gray-600 text-xs sm:text-sm font-light">
+                <p className="text-gray-500 text-xs sm:text-sm font-light">
                   {isLogin
                     ? 'Sign in to access your account'
                     : 'Start your journey with us today'
@@ -2372,12 +2371,12 @@ export default function HomePage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.5 }}
                     >
-                      <Label htmlFor="login-email" className="text-xs sm:text-sm font-medium text-orange-950 mb-2 block">
+                      <Label htmlFor="login-email" className="text-xs sm:text-sm font-medium text-gray-700 mb-2 block">
                         Email Address
                       </Label>
                       <div className="relative group">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                          <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 group-focus-within:text-orange-700 transition-colors" />
+                          <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                         </div>
                         <Input
                           id="login-email"
@@ -2386,7 +2385,7 @@ export default function HomePage() {
                           onChange={(e) => setAuthData({ ...authData, email: e.target.value })}
                           placeholder="your@email.com"
                           required
-                          className="h-12 sm:h-13 pl-12 pr-4 bg-white/90 backdrop-blur-md border-2 border-orange-200 text-orange-950 placeholder:text-orange-400 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/30 transition-all duration-300 text-sm sm:text-base"
+                          className="h-12 sm:h-13 pl-12 pr-4 bg-gray-50 border-2 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/20 transition-all duration-300 text-sm sm:text-base"
                         />
                       </div>
                     </motion.div>
@@ -2398,7 +2397,7 @@ export default function HomePage() {
                       transition={{ delay: 0.6 }}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <Label htmlFor="login-password" className="text-xs sm:text-sm font-medium text-orange-950">
+                        <Label htmlFor="login-password" className="text-xs sm:text-sm font-medium text-gray-700">
                           Password
                         </Label>
                         <button
@@ -2407,14 +2406,14 @@ export default function HomePage() {
                             setIsForgotPasswordOpen(true)
                             setIsAuthModalOpen(false)
                           }}
-                          className="text-[10px] sm:text-xs text-orange-700 hover:text-orange-950 font-medium hover:underline transition-colors"
+                          className="text-[10px] sm:text-xs text-orange-500 hover:text-orange-700 font-medium hover:underline transition-colors"
                         >
                           Forgot password?
                         </button>
                       </div>
                       <div className="relative group">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                          <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 group-focus-within:text-orange-700 transition-colors" />
+                          <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                         </div>
                         <Input
                           id="login-password"
@@ -2423,7 +2422,7 @@ export default function HomePage() {
                           onChange={(e) => setAuthData({ ...authData, password: e.target.value })}
                           placeholder="•••••••"
                           required
-                          className="h-11 sm:h-12 pl-10 sm:pl-12 pr-4 bg-white/90 backdrop-blur-md border-2 border-orange-200 text-orange-950 placeholder:text-orange-400 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/30 transition-all duration-300 text-sm sm:text-base"
+                          className="h-11 sm:h-12 pl-10 sm:pl-12 pr-4 bg-gray-50 border-2 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/20 transition-all duration-300 text-sm sm:text-base"
                         />
                       </div>
                     </motion.div>
@@ -2451,9 +2450,9 @@ export default function HomePage() {
                     className="relative my-4 sm:my-5"
                   >
                     <div className="flex items-center gap-3 sm:gap-4">
-                      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-orange-400/50 to-transparent"></div>
-                      <span className="text-[10px] sm:text-xs text-orange-700/90 font-medium uppercase tracking-wider">Or continue with</span>
-                      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-orange-400/50 to-transparent"></div>
+                      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+                      <span className="text-[10px] sm:text-xs text-gray-500 font-medium uppercase tracking-wider">Or continue with</span>
+                      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
                     </div>
                   </motion.div>
 
@@ -2464,7 +2463,7 @@ export default function HomePage() {
                     transition={{ delay: 0.9 }}
                     className="text-center"
                   >
-                    <p className="text-xs sm:text-sm text-orange-800/90">
+                    <p className="text-xs sm:text-sm text-gray-600">
                       Don't have an account?{' '}
                       <button
                         type="button"
@@ -2472,7 +2471,7 @@ export default function HomePage() {
                           setIsLogin(false)
                           setAuthData({ email: '', password: '', name: '', phone: '', address: '' })
                         }}
-                        className="text-orange-950 font-semibold hover:text-red-700 hover:underline transition-all inline-flex items-center gap-1.5 group"
+                        className="text-orange-600 font-semibold hover:text-orange-700 hover:underline transition-all inline-flex items-center gap-1.5 group"
                       >
                         Create Account
                         <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
@@ -2496,12 +2495,12 @@ export default function HomePage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.5 }}
                     >
-                      <Label htmlFor="register-name" className="text-xs sm:text-sm font-medium text-orange-950 mb-2 block">
+                      <Label htmlFor="register-name" className="text-xs sm:text-sm font-medium text-gray-700 mb-2 block">
                         Full Name
                       </Label>
                       <div className="relative group">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                          <User className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 group-focus-within:text-orange-700 transition-colors" />
+                          <User className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                         </div>
                         <Input
                           id="register-name"
@@ -2509,7 +2508,7 @@ export default function HomePage() {
                           onChange={(e) => setAuthData({ ...authData, name: e.target.value })}
                           placeholder="John Doe"
                           required
-                          className="h-10 sm:h-11 pl-10 sm:pl-12 pr-4 bg-white/90 backdrop-blur-md border-2 border-orange-200 text-orange-950 placeholder:text-orange-400 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/30 transition-all duration-300 text-xs sm:text-sm"
+                          className="h-10 sm:h-11 pl-10 sm:pl-12 pr-4 bg-gray-50 border-2 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/20 transition-all duration-300 text-xs sm:text-sm"
                         />
                       </div>
                     </motion.div>
@@ -2520,12 +2519,12 @@ export default function HomePage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.55 }}
                     >
-                      <Label htmlFor="register-email" className="text-xs sm:text-sm font-medium text-orange-950 mb-2 block">
+                      <Label htmlFor="register-email" className="text-xs sm:text-sm font-medium text-gray-700 mb-2 block">
                         Email Address
                       </Label>
                       <div className="relative group">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                          <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 group-focus-within:text-orange-700 transition-colors" />
+                          <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                         </div>
                         <Input
                           id="register-email"
@@ -2534,7 +2533,7 @@ export default function HomePage() {
                           onChange={(e) => setAuthData({ ...authData, email: e.target.value })}
                           placeholder="your@email.com"
                           required
-                          className="h-10 sm:h-11 pl-10 sm:pl-12 pr-4 bg-white/90 backdrop-blur-md border-2 border-orange-200 text-orange-950 placeholder:text-orange-400 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/30 transition-all duration-300 text-xs sm:text-sm"
+                          className="h-10 sm:h-11 pl-10 sm:pl-12 pr-4 bg-gray-50 border-2 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/20 transition-all duration-300 text-xs sm:text-sm"
                         />
                       </div>
                     </motion.div>
@@ -2545,12 +2544,12 @@ export default function HomePage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.6 }}
                     >
-                      <Label htmlFor="register-phone" className="text-xs sm:text-sm font-medium text-orange-950 mb-2 block">
+                      <Label htmlFor="register-phone" className="text-xs sm:text-sm font-medium text-gray-700 mb-2 block">
                         Phone Number
                       </Label>
                       <div className="relative group">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                          <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 group-focus-within:text-orange-700 transition-colors" />
+                          <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                         </div>
                         <Input
                           id="register-phone"
@@ -2558,7 +2557,7 @@ export default function HomePage() {
                           value={authData.phone}
                           onChange={(e) => setAuthData({ ...authData, phone: e.target.value })}
                           placeholder="081234567890"
-                          className="h-10 sm:h-11 pl-10 sm:pl-12 pr-4 bg-white/90 backdrop-blur-md border-2 border-orange-200 text-orange-950 placeholder:text-orange-400 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/30 transition-all duration-300 text-xs sm:text-sm"
+                          className="h-10 sm:h-11 pl-10 sm:pl-12 pr-4 bg-gray-50 border-2 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/20 transition-all duration-300 text-xs sm:text-sm"
                         />
                       </div>
                     </motion.div>
@@ -2569,12 +2568,12 @@ export default function HomePage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.65 }}
                     >
-                      <Label htmlFor="register-address" className="text-xs sm:text-sm font-medium text-orange-950 mb-2 block">
+                      <Label htmlFor="register-address" className="text-xs sm:text-sm font-medium text-gray-700 mb-2 block">
                         Full Address
                       </Label>
                       <div className="relative group">
                         <div className="absolute top-2.5 left-0 pl-3 flex items-start pointer-events-none z-10">
-                          <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 group-focus-within:text-orange-700 transition-colors" />
+                          <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                         </div>
                         <Textarea
                           id="register-address"
@@ -2582,7 +2581,7 @@ export default function HomePage() {
                           onChange={(e) => setAuthData({ ...authData, address: e.target.value })}
                           placeholder="Enter your full address"
                           rows={2}
-                          className="pl-10 sm:pl-12 pr-4 py-2.5 bg-white/90 backdrop-blur-md border-2 border-orange-200 text-orange-950 placeholder:text-orange-400 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/30 transition-all duration-300 text-xs sm:text-sm resize-none"
+                          className="pl-10 sm:pl-12 pr-4 py-2.5 bg-gray-50 border-2 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/20 transition-all duration-300 text-xs sm:text-sm resize-none"
                         />
                       </div>
                     </motion.div>
@@ -2593,12 +2592,12 @@ export default function HomePage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.7 }}
                     >
-                      <Label htmlFor="register-password" className="text-xs sm:text-sm font-medium text-orange-950 mb-2 block">
+                      <Label htmlFor="register-password" className="text-xs sm:text-sm font-medium text-gray-700 mb-2 block">
                         Password
                       </Label>
                       <div className="relative group">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                          <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 group-focus-within:text-orange-700 transition-colors" />
+                          <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                         </div>
                         <Input
                           id="register-password"
@@ -2608,10 +2607,10 @@ export default function HomePage() {
                           placeholder="Create password"
                           required
                           minLength={6}
-                          className="h-10 sm:h-11 pl-10 sm:pl-12 pr-4 bg-white/90 backdrop-blur-md border-2 border-orange-200 text-orange-950 placeholder:text-orange-400 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/30 transition-all duration-300 text-xs sm:text-sm"
+                          className="h-10 sm:h-11 pl-10 sm:pl-12 pr-4 bg-gray-50 border-2 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/20 transition-all duration-300 text-xs sm:text-sm"
                         />
                       </div>
-                      <p className="text-[10px] sm:text-xs text-orange-600/80 mt-1">Minimum 6 characters</p>
+                      <p className="text-[10px] sm:text-xs text-gray-500 mt-1">Minimum 6 characters</p>
                     </motion.div>
 
                     {/* Premium Submit Button */}
@@ -2637,9 +2636,9 @@ export default function HomePage() {
                     className="relative my-4 sm:my-5"
                   >
                     <div className="flex items-center gap-3 sm:gap-4">
-                      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-orange-400/50 to-transparent"></div>
-                      <span className="text-[10px] sm:text-xs text-orange-700/90 font-medium uppercase tracking-wider">Or continue with</span>
-                      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-orange-400/50 to-transparent"></div>
+                      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+                      <span className="text-[10px] sm:text-xs text-gray-500 font-medium uppercase tracking-wider">Or continue with</span>
+                      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
                     </div>
                   </motion.div>
 
@@ -2650,7 +2649,7 @@ export default function HomePage() {
                     transition={{ delay: 0.85 }}
                     className="text-center"
                   >
-                    <p className="text-xs sm:text-sm text-orange-800/90">
+                    <p className="text-xs sm:text-sm text-gray-600">
                       Already have an account?{' '}
                       <button
                         type="button"
@@ -2658,7 +2657,7 @@ export default function HomePage() {
                           setIsLogin(true)
                           setAuthData({ email: '', password: '', name: '', phone: '', address: '' })
                         }}
-                        className="text-orange-950 font-semibold hover:text-red-700 hover:underline transition-all inline-flex items-center gap-1.5 group"
+                        className="text-orange-600 font-semibold hover:text-orange-700 hover:underline transition-all inline-flex items-center gap-1.5 group"
                       >
                         Sign In
                         <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
