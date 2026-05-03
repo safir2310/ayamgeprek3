@@ -1583,7 +1583,7 @@ export default function HomePage() {
                 )}
               </div>
               <div>
-                <h1 className="text-[10px] sm:text-xs font-bold text-white tracking-wide leading-tight whitespace-nowrap">AYAM GEPREK SAMBAL IJO</h1>
+                <h1 className="text-[11px] sm:text-xs lg:text-[13px] font-bold text-white tracking-wide leading-tight whitespace-nowrap">AYAM GEPREK SAMBAL IJO</h1>
                 <button
                   onClick={() => setIsAddressModalOpen(true)}
                   className="flex items-center gap-1 text-white/90 text-[9px] sm:text-[10px] hover:text-white transition-colors cursor-pointer truncate"
