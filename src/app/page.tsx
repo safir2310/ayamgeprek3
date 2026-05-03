@@ -2254,152 +2254,180 @@ export default function HomePage() {
         )}
 
         {currentTab === 'account' && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="space-y-6">
             {user ? (
-              <div className="space-y-6">
-                {/* Profile Header Card - Modern Glass Effect */}
-                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-500 via-orange-500 to-red-600 shadow-2xl">
-                  {/* Decorative Circles */}
-                  <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-                  <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-white/5 rounded-full blur-2xl"></div>
+              <>
+                {/* Profile Header Card - Premium Glass Effect */}
+                <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-red-500 via-orange-500 to-red-600 shadow-2xl">
+                  {/* Decorative Patterns */}
+                  <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+                  <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-white/5 rounded-full blur-2xl" />
+                  <div className="absolute top-0 left-0 w-full h-full opacity-20" style={{
+                    backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.3) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(255,255,255,0.2) 0%, transparent 50%)'
+                  }} />
 
-                  <CardContent className="relative p-6 text-white">
-                    <div className="flex flex-col md:flex-row items-center gap-6">
-                      {/* Profile Photo with Glow Effect */}
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full blur-sm opacity-75 animate-pulse"></div>
-                        <Avatar className="relative w-28 h-28 border-4 border-white/30 shadow-xl ring-4 ring-white/20">
-                          <AvatarImage src={(user as any).profilePhoto || undefined} />
-                          <AvatarFallback className="text-4xl bg-white/90 text-red-600 font-bold shadow-inner">
-                            {user.name?.charAt(0).toUpperCase() || 'P'}
-                          </AvatarFallback>
-                        </Avatar>
+                  <div className="relative p-8 text-white">
+                    <div className="flex flex-col md:flex-row items-center gap-8">
+                      {/* Profile Photo with Premium Glow Effect */}
+                      <div className="relative group">
+                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 rounded-full blur-lg opacity-75 animate-pulse" />
+                        <div className="relative w-32 h-32">
+                          <div className="absolute inset-0 bg-white/30 rounded-full backdrop-blur-sm" />
+                          <Avatar className="relative w-full h-full border-4 border-white/40 shadow-2xl ring-8 ring-white/10">
+                            <AvatarImage src={(user as any).profilePhoto || undefined} />
+                            <AvatarFallback className="text-5xl bg-white/95 text-red-600 font-bold shadow-inner">
+                              {user.name?.charAt(0).toUpperCase() || 'P'}
+                            </AvatarFallback>
+                          </Avatar>
+                        </div>
                         {/* Edit Photo Button Overlay */}
-                        <button
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
                           onClick={handleOpenEditProfile}
-                          className="absolute -bottom-1 -right-1 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-red-600 hover:scale-110 hover:bg-red-50 transition-all"
+                          className="absolute -bottom-2 -right-2 w-14 h-14 bg-gradient-to-br from-white to-gray-100 rounded-full shadow-2xl flex items-center justify-center text-red-600 hover:shadow-red-500/30 transition-all"
                         >
-                          <UserCircle className="h-5 w-5" />
-                        </button>
+                          <UserCircle className="h-7 w-7" />
+                        </motion.button>
                       </div>
 
                       {/* User Info */}
-                      <div className="flex-1 text-center md:text-left">
-                        <div className="flex flex-col md:flex-row items-center gap-3 mb-2">
-                          <h3 className="text-2xl font-bold">{user.name || 'Pelanggan'}</h3>
-                          <Badge className="px-3 py-1 bg-yellow-400 text-yellow-900 font-bold text-sm shadow-md">
+                      <div className="flex-1 text-center md:text-left space-y-3">
+                        <div className="flex flex-col md:flex-row items-center gap-3">
+                          <h3 className="text-3xl font-bold tracking-tight">{user.name || 'Pelanggan'}</h3>
+                          <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full font-bold text-sm shadow-lg shadow-yellow-500/30"
+                          >
                             {user.memberLevel}
-                          </Badge>
+                          </motion.div>
                         </div>
-                        <p className="text-white/90 text-sm mb-1">{user.email}</p>
-                        <div className="flex items-center gap-2 justify-center md:justify-start">
+                        <p className="text-white/95 text-lg font-medium">{user.email}</p>
+                        <div className="flex items-center gap-4 justify-center md:justify-start flex-wrap">
                           {user.phone && (
-                            <span className="text-xs text-white/80 flex items-center gap-1">
-                              <Phone className="h-3 w-3" />
-                              {user.phone}
-                            </span>
+                            <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/20">
+                              <Phone className="h-4 w-4" />
+                              <span className="text-sm font-medium">{user.phone}</span>
+                            </div>
                           )}
                           {user.address && (
-                            <span className="text-xs text-white/80 flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              {user.address.length > 20 ? user.address.substring(0, 20) + '...' : user.address}
-                            </span>
+                            <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/20">
+                              <MapPin className="h-4 w-4" />
+                              <span className="text-sm font-medium">{user.address.length > 30 ? user.address.substring(0, 30) + '...' : user.address}</span>
+                            </div>
                           )}
                         </div>
                       </div>
                     </div>
-                  </CardContent>
+                  </div>
                 </div>
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-3 gap-4">
+                {/* Stats Grid - Premium Design */}
+                <div className="grid grid-cols-3 gap-4 md:gap-6">
                   {/* Points Card */}
                   <motion.div
-                    whileHover={{ scale: 1.05, y: -5 }}
-                    transition={{ type: "spring", stiffness: 300 }}
+                    whileHover={{ scale: 1.08, y: -8 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 15 }}
                   >
-                    <Card className="relative overflow-hidden bg-gradient-to-br from-red-50 to-red-100 border-red-200 shadow-md hover:shadow-xl transition-all">
-                      <CardContent className="p-4 text-center relative">
-                        <div className="absolute top-2 right-2 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-                          <Star className="h-4 w-4 text-white" />
-                        </div>
-                        <div className="text-3xl font-bold text-red-600 mb-1">{user.points}</div>
-                        <div className="text-sm font-semibold text-red-700">Poin</div>
-                      </CardContent>
-                    </Card>
+                    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-red-50 via-red-100 to-orange-50 border-2 border-red-200 shadow-lg hover:shadow-2xl transition-all duration-300">
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-red-400 to-red-600 rounded-full blur-2xl opacity-20" />
+                      <div className="absolute top-3 right-3 w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg">
+                        <Star className="h-5 w-5 text-white" />
+                      </div>
+                      <div className="relative p-6 text-center">
+                        <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent mb-2">{user.points}</div>
+                        <div className="text-sm md:text-base font-semibold text-red-700">Poin</div>
+                      </div>
+                    </div>
                   </motion.div>
 
                   {/* Stamps Card */}
                   <motion.div
-                    whileHover={{ scale: 1.05, y: -5 }}
-                    transition={{ type: "spring", stiffness: 300 }}
+                    whileHover={{ scale: 1.08, y: -8 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 15 }}
                   >
-                    <Card className="relative overflow-hidden bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 shadow-md hover:shadow-xl transition-all">
-                      <CardContent className="p-4 text-center relative">
-                        <div className="absolute top-2 right-2 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                          <Flame className="h-4 w-4 text-white" />
-                        </div>
-                        <div className="text-3xl font-bold text-orange-600 mb-1">{user.stampCount}</div>
-                        <div className="text-sm font-semibold text-orange-700">Stamp</div>
-                      </CardContent>
-                    </Card>
+                    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-orange-50 via-orange-100 to-amber-50 border-2 border-orange-200 shadow-lg hover:shadow-2xl transition-all duration-300">
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full blur-2xl opacity-20" />
+                      <div className="absolute top-3 right-3 w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
+                        <Flame className="h-5 w-5 text-white" />
+                      </div>
+                      <div className="relative p-6 text-center">
+                        <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent mb-2">{user.stampCount}</div>
+                        <div className="text-sm md:text-base font-semibold text-orange-700">Stamp</div>
+                      </div>
+                    </div>
                   </motion.div>
 
                   {/* Stars Card */}
                   <motion.div
-                    whileHover={{ scale: 1.05, y: -5 }}
-                    transition={{ type: "spring", stiffness: 300 }}
+                    whileHover={{ scale: 1.08, y: -8 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 15 }}
                   >
-                    <Card className="relative overflow-hidden bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200 shadow-md hover:shadow-xl transition-all">
-                      <CardContent className="p-4 text-center relative">
-                        <div className="absolute top-2 right-2 w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
-                          <Gift className="h-4 w-4 text-white" />
-                        </div>
-                        <div className="text-3xl font-bold text-yellow-600 mb-1">{user.starCount}</div>
-                        <div className="text-sm font-semibold text-yellow-700">Star</div>
-                      </CardContent>
-                    </Card>
+                    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-yellow-50 via-yellow-100 to-amber-50 border-2 border-yellow-200 shadow-lg hover:shadow-2xl transition-all duration-300">
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full blur-2xl opacity-20" />
+                      <div className="absolute top-3 right-3 w-10 h-10 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl flex items-center justify-center shadow-lg">
+                        <Gift className="h-5 w-5 text-white" />
+                      </div>
+                      <div className="relative p-6 text-center">
+                        <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-yellow-600 to-amber-600 bg-clip-text text-transparent mb-2">{user.starCount}</div>
+                        <div className="text-sm md:text-base font-semibold text-yellow-700">Star</div>
+                      </div>
+                    </div>
                   </motion.div>
                 </div>
 
-                {/* Quick Actions - Grid Layout */}
-                <Card className="shadow-lg border-gray-200">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="flex items-center gap-2 text-gray-800">
-                      <Settings className="h-5 w-5 text-red-600" />
-                      Menu Cepat
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {/* Quick Actions - Modern Grid Layout */}
+                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-gray-50 to-white border-2 border-gray-200 shadow-2xl">
+                  {/* Decorative Glow Effects */}
+                  <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-red-400 to-orange-400 rounded-full blur-3xl opacity-20" />
+                  <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-gradient-to-br from-orange-300 to-red-300 rounded-full blur-2xl opacity-15" />
+                  
+                  <div className="relative p-6 md:p-8 border-b border-gray-200/50 bg-gradient-to-r from-gray-50/50 via-white/50 to-slate-50/50 backdrop-blur-sm">
+                    <div className="flex items-center gap-4">
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl blur-lg opacity-50" />
+                        <div className="relative w-12 h-12 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-xl shadow-red-500/40">
+                          <Settings className="h-6 w-6 text-white" />
+                        </div>
+                      </div>
+                      <h3 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">Menu Cepat</h3>
+                    </div>
+                  </div>
+                  <div className="relative p-6 md:p-8">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-5">
                       {/* Edit Profile */}
                       <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.08, y: -4 }}
+                        whileTap={{ scale: 0.92 }}
                         onClick={handleOpenEditProfile}
-                        className="flex flex-col items-center gap-2 p-4 rounded-xl bg-gradient-to-br from-red-50 to-red-100 border border-red-200 hover:shadow-md transition-all"
+                        className="group flex flex-col items-center gap-3 p-6 rounded-3xl bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-200 hover:shadow-xl hover:border-red-300 transition-all duration-300"
                       >
-                        <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
-                          <UserCircle className="h-6 w-6 text-white" />
+                        <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                          <UserCircle className="h-8 w-8 text-white" />
                         </div>
                         <span className="text-sm font-semibold text-red-700">Edit Profil</span>
                       </motion.button>
 
                       {/* Vouchers */}
                       <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.08, y: -4 }}
+                        whileTap={{ scale: 0.92 }}
                         onClick={() => setSelectedAccountSection('vouchers')}
-                        className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all ${
+                        className={`group flex flex-col items-center gap-3 p-6 rounded-3xl border-2 transition-all duration-300 ${
                           selectedAccountSection === 'vouchers'
-                            ? 'bg-gradient-to-br from-red-500 to-orange-500 border-red-500 shadow-xl'
-                            : 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-md'
+                            ? 'bg-gradient-to-br from-red-500 to-orange-500 border-red-500 shadow-2xl'
+                            : 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-xl hover:border-orange-300'
                         }`}
                       >
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg ${
-                          selectedAccountSection === 'vouchers' ? 'bg-white' : 'bg-orange-500'
+                        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300 ${
+                          selectedAccountSection === 'vouchers'
+                            ? 'bg-white'
+                            : 'bg-gradient-to-br from-orange-500 to-orange-600 group-hover:scale-110'
                         }`}>
-                          <Gift className={`h-6 w-6 ${selectedAccountSection === 'vouchers' ? 'text-red-500' : 'text-white'}`} />
+                          <Gift className={`h-8 w-8 transition-colors ${selectedAccountSection === 'vouchers' ? 'text-red-500' : 'text-white'}`} />
                         </div>
                         <span className={`text-sm font-semibold ${selectedAccountSection === 'vouchers' ? 'text-white' : 'text-orange-700'}`}>
                           Voucher
@@ -2408,19 +2436,21 @@ export default function HomePage() {
 
                       {/* Notifications */}
                       <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.08, y: -4 }}
+                        whileTap={{ scale: 0.92 }}
                         onClick={() => setSelectedAccountSection('notifications')}
-                        className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all ${
+                        className={`group flex flex-col items-center gap-3 p-6 rounded-3xl border-2 transition-all duration-300 ${
                           selectedAccountSection === 'notifications'
-                            ? 'bg-gradient-to-br from-red-500 to-orange-500 border-red-500 shadow-xl'
-                            : 'bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-md'
+                            ? 'bg-gradient-to-br from-red-500 to-orange-500 border-red-500 shadow-2xl'
+                            : 'bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-xl hover:border-purple-300'
                         }`}
                       >
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg ${
-                          selectedAccountSection === 'notifications' ? 'bg-white' : 'bg-purple-500'
+                        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300 ${
+                          selectedAccountSection === 'notifications'
+                            ? 'bg-white'
+                            : 'bg-gradient-to-br from-purple-500 to-purple-600 group-hover:scale-110'
                         }`}>
-                          <Bell className={`h-6 w-6 ${selectedAccountSection === 'notifications' ? 'text-red-500' : 'text-white'}`} />
+                          <Bell className={`h-8 w-8 transition-colors ${selectedAccountSection === 'notifications' ? 'text-red-500' : 'text-white'}`} />
                         </div>
                         <span className={`text-sm font-semibold ${selectedAccountSection === 'notifications' ? 'text-white' : 'text-purple-700'}`}>
                           Notifikasi
@@ -2429,19 +2459,21 @@ export default function HomePage() {
 
                       {/* Security */}
                       <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.08, y: -4 }}
+                        whileTap={{ scale: 0.92 }}
                         onClick={() => setSelectedAccountSection('security')}
-                        className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all ${
+                        className={`group flex flex-col items-center gap-3 p-6 rounded-3xl border-2 transition-all duration-300 ${
                           selectedAccountSection === 'security'
-                            ? 'bg-gradient-to-br from-red-500 to-orange-500 border-red-500 shadow-xl'
-                            : 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-md'
+                            ? 'bg-gradient-to-br from-red-500 to-orange-500 border-red-500 shadow-2xl'
+                            : 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-xl hover:border-blue-300'
                         }`}
                       >
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg ${
-                          selectedAccountSection === 'security' ? 'bg-white' : 'bg-blue-500'
+                        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300 ${
+                          selectedAccountSection === 'security'
+                            ? 'bg-white'
+                            : 'bg-gradient-to-br from-blue-500 to-blue-600 group-hover:scale-110'
                         }`}>
-                          <Lock className={`h-6 w-6 ${selectedAccountSection === 'security' ? 'text-red-500' : 'text-white'}`} />
+                          <Lock className={`h-8 w-8 transition-colors ${selectedAccountSection === 'security' ? 'text-red-500' : 'text-white'}`} />
                         </div>
                         <span className={`text-sm font-semibold ${selectedAccountSection === 'security' ? 'text-white' : 'text-blue-700'}`}>
                           Keamanan
@@ -2450,19 +2482,21 @@ export default function HomePage() {
 
                       {/* Settings */}
                       <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.08, y: -4 }}
+                        whileTap={{ scale: 0.92 }}
                         onClick={() => setSelectedAccountSection('settings')}
-                        className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all ${
+                        className={`group flex flex-col items-center gap-3 p-6 rounded-3xl border-2 transition-all duration-300 ${
                           selectedAccountSection === 'settings'
-                            ? 'bg-gradient-to-br from-red-500 to-orange-500 border-red-500 shadow-xl'
-                            : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 hover:shadow-md'
+                            ? 'bg-gradient-to-br from-red-500 to-orange-500 border-red-500 shadow-2xl'
+                            : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 hover:shadow-xl hover:border-gray-300'
                         }`}
                       >
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg ${
-                          selectedAccountSection === 'settings' ? 'bg-white' : 'bg-gray-500'
+                        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300 ${
+                          selectedAccountSection === 'settings'
+                            ? 'bg-white'
+                            : 'bg-gradient-to-br from-gray-500 to-gray-600 group-hover:scale-110'
                         }`}>
-                          <Settings className={`h-6 w-6 ${selectedAccountSection === 'settings' ? 'text-red-500' : 'text-white'}`} />
+                          <Settings className={`h-8 w-8 transition-colors ${selectedAccountSection === 'settings' ? 'text-red-500' : 'text-white'}`} />
                         </div>
                         <span className={`text-sm font-semibold ${selectedAccountSection === 'settings' ? 'text-white' : 'text-gray-700'}`}>
                           Pengaturan
@@ -2471,19 +2505,19 @@ export default function HomePage() {
 
                       {/* Logout */}
                       <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.08, y: -4 }}
+                        whileTap={{ scale: 0.92 }}
                         onClick={handleLogout}
-                        className="flex flex-col items-center gap-2 p-4 rounded-xl bg-gradient-to-br from-red-50 to-red-100 border border-red-200 hover:shadow-md transition-all"
+                        className="group flex flex-col items-center gap-3 p-6 rounded-3xl bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-200 hover:shadow-xl hover:border-red-300 transition-all duration-300"
                       >
-                        <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center shadow-lg">
-                          <LogOut className="h-6 w-6 text-white" />
+                        <div className="w-16 h-16 bg-gradient-to-br from-red-600 to-red-700 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                          <LogOut className="h-8 w-8 text-white" />
                         </div>
                         <span className="text-sm font-semibold text-red-700">Logout</span>
                       </motion.button>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
                 {/* Dynamic Sections */}
                 {selectedAccountSection === 'vouchers' && (
@@ -3021,7 +3055,7 @@ export default function HomePage() {
                     </Card>
                   </motion.div>
                 )}
-              </div>
+              </>
             ) : (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
