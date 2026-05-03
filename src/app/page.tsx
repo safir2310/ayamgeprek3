@@ -1636,28 +1636,27 @@ export default function HomePage() {
                   </Badge>
                 )}
               </Button>
-              {user?.role !== 'admin' && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-white hover:bg-white/20 relative h-10 w-10 sm:h-10 sm:w-10"
-                  onClick={() => {
-                    if (user) {
-                      setIsChatOpen(true)
-                    } else {
-                      toast.info('Silakan login untuk menggunakan fitur chat')
-                      setIsAuthModalOpen(true)
-                    }
-                  }}
-                >
-                  <MessageCircle className="h-5 w-5 sm:h-5 sm:w-5" />
-                  {unreadChatCount > 0 && (
-                    <Badge className="absolute -top-0.5 -right-0.5 h-5 w-5 sm:h-5 sm:w-5 flex items-center justify-center bg-red-500 text-white text-[10px] sm:text-[10px] font-bold animate-pulse">
-                      {unreadChatCount > 9 ? '9+' : unreadChatCount}
-                    </Badge>
-                  )}
-                </Button>
-              )}
+              {/* Chat Button */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/20 relative h-10 w-10 sm:h-10 sm:w-10"
+                onClick={() => {
+                  if (user) {
+                    setIsChatOpen(true)
+                  } else {
+                    toast.info('Silakan login untuk menggunakan fitur chat')
+                    setIsAuthModalOpen(true)
+                  }
+                }}
+              >
+                <MessageCircle className="h-5 w-5 sm:h-5 sm:w-5" />
+                {unreadChatCount > 0 && (
+                  <Badge className="absolute -top-0.5 -right-0.5 h-5 w-5 sm:h-5 sm:w-5 flex items-center justify-center bg-red-500 text-white text-[10px] sm:text-[10px] font-bold animate-pulse">
+                    {unreadChatCount > 9 ? '9+' : unreadChatCount}
+                  </Badge>
+                )}
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
