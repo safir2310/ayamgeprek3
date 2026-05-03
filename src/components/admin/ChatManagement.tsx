@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, MessageCircle, Send, User, Clock, X, Check, MoreVertical, ChevronRight, Archive, XCircle, RefreshCw } from 'lucide-react'
+import { Search, MessageCircle, Send, User, Clock, X, Check, MoreVertical, ChevronRight, Archive, XCircle, RefreshCw, Sparkles, Shield, CheckCircle2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -184,13 +184,16 @@ export function ChatManagement() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Chat Pelanggan</h2>
-          <p className="text-gray-600">Komunikasi dengan pelanggan</p>
+          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+            <MessageCircle className="h-7 w-7 text-red-500" />
+            Chat Pelanggan
+          </h2>
+          <p className="text-gray-600 mt-1">Komunikasi dengan pelanggan secara real-time</p>
         </div>
         <Button
           onClick={loadConversations}
           variant="outline"
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 border-2 rounded-2xl hover:bg-red-50 hover:border-red-200 transition-all"
         >
           <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
           Refresh
@@ -198,16 +201,16 @@ export function ChatManagement() {
       </div>
 
       {/* Search & Filters */}
-      <Card>
-        <CardContent className="p-4">
+      <Card className="shadow-lg border-2 border-gray-100 rounded-3xl">
+        <CardContent className="p-5">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
               <Input
                 placeholder="Cari nama, email, atau subjek..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-12 h-12 rounded-2xl border-2 border-gray-200 focus:border-red-400 focus:ring-2 focus:ring-red-400/20"
               />
             </div>
             <div className="flex gap-2 flex-wrap">
@@ -215,7 +218,7 @@ export function ChatManagement() {
                 variant={statusFilter === 'all' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setStatusFilter('all')}
-                className={statusFilter === 'all' ? 'bg-gradient-to-r from-red-600 to-orange-500' : ''}
+                className={`rounded-2xl font-medium ${statusFilter === 'all' ? 'bg-gradient-to-r from-red-500 to-orange-500 border-0' : 'border-2'}`}
               >
                 Semua
               </Button>
@@ -223,7 +226,7 @@ export function ChatManagement() {
                 variant={statusFilter === 'active' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setStatusFilter('active')}
-                className={statusFilter === 'active' ? 'bg-gradient-to-r from-red-600 to-orange-500' : ''}
+                className={`rounded-2xl font-medium ${statusFilter === 'active' ? 'bg-gradient-to-r from-red-500 to-orange-500 border-0' : 'border-2'}`}
               >
                 Aktif
               </Button>
@@ -231,7 +234,7 @@ export function ChatManagement() {
                 variant={statusFilter === 'closed' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setStatusFilter('closed')}
-                className={statusFilter === 'closed' ? 'bg-gradient-to-r from-red-600 to-orange-500' : ''}
+                className={`rounded-2xl font-medium ${statusFilter === 'closed' ? 'bg-gradient-to-r from-red-500 to-orange-500 border-0' : 'border-2'}`}
               >
                 Ditutup
               </Button>
@@ -243,75 +246,99 @@ export function ChatManagement() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Conversations List */}
         <div className="lg:col-span-1">
-          <Card className="h-[600px]">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Percakapan</CardTitle>
+          <Card className="h-[650px] shadow-xl border-2 border-gray-100 rounded-3xl">
+            <CardHeader className="pb-4 border-b border-gray-100">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <MessageCircle className="h-5 w-5 text-red-500" />
+                Percakapan
+              </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <ScrollArea className="h-[500px]">
-                <div className="space-y-1 p-3">
+              <ScrollArea className="h-[550px]">
+                <div className="space-y-2 p-4">
                   {isLoading ? (
-                    <div className="text-center py-8 text-gray-500">
-                      <RefreshCw className="h-8 w-8 mx-auto mb-2 animate-spin" />
-                      <p className="text-sm">Memuat percakapan...</p>
+                    <div className="text-center py-12 text-gray-500">
+                      <RefreshCw className="h-10 w-10 mx-auto mb-3 animate-spin text-red-400" />
+                      <p className="text-sm font-medium">Memuat percakapan...</p>
                     </div>
                   ) : filteredConversations.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                      <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">Tidak ada percakapan</p>
+                    <div className="text-center py-12 text-gray-500">
+                      <motion.div
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl mb-3"
+                      >
+                        <MessageCircle className="h-8 w-8 text-gray-400" />
+                      </motion.div>
+                      <p className="text-sm font-medium">Tidak ada percakapan</p>
                     </div>
                   ) : (
-                    filteredConversations.map((conv) => (
-                      <motion.button
-                        key={conv.id}
-                        whileHover={{ scale: 1.01 }}
-                        whileTap={{ scale: 0.99 }}
-                        onClick={() => handleSelectConversation(conv)}
-                        className={`w-full text-left p-3 rounded-lg transition-all ${
-                          selectedConversation?.id === conv.id
-                            ? 'bg-gradient-to-r from-red-50 to-orange-50 border border-red-200'
-                            : 'hover:bg-gray-50 border border-transparent'
-                        }`}
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <User className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                              <p className="font-medium text-sm text-gray-900 truncate">
-                                {conv.user.name}
-                              </p>
-                              {conv.unreadCount > 0 && (
-                                <Badge className="bg-red-500 text-white text-xs h-5 min-w-[20px] flex items-center justify-center px-1">
-                                  {conv.unreadCount}
-                                </Badge>
+                    <AnimatePresence mode="popLayout">
+                      {filteredConversations.map((conv) => (
+                        <motion.button
+                          key={conv.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          transition={{ duration: 0.2 }}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => handleSelectConversation(conv)}
+                          className={`w-full text-left p-4 rounded-2xl transition-all ${
+                            selectedConversation?.id === conv.id
+                              ? 'bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 shadow-lg shadow-red-100/50'
+                              : 'hover:bg-gray-50 border-2 border-transparent'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-md shadow-red-500/20">
+                                  {conv.user.name.charAt(0).toUpperCase()}
+                                </div>
+                                <p className="font-semibold text-sm text-gray-900 truncate">
+                                  {conv.user.name}
+                                </p>
+                                {conv.unreadCount > 0 && (
+                                  <Badge className="bg-red-500 text-white text-xs h-5 min-w-[20px] flex items-center justify-center px-1.5 rounded-full shadow-md shadow-red-500/30">
+                                    {conv.unreadCount}
+                                  </Badge>
+                                )}
+                              </div>
+                              {conv.subject && (
+                                <p className="text-xs text-gray-600 truncate mb-1 font-medium">{conv.subject}</p>
                               )}
+                              {conv.lastMessage && (
+                                <p className="text-xs text-gray-500 truncate leading-relaxed">
+                                  {conv.lastMessage.message}
+                                </p>
+                              )}
+                              <div className="flex items-center gap-1 mt-2 text-xs text-gray-400">
+                                <Clock className="h-3 w-3" />
+                                {formatDate(conv.updatedAt)}
+                              </div>
                             </div>
-                            {conv.subject && (
-                              <p className="text-xs text-gray-600 truncate">{conv.subject}</p>
-                            )}
-                            {conv.lastMessage && (
-                              <p className="text-xs text-gray-500 truncate">
-                                {conv.lastMessage.message}
-                              </p>
-                            )}
-                            <div className="flex items-center gap-1 mt-1 text-xs text-gray-400">
-                              <Clock className="h-3 w-3" />
-                              {formatDate(conv.updatedAt)}
-                            </div>
+                            <Badge
+                              variant="outline"
+                              className={`text-xs rounded-full border-2 ${
+                                conv.status === 'active'
+                                  ? 'text-green-600 border-green-200 bg-green-50'
+                                  : 'text-gray-500 border-gray-200 bg-gray-50'
+                              }`}
+                            >
+                              {conv.status === 'active' ? (
+                                <span className="flex items-center gap-1">
+                                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                                  Aktif
+                                </span>
+                              ) : (
+                                'Ditutup'
+                              )}
+                            </Badge>
                           </div>
-                          <Badge
-                            variant="outline"
-                            className={`text-xs ${
-                              conv.status === 'active'
-                                ? 'text-green-600 border-green-200'
-                                : 'text-gray-500 border-gray-200'
-                            }`}
-                          >
-                            {conv.status === 'active' ? 'Aktif' : 'Ditutup'}
-                          </Badge>
-                        </div>
-                      </motion.button>
-                    ))
+                        </motion.button>
+                      ))}
+                    </AnimatePresence>
                   )}
                 </div>
               </ScrollArea>
@@ -321,20 +348,24 @@ export function ChatManagement() {
 
         {/* Chat Window */}
         <div className="lg:col-span-2">
-          <Card className="h-[600px]">
+          <Card className="h-[650px] shadow-xl border-2 border-gray-100 rounded-3xl">
             {selectedConversation ? (
               <>
-                <CardHeader className="pb-3 border-b">
+                <CardHeader className="pb-4 border-b border-gray-100 bg-gradient-to-r from-red-50 to-orange-50">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white">
-                        <User className="h-5 w-5" />
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl flex items-center justify-center text-white text-lg font-bold shadow-lg shadow-red-500/30">
+                        {selectedConversation.user.name.charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <CardTitle className="text-base">{selectedConversation.user.name}</CardTitle>
-                        <p className="text-xs text-gray-500">
-                          {selectedConversation.user.email}
-                          {selectedConversation.orderId && ` • Order: ${selectedConversation.orderId}`}
+                        <CardTitle className="text-lg font-bold text-gray-900">{selectedConversation.user.name}</CardTitle>
+                        <p className="text-xs text-gray-600 mt-0.5 flex items-center gap-2">
+                          <span>{selectedConversation.user.email}</span>
+                          {selectedConversation.orderId && (
+                            <Badge variant="outline" className="text-xs rounded-full border-2">
+                              Order: {selectedConversation.orderId}
+                            </Badge>
+                          )}
                         </p>
                       </div>
                     </div>
@@ -343,7 +374,7 @@ export function ChatManagement() {
                         size="sm"
                         variant="outline"
                         onClick={() => handleCloseConversation(selectedConversation.id)}
-                        className="text-red-600 hover:bg-red-50"
+                        className="text-red-600 hover:bg-red-50 hover:border-red-200 border-2 rounded-2xl font-medium transition-all"
                       >
                         <XCircle className="h-4 w-4 mr-1" />
                         Tutup
@@ -353,34 +384,44 @@ export function ChatManagement() {
                 </CardHeader>
                 <CardContent className="p-0">
                   {/* Messages */}
-                  <ScrollArea className="h-[440px] p-4" ref={scrollRef}>
+                  <ScrollArea className="h-[460px] p-5" ref={scrollRef}>
                     <div className="space-y-4">
-                      <AnimatePresence>
+                      <AnimatePresence mode="popLayout">
                         {messages.map((message) => (
                           <motion.div
                             key={message.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
+                            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                            transition={{ duration: 0.3 }}
                             layout
                             className={`flex ${message.senderType === 'admin' ? 'justify-end' : 'justify-start'}`}
                           >
-                            <div
-                              className={`max-w-[70%] rounded-2xl px-4 py-2 ${
-                                message.senderType === 'admin'
-                                  ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
-                                  : 'bg-gray-100 text-gray-900'
-                              }`}
-                            >
-                              <p className="text-sm">{message.message}</p>
+                            <div className="flex items-end gap-2 max-w-[70%]">
+                              {message.senderType === 'user' && (
+                                <div className="w-8 h-8 bg-gradient-to-br from-gray-400 to-gray-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mb-1">
+                                  {selectedConversation.user.name.charAt(0).toUpperCase()}
+                                </div>
+                              )}
                               <div
-                                className={`text-xs mt-1 ${
-                                  message.senderType === 'admin' ? 'text-red-100' : 'text-gray-400'
+                                className={`px-4 py-3 shadow-md ${
+                                  message.senderType === 'admin'
+                                    ? 'bg-gradient-to-br from-red-500 to-orange-500 text-white rounded-[24px] rounded-br-md shadow-lg shadow-red-500/20'
+                                    : 'bg-white text-gray-900 rounded-[24px] rounded-bl-md shadow-md border-2 border-gray-100'
                                 }`}
                               >
-                                {formatDate(message.createdAt)}
-                                {message.senderType === 'admin' && (
-                                  <Check className="inline h-3 w-3 ml-1" />
-                                )}
+                                <p className="text-sm leading-relaxed">{message.message}</p>
+                                <div
+                                  className={`text-[10px] mt-2 flex items-center justify-end gap-1.5 ${
+                                    message.senderType === 'admin' ? 'text-red-100' : 'text-gray-400'
+                                  }`}
+                                >
+                                  <Clock className="w-3 h-3" />
+                                  {formatDate(message.createdAt)}
+                                  {message.senderType === 'admin' && (
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </motion.div>
@@ -391,32 +432,62 @@ export function ChatManagement() {
 
                   {/* Message Input */}
                   {selectedConversation.status === 'active' && (
-                    <div className="p-4 border-t">
-                      <form onSubmit={handleSendMessage} className="flex gap-2">
-                        <Input
-                          value={newMessage}
-                          onChange={(e) => setNewMessage(e.target.value)}
-                          placeholder="Tulis pesan..."
-                          disabled={isSending}
-                          className="flex-1"
-                        />
+                    <div className="p-5 border-t border-gray-100 bg-gradient-to-b from-white to-red-50/30">
+                      <form onSubmit={handleSendMessage} className="flex gap-3">
+                        <div className="flex-1 relative">
+                          <Input
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
+                            placeholder="Tulis pesan balasan..."
+                            disabled={isSending}
+                            className="pr-12 h-12 rounded-2xl border-2 border-gray-200 focus:border-red-400 focus:ring-2 focus:ring-red-400/20"
+                          />
+                          {newMessage && (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="absolute right-4 top-1/2 -translate-y-1/2"
+                            >
+                              <div className="flex gap-1">
+                                <div className="w-1.5 h-1.5 bg-red-400 rounded-full animate-pulse"></div>
+                                <div className="w-1.5 h-1.5 bg-red-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                                <div className="w-1.5 h-1.5 bg-red-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </div>
                         <Button
                           type="submit"
                           disabled={isSending || !newMessage.trim()}
-                          className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600"
+                          className="h-12 w-12 bg-gradient-to-br from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 rounded-2xl shadow-lg shadow-red-500/25 flex items-center justify-center transition-all hover:scale-105 active:scale-95"
                         >
-                          <Send className="h-4 w-4" />
+                          {isSending ? (
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                          ) : (
+                            <Send className="h-4 w-4" />
+                          )}
                         </Button>
                       </form>
+                      <p className="text-[10px] text-gray-400 mt-3 text-center font-medium flex items-center justify-center gap-2">
+                        <Shield className="w-3 h-3" />
+                        Pesan tersimpan dan terenkripsi dengan aman
+                      </p>
                     </div>
                   )}
                 </CardContent>
               </>
             ) : (
-              <CardContent className="h-full flex items-center justify-center">
+              <CardContent className="h-full flex items-center justify-center bg-gradient-to-br from-red-50/30 to-orange-50/30">
                 <div className="text-center text-gray-500">
-                  <MessageCircle className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <p>Pilih percakapan untuk memulai chat</p>
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-red-100 to-orange-100 rounded-3xl mb-4 shadow-lg"
+                  >
+                    <MessageCircle className="h-12 w-12 text-red-400" />
+                  </motion.div>
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">Pilih Percakapan</h3>
+                  <p className="text-sm">Klik pada salah satu percakapan untuk memulai chat</p>
                 </div>
               </CardContent>
             )}
