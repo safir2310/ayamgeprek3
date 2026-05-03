@@ -1583,14 +1583,16 @@ export default function HomePage() {
                 )}
               </div>
               <div>
-                <h1 className="text-[10px] sm:text-xs font-bold text-white tracking-wide leading-tight">AYAM GEPREK SAMBAL IJO</h1>
-                <button
-                  onClick={() => setIsAddressModalOpen(true)}
-                  className="flex items-center gap-1 text-white/90 text-[9px] sm:text-[10px] hover:text-white transition-colors cursor-pointer"
-                >
-                  <MapPin className="h-2 w-2 sm:h-2.5 sm:w-2.5" />
-                  <span className="truncate max-w-[80px] sm:max-w-[120px]">Jl. Medan - Banda Aceh, Simpang Camat, Gampong Tijue, 24151</span>
-                </button>
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <h1 className="text-[10px] sm:text-xs font-bold text-white tracking-wide leading-tight whitespace-nowrap">AYAM GEPREK SAMBAL IJO</h1>
+                  <button
+                    onClick={() => setIsAddressModalOpen(true)}
+                    className="flex items-center gap-1 text-white/90 text-[9px] sm:text-[10px] hover:text-white transition-colors cursor-pointer truncate"
+                  >
+                    <MapPin className="h-2 w-2 sm:h-2.5 sm:w-2.5 flex-shrink-0" />
+                    <span className="truncate max-w-[60px] sm:max-w-[80px] lg:max-w-[100px]">Jl. Medan - Banda Aceh, Simpang Camat, Gampong Tijue, 24151</span>
+                  </button>
+                </div>
                 {/* Mobile Admin Tap Indicator - Changed to 2 for double-tap */}
                 {adminTapCount > 0 && (
                   <div className="md:hidden flex items-center gap-1 mt-1">
