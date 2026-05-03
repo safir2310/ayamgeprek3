@@ -1583,13 +1583,13 @@ export default function HomePage() {
                 )}
               </div>
               <div>
-                <h1 className="text-[10px] sm:text-xs font-bold text-white tracking-wide leading-tight">AYAM GEPREK SAMBAL IJO</h1>
+                <h1 className="text-[10px] sm:text-xs font-bold text-white tracking-wide leading-tight truncate max-w-[100px] sm:max-w-[140px] lg:max-w-[180px]">AYAM GEPREK SAMBAL IJO</h1>
                 <button
                   onClick={() => setIsAddressModalOpen(true)}
                   className="flex items-center gap-1 text-white/90 text-[9px] sm:text-[10px] hover:text-white transition-colors cursor-pointer truncate"
                 >
                   <MapPin className="h-2 w-2 sm:h-2.5 sm:w-2.5 flex-shrink-0" />
-                  <span className="truncate max-w-[80px] sm:max-w-[120px] lg:max-w-[150px]">Jl. Medan - Banda Aceh, Simpang Camat, Gampong Tijue, 24151</span>
+                  <span className="truncate max-w-[100px] sm:max-w-[140px] lg:max-w-[180px]">Jl. Medan - Banda Aceh, Simpang Camat, Gampong Tijue, 24151</span>
                 </button>
                 {/* Mobile Admin Tap Indicator - Changed to 2 for double-tap */}
                 {adminTapCount > 0 && (
