@@ -1481,12 +1481,12 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-red-50 via-orange-50 to-white">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-gradient-to-br from-red-600 via-red-500 to-orange-500 shadow-xl shadow-red-900/20 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-3 sm:px-6 sm:py-4">
-          <div className="flex items-center justify-between gap-3 sm:gap-4">
+        <div className="container mx-auto px-3 py-2.5 sm:px-5 sm:py-3">
+          <div className="flex items-center justify-between gap-2 sm:gap-3">
             {/* Logo Section */}
-            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
               <div
-                className="w-11 h-11 sm:w-12 sm:h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-lg shadow-black/10 cursor-pointer select-none active:scale-95 transition-all hover:scale-105 hover:bg-white/20 md:cursor-default relative border-2 border-white/20"
+                className="w-9 h-9 sm:w-10 sm:h-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center shadow-lg shadow-black/10 cursor-pointer select-none active:scale-95 transition-all hover:scale-105 hover:bg-white/20 md:cursor-default relative border-2 border-white/20"
                 onClick={handleLogoTap}
                 onTouchStart={handleLogoPressStart}
                 onMouseDown={handleLogoPressStart}
@@ -1494,7 +1494,7 @@ export default function HomePage() {
                 onMouseUp={handleLogoPressEnd}
                 onMouseLeave={handleLogoPressEnd}
               >
-                <svg viewBox="0 0 100 100" className="w-8 h-8 sm:w-8 sm:h-8">
+                <svg viewBox="0 0 100 100" className="w-7 h-7 sm:w-8 sm:h-8">
                   <defs>
                     <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="#DC2626" stopOpacity={1} />
@@ -1583,13 +1583,13 @@ export default function HomePage() {
                 )}
               </div>
               <div>
-                <h1 className="text-[11px] sm:text-xs font-bold text-white tracking-wide leading-tight">AYAM GEPREK SAMBAL IJO</h1>
+                <h1 className="text-[10px] sm:text-xs font-bold text-white tracking-wide leading-tight">AYAM GEPREK SAMBAL IJO</h1>
                 <button
                   onClick={() => setIsAddressModalOpen(true)}
-                  className="flex items-center gap-1.5 text-white/90 text-[10px] sm:text-[10px] hover:text-white transition-colors cursor-pointer"
+                  className="flex items-center gap-1 text-white/90 text-[9px] sm:text-[10px] hover:text-white transition-colors cursor-pointer"
                 >
-                  <MapPin className="h-2.5 w-2.5 sm:h-2.5 sm:w-2.5" />
-                  <span className="truncate max-w-[100px] sm:max-w-[150px]">Jl. Medan - Banda Aceh, Simpang Camat, Gampong Tijue, 24151</span>
+                  <MapPin className="h-2 w-2 sm:h-2.5 sm:w-2.5" />
+                  <span className="truncate max-w-[80px] sm:max-w-[120px]">Jl. Medan - Banda Aceh, Simpang Camat, Gampong Tijue, 24151</span>
                 </button>
                 {/* Mobile Admin Tap Indicator - Changed to 2 for double-tap */}
                 {adminTapCount > 0 && (
@@ -1622,16 +1622,16 @@ export default function HomePage() {
             </div>
 
             {/* Right Side Buttons */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20 hover:scale-110 active:scale-95 relative h-11 w-11 sm:h-12 sm:w-12 rounded-2xl transition-all shadow-md shadow-black/10"
+                className="text-white hover:bg-white/20 hover:scale-110 active:scale-95 relative h-9 w-9 sm:h-9 sm:w-9 rounded-xl transition-all"
                 onClick={() => setIsCartOpen(true)}
               >
-                <ShoppingCart className="h-5 w-5 sm:h-5 sm:w-5" />
+                <ShoppingCart className="h-4.5 w-4.5 sm:h-4.5 sm:w-4.5" />
                 {cartCount > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 sm:h-5 sm:w-5 flex items-center justify-center bg-yellow-400 text-red-900 text-[10px] sm:text-[10px] font-bold rounded-full shadow-lg shadow-yellow-400/30">
+                  <Badge className="absolute -top-0.5 -right-0.5 h-4.5 w-4.5 sm:h-4.5 sm:w-4.5 flex items-center justify-center bg-yellow-400 text-red-900 text-[9px] sm:text-[9px] font-bold rounded-full shadow-md shadow-yellow-400/30">
                     {cartCount}
                   </Badge>
                 )}
@@ -1640,7 +1640,7 @@ export default function HomePage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20 hover:scale-110 active:scale-95 relative h-11 w-11 sm:h-12 sm:w-12 rounded-2xl transition-all shadow-md shadow-black/10"
+                className="text-white hover:bg-white/20 hover:scale-110 active:scale-95 relative h-9 w-9 sm:h-9 sm:w-9 rounded-xl transition-all"
                 onClick={() => {
                   if (user) {
                     setIsChatOpen(true)
@@ -1650,9 +1650,9 @@ export default function HomePage() {
                   }
                 }}
               >
-                <MessageCircle className="h-5 w-5 sm:h-5 sm:w-5" />
+                <MessageCircle className="h-4.5 w-4.5 sm:h-4.5 sm:w-4.5" />
                 {unreadChatCount > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 sm:h-5 sm:w-5 flex items-center justify-center bg-red-500 text-white text-[10px] sm:text-[10px] font-bold rounded-full shadow-lg shadow-red-500/30 animate-pulse">
+                  <Badge className="absolute -top-0.5 -right-0.5 h-4.5 w-4.5 sm:h-4.5 sm:w-4.5 flex items-center justify-center bg-red-500 text-white text-[9px] sm:text-[9px] font-bold rounded-full shadow-md shadow-red-500/30 animate-pulse">
                     {unreadChatCount > 9 ? '9+' : unreadChatCount}
                   </Badge>
                 )}
@@ -1660,10 +1660,10 @@ export default function HomePage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/20 hover:scale-110 active:scale-95 h-11 w-11 sm:h-12 sm:w-12 rounded-2xl transition-all shadow-md shadow-black/10"
+                className="text-white hover:bg-white/20 hover:scale-110 active:scale-95 h-9 w-9 sm:h-9 sm:w-9 rounded-xl transition-all"
                 onClick={() => (user ? handleLogout() : setIsAuthModalOpen(true))}
               >
-                <User className="h-5 w-5 sm:h-5 sm:w-5" />
+                <User className="h-4.5 w-4.5 sm:h-4.5 sm:w-4.5" />
               </Button>
             </div>
           </div>
@@ -1673,22 +1673,22 @@ export default function HomePage() {
       {/* Search Bar - Below Header (Home & Products tabs only) */}
       {(currentTab === 'home' || currentTab === 'products') && (
         <div className="bg-white/80 backdrop-blur-md shadow-md shadow-gray-200/50 border-b border-gray-100/50">
-          <div className="container mx-auto px-4 py-4 sm:px-6 sm:py-5">
+          <div className="container mx-auto px-3 py-3 sm:px-5 sm:py-3.5">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-gray-400" />
               <Input
                 type="text"
                 placeholder="Cari produk..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-12 pl-12 pr-12 bg-gray-50/80 border-2 border-gray-200 rounded-2xl text-sm placeholder:text-gray-400 focus:bg-white focus:border-red-400 focus:ring-2 focus:ring-red-400/20 transition-all shadow-sm focus:shadow-md"
+                className="w-full h-10 pl-10 pr-10 bg-gray-50/80 border-2 border-gray-200 rounded-xl text-sm placeholder:text-gray-400 focus:bg-white focus:border-red-400 focus:ring-2 focus:ring-red-400/20 transition-all shadow-sm focus:shadow-md"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-all hover:scale-110 active:scale-95"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-all hover:scale-110 active:scale-95"
                 >
-                  <X className="h-4 w-4 text-gray-500" />
+                  <X className="h-3.5 w-3.5 text-gray-500" />
                 </button>
               )}
             </div>
