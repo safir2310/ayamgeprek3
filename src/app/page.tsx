@@ -44,6 +44,7 @@ import {
   RefreshCw,
   AlertCircle,
   Printer,
+  LayoutDashboard,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -2145,12 +2146,25 @@ export default function HomePage() {
                       <div className="flex-1 text-center md:text-left space-y-3">
                         <div className="flex flex-col md:flex-row items-center gap-3">
                           <h3 className="text-3xl font-bold tracking-tight">{user.name || 'Pelanggan'}</h3>
-                          <motion.div
-                            whileHover={{ scale: 1.05 }}
-                            className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full font-bold text-sm shadow-lg shadow-yellow-500/30"
-                          >
-                            {user.memberLevel}
-                          </motion.div>
+                          <div className="flex items-center gap-2">
+                            <motion.div
+                              whileHover={{ scale: 1.05 }}
+                              className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full font-bold text-sm shadow-lg shadow-yellow-500/30"
+                            >
+                              {user.memberLevel}
+                            </motion.div>
+                            {user.role === 'admin' && (
+                              <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => setShowAdminDashboard(true)}
+                                className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all"
+                                title="Dashboard Admin"
+                              >
+                                <LayoutDashboard className="h-6 w-6 text-white" />
+                              </motion.button>
+                            )}
+                          </div>
                         </div>
                         <p className="text-white/95 text-lg font-medium">{user.email}</p>
                         <div className="flex items-center gap-4 justify-center md:justify-start flex-wrap">
