@@ -454,6 +454,13 @@ const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                 >
                   <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
                 </button>
+                <button
+                  onClick={() => setActivePage('dashboard')}
+                  className={`p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ${activePage === 'dashboard' ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white' : 'text-slate-600 dark:text-slate-300'}`}
+                  title="Dashboard"
+                >
+                  <LayoutDashboard className="w-5 h-5" />
+                </button>
                 <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-violet-600 rounded-xl flex items-center justify-center text-white font-semibold shadow-lg shadow-pink-500/25">
                   AD
                 </div>
