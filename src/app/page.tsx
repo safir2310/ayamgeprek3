@@ -61,141 +61,7 @@ import { POS } from '@/components/admin/POS'
 import AdminDashboard from '@/components/admin/AdminDashboard'
 import { UserChatDialog } from '@/components/UserChatDialog'
 
-// Mock data - using product IDs from database
-const mockProducts = [
-  {
-    id: 'cmok8z92g0008l9tmj547udj5',
-    name: 'Ayam Geprek Original',
-    price: 15000,
-    discountPrice: null,
-    discountPercent: null,
-    category: 'Makanan',
-    image: '🍗',
-    stock: 50,
-    barcode: 'AG001',
-  },
-  {
-    id: 'cmok8z92i000al9tmtv04aoyn',
-    name: 'Ayam Geprek Keju',
-    price: 18000,
-    discountPrice: 15000,
-    discountPercent: 17,
-    category: 'Makanan',
-    image: '🧀',
-    stock: 30,
-    barcode: 'AG002',
-  },
-  {
-    id: 'cmok8z92k000cl9tmjo7tdo9y',
-    name: 'Nasi Pecel Ayam',
-    price: 20000,
-    discountPrice: null,
-    discountPercent: null,
-    category: 'Makanan',
-    image: '🍛',
-    stock: 40,
-    barcode: 'NP001',
-  },
-  {
-    id: 'cmok8z92m000el9tmc7bluwiq',
-    name: 'Es Teh Manis',
-    price: 5000,
-    discountPrice: null,
-    discountPercent: null,
-    category: 'Minuman',
-    image: '🧊',
-    stock: 100,
-    barcode: 'ET001',
-  },
-  {
-    id: 'cmok8z92n000gl9tmfb1hhbst',
-    name: 'Es Jeruk Peras',
-    price: 8000,
-    discountPrice: null,
-    discountPercent: null,
-    category: 'Minuman',
-    image: '🍊',
-    stock: 80,
-    barcode: 'EJ001',
-  },
-  {
-    id: 'cmok8z92p000il9tmbhu75gv0',
-    name: 'Kopi Susu Gula Aren',
-    price: 12000,
-    discountPrice: null,
-    discountPercent: null,
-    category: 'Minuman',
-    image: '☕',
-    stock: 60,
-    barcode: 'KS001',
-  },
-  {
-    id: 'cmok8z92q000kl9tmgxz2cbc5',
-    name: 'Keripik Singkong',
-    price: 10000,
-    discountPrice: null,
-    discountPercent: null,
-    category: 'Snack',
-    image: '🍠',
-    stock: 50,
-    barcode: 'KS002',
-  },
-  {
-    id: 'cmok8z92r000ml9tmm6p1onbq',
-    name: 'Kerupuk Udang',
-    price: 12000,
-    discountPrice: 10000,
-    discountPercent: 17,
-    category: 'Snack',
-    image: '🦐',
-    stock: 40,
-    barcode: 'KU001',
-  },
-  {
-    id: 'cmok8z92t000ol9tmmsag6wb4',
-    name: 'Sambal Ijo Botol',
-    price: 25000,
-    discountPrice: null,
-    discountPercent: null,
-    category: 'Bumbu',
-    image: '🌶️',
-    stock: 30,
-    barcode: 'SI001',
-  },
-  {
-    id: 'cmok8z92u000ql9tmoqdxfzz7',
-    name: 'Sambal Merah',
-    price: 20000,
-    discountPrice: null,
-    discountPercent: null,
-    category: 'Bumbu',
-    image: '🔴',
-    stock: 35,
-    barcode: 'SM001',
-  },
-  {
-    id: 'cmok8z92v000sl9tm5e4nz4cb',
-    name: 'Bumbu Rendang',
-    price: 8000,
-    discountPrice: null,
-    discountPercent: null,
-    category: 'Bumbu',
-    image: '🥘',
-    stock: 45,
-    barcode: 'BR001',
-  },
-  {
-    id: 'cmok8z92w000ul9tmt4vb8lvu',
-    name: 'Minyak Goreng 2L',
-    price: 35000,
-    discountPrice: 30000,
-    discountPercent: 14,
-    category: 'Kebutuhan Rumah',
-    image: '🫗',
-    stock: 25,
-    barcode: 'MG001',
-  },
-]
+// Mock data removed - products are fetched from database via /api/products
 
 const categories = [
   { id: 'all', name: 'Semua', icon: '🛒' },
@@ -206,42 +72,9 @@ const categories = [
   { id: 'kebutuhan-rumah', name: 'Kebutuhan Rumah', icon: '🏠' },
 ]
 
-const mockOrders = [
-  {
-    id: 'ORD001',
-    orderNumber: 'ORD1704067200000',
-    totalAmount: 65000,
-    finalAmount: 65000,
-    paymentMethod: 'COD',
-    paymentStatus: 'paid',
-    orderStatus: 'completed',
-    createdAt: '2024-01-15T10:30:00',
-    items: [
-      { name: 'Ayam Geprek Keju', quantity: 2, price: 15000 },
-      { name: 'Es Teh Manis', quantity: 2, price: 5000 },
-      { name: 'Sambal Ijo Botol', quantity: 1, price: 25000 },
-    ],
-  },
-  {
-    id: 'ORD002',
-    orderNumber: 'ORD1704067300000',
-    totalAmount: 30000,
-    finalAmount: 30000,
-    paymentMethod: 'QRIS',
-    paymentStatus: 'paid',
-    orderStatus: 'shipped',
-    createdAt: '2024-01-14T14:45:00',
-    items: [
-      { name: 'Nasi Pecel Ayam', quantity: 1, price: 20000 },
-      { name: 'Kopi Susu Gula Aren', quantity: 1, price: 12000 },
-    ],
-  },
-]
+// Mock data removed - orders are fetched from database via /api/orders
 
-const vouchers = [
-  { code: 'DISKON10', name: 'Diskon 10%', description: 'Min. belanja Rp 50.000', value: 10 },
-  { code: 'HEMAT20K', name: 'Hemat Rp 20.000', description: 'Min. belanja Rp 100.000', value: 20000 },
-]
+// Mock data removed - vouchers are fetched from database via /api/user/vouchers
 
 export default function HomePage() {
   const [mounted, setMounted] = useState(false)
@@ -249,6 +82,7 @@ export default function HomePage() {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [products, setProducts] = useState<any[]>([])
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [isLogin, setIsLogin] = useState(true)
@@ -418,6 +252,7 @@ export default function HomePage() {
 
   // Fetch products from database
   const fetchProducts = async () => {
+    setIsLoadingProducts(true)
     try {
       const params = new URLSearchParams()
       if (selectedCategory && selectedCategory !== 'all') {
@@ -435,6 +270,9 @@ export default function HomePage() {
       }
     } catch (error) {
       console.error('Error fetching products:', error)
+      toast.error('Gagal memuat produk')
+    } finally {
+      setIsLoadingProducts(false)
     }
   }
 
@@ -1938,9 +1776,20 @@ export default function HomePage() {
             </div>
 
             {/* Products Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              <AnimatePresence>
-                {filteredProducts.map((product, index) => (
+            {isLoadingProducts ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="bg-gray-200 rounded-lg aspect-square mb-3"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <AnimatePresence>
+                  {filteredProducts.map((product, index) => (
                   <motion.div
                     key={product.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -2014,8 +1863,9 @@ export default function HomePage() {
                 ))}
               </AnimatePresence>
             </div>
+            )}
 
-            {filteredProducts.length === 0 && (
+            {filteredProducts.length === 0 && !isLoadingProducts && (
               <div className="text-center py-12 text-gray-500">
                 <Package className="h-16 w-16 mx-auto mb-4 opacity-50" />
                 <p className="text-lg">Tidak ada produk ditemukan</p>
