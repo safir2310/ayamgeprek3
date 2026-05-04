@@ -31,10 +31,6 @@ export function SalesReports() {
   const [topProducts, setTopProducts] = useState<ProductSale[]>([])
   const [categorySales, setCategorySales] = useState<CategorySale[]>([])
 
-  useEffect(() => {
-    loadData()
-  }, [selectedPeriod])
-
   const loadData = () => {
     // Mock data - will be replaced with API call
     const days = selectedPeriod === 'week' ? 7 : selectedPeriod === 'month' ? 30 : 90
@@ -68,6 +64,10 @@ export function SalesReports() {
       { category: 'Snack', revenue: 960000, percentage: 13 },
     ])
   }
+
+  useEffect(() => {
+    loadData()
+  }, [selectedPeriod])
 
   const totalRevenue = dailySales.reduce((sum, day) => sum + day.revenue, 0)
   const totalOrders = dailySales.reduce((sum, day) => sum + day.orders, 0)

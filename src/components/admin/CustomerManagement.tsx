@@ -67,7 +67,7 @@ export function CustomerManagement() {
 
   useEffect(() => {
     loadCustomers()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [loadCustomers])
 
   const filteredCustomers = customers // Filter is now handled on the server side

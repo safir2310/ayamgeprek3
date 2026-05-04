@@ -51,10 +51,6 @@ export function PromoManagement() {
     { id: '8', name: 'Sambal Ijo', price: 5000, image: '🌶️' },
   ]
 
-  useEffect(() => {
-    loadPromoProducts()
-  }, [])
-
   const loadPromoProducts = () => {
     // Mock promo products - will be replaced with API call
     setPromoProducts([
@@ -112,6 +108,10 @@ export function PromoManagement() {
       },
     ])
   }
+
+  useEffect(() => {
+    loadPromoProducts()
+  }, [])
 
   const filteredPromoProducts = promoProducts.filter(promo => {
     const matchesSearch = promo.productName.toLowerCase().includes(searchQuery.toLowerCase())
