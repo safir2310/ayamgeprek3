@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Plus, Edit, Trash2, Tag, X, Save, Calendar, Percent, CheckCircle, XCircle, Copy } from 'lucide-react'
+import { Search, Plus, Edit, Trash2, Tag, X, Save, Calendar, Percent, CheckCircle, XCircle, Copy, FileSpreadsheet, Download } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toast } from 'sonner'
+import { downloadVouchersExcel } from '@/lib/downloadExcel'
 
 interface Voucher {
   id: string
@@ -33,6 +34,7 @@ export function VoucherManagement() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingVoucher, setEditingVoucher] = useState<Voucher | null>(null)
+  const [isExporting, setIsExporting] = useState(false)
   const [formData, setFormData] = useState({
     code: '',
     name: '',
@@ -255,6 +257,19 @@ export function VoucherManagement() {
     }
   }
 
+  const handleExportToExcel = async () => {
+    setIsExporting(true)
+    try {
+      await downloadVouchersExcel()
+      toast.success('✅ Voucher berhasil diekspor ke Excel!')
+    } catch (error) {
+      console.error('Error exporting vouchers:', error)
+      toast.error('Gagal mengekspor voucher ke Excel')
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -263,13 +278,27 @@ export function VoucherManagement() {
           <h2 className="text-2xl font-bold text-gray-800">Kelola Voucher</h2>
           <p className="text-gray-600">Buat dan kelola voucher untuk pelanggan</p>
         </div>
-        <Button
-          onClick={handleAdd}
-          className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Tambah Voucher
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleExportToExcel}
+            disabled={isExporting || vouchers.length === 0}
+            className="bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600"
+          >
+            {isExporting ? (
+              <Download className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+            )}
+            Export ke Excel
+          </Button>
+          <Button
+            onClick={handleAdd}
+            className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Tambah Voucher
+          </Button>
+        </div>
       </div>
 
       {/* Search & Filters */}

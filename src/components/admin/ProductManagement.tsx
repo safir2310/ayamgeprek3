@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Plus, Edit, Trash2, Package, X, Save, Upload, X as XIcon, Image as ImageIcon, Percent } from 'lucide-react'
+import { Search, Plus, Edit, Trash2, Package, X, Save, Upload, X as XIcon, Image as ImageIcon, Percent, FileSpreadsheet, Download } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toast } from 'sonner'
+import { downloadProductsExcel } from '@/lib/downloadExcel'
 
 interface Product {
   id: string
@@ -26,6 +27,7 @@ interface Product {
 
 export function ProductManagement() {
   const [products, setProducts] = useState<Product[]>([])
+  const [isExporting, setIsExporting] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -164,6 +166,19 @@ export function ProductManagement() {
     }
   }
 
+  const handleExportToExcel = async () => {
+    setIsExporting(true)
+    try {
+      await downloadProductsExcel()
+      toast.success('✅ Produk berhasil diekspor ke Excel!')
+    } catch (error) {
+      console.error('Error exporting products:', error)
+      toast.error('Gagal mengekspor produk ke Excel')
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -252,13 +267,27 @@ export function ProductManagement() {
           <h2 className="text-2xl font-bold text-gray-800">Kelola Produk</h2>
           <p className="text-gray-600">Tambah, edit, atau hapus produk</p>
         </div>
-        <Button
-          onClick={handleAdd}
-          className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Tambah Produk
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleExportToExcel}
+            disabled={isExporting || products.length === 0}
+            className="bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600"
+          >
+            {isExporting ? (
+              <Download className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+            )}
+            Export ke Excel
+          </Button>
+          <Button
+            onClick={handleAdd}
+            className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Tambah Produk
+          </Button>
+        </div>
       </div>
 
       {/* Search & Filters */}

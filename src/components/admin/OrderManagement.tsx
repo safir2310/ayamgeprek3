@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, ShoppingBag, Eye, CheckCircle2, XCircle, Clock, Truck, Filter, Calendar, RefreshCw } from 'lucide-react'
+import { Search, ShoppingBag, Eye, CheckCircle2, XCircle, Clock, Truck, Filter, Calendar, RefreshCw, FileSpreadsheet, Download } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toast } from 'sonner'
+import { downloadOrdersExcel } from '@/lib/downloadExcel'
 
 interface OrderItem {
   id: string
@@ -43,6 +44,7 @@ export function OrderManagement() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
 
   const statusOptions = ['all', 'pending', 'processing', 'shipped', 'completed', 'cancelled', 'confirmed']
 
@@ -199,6 +201,19 @@ export function OrderManagement() {
     }
   }
 
+  const handleExportToExcel = async () => {
+    setIsExporting(true)
+    try {
+      await downloadOrdersExcel()
+      toast.success('✅ Pesanan berhasil diekspor ke Excel!')
+    } catch (error) {
+      console.error('Error exporting orders:', error)
+      toast.error('Gagal mengekspor pesanan ke Excel')
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -207,15 +222,29 @@ export function OrderManagement() {
           <h2 className="text-2xl font-bold text-gray-800">Daftar Pesanan</h2>
           <p className="text-gray-600">Kelola dan pantau semua pesanan</p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={loadOrders}
-          disabled={isLoading}
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleExportToExcel}
+            disabled={isExporting || orders.length === 0}
+            className="bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600"
+          >
+            {isExporting ? (
+              <Download className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+            )}
+            Export ke Excel
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={loadOrders}
+            disabled={isLoading}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Search & Filters */}
