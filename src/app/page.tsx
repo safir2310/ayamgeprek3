@@ -1539,197 +1539,230 @@ export default function HomePage() {
       <main className="flex-1 container mx-auto px-3 py-4 pb-20 sm:px-4 sm:py-6">
         {currentTab === 'home' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            {/* Member Card */}
+            {/* Member Card - Credit Card Size Design */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="mb-6"
             >
-              <Card className="bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 border-0 shadow-xl overflow-hidden relative">
-                {/* Decorative pattern */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+              <div className="w-full max-w-[358px] mx-auto">
+                <AnimatePresence mode="wait">
+                  {!showMemberBarcode ? (
+                    <motion.div
+                      key="card"
+                      initial={{ opacity: 0, scale: 0.95, rotateX: 10 }}
+                      animate={{ opacity: 1, scale: 1, rotateX: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, rotateX: 10 }}
+                      transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                    >
+                      <Card className="bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-400 border-0 shadow-2xl overflow-hidden relative" style={{ aspectRatio: '1.586', width: '358px', minHeight: '226px' }}>
+                        {/* Decorative Pattern */}
+                        <div className="absolute inset-0 opacity-8 pointer-events-none">
+                          <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                              <pattern id="creditPattern" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                                <circle cx="15" cy="15" r="0.5" fill="rgba(255,255,255,0.4)" />
+                              </pattern>
+                            </defs>
+                            <rect width="100%" height="100%" fill="url(#creditPattern)" />
+                          </svg>
 
-                {/* Floating Barcode Widget */}
-                {user && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="absolute bottom-4 right-4 z-10"
-                  >
-                    <div className="relative">
-                      <AnimatePresence>
-                        {showFloatingBarcode && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.8, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.8, y: 10 }}
-                            transition={{ duration: 0.2 }}
-                            className="mb-3"
-                          >
-                            <Card className="bg-white border-2 border-orange-300 shadow-xl overflow-hidden w-64">
-                              <CardContent className="p-4">
-                                <div className="flex items-center justify-between mb-3">
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center">
-                                      <User className="h-4 w-4 text-white" />
-                                    </div>
-                                    <div>
-                                      <p className="font-semibold text-sm text-gray-800">{user.name || 'Pelanggan'}</p>
-                                      <p className="text-xs text-gray-500">{user.memberLevel}</p>
-                                    </div>
-                                  </div>
+                          {/* Gradient overlays */}
+                          <div className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-r from-white/20 to-transparent" />
+                          <div className="absolute bottom-0 right-0 w-24 h-24 bg-white/10 rounded-full translate-x-1/2 translate-y-1/2" />
+                        </div>
+
+                        {/* Card Content */}
+                        <CardContent className="p-5 relative z-10 h-full flex flex-col">
+                          {/* Top Row */}
+                          <div className="flex items-start justify-between mb-3">
+                            {/* Gift Icon & Title */}
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-10 h-10 bg-white/25 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/40 shadow-lg">
+                                <span className="text-xl">🎁</span>
+                              </div>
+                              <div>
+                                <h3 className="text-sm font-bold text-white tracking-wide">Member Card</h3>
+                                <p className="text-[9px] text-white/75 font-medium">Exclusive</p>
+                              </div>
+                            </div>
+
+                            {/* Chip Button */}
+                            <motion.button
+                              whileHover={{ scale: 1.08 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => setShowMemberBarcode(true)}
+                              className="group relative"
+                              aria-label="Tampilkan barcode"
+                            >
+                              <div className="w-13 h-9 bg-gradient-to-br from-yellow-100 to-amber-100 rounded-xl border-2 border-yellow-200/70 shadow-lg flex items-center justify-center relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/70 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-600 ease-in-out" />
+                                <div className="w-full h-full flex items-center justify-center gap-0.5">
+                                  <div className="w-1.5 h-6 bg-yellow-400 rounded-sm" />
+                                  <div className="w-1.5 h-6 bg-yellow-400 rounded-sm" />
+                                  <div className="w-1.5 h-6 bg-yellow-400 rounded-sm" />
+                                  <div className="w-1.5 h-6 bg-yellow-400 rounded-sm" />
+                                  <div className="w-1.5 h-6 bg-yellow-400 rounded-sm" />
+                                  <div className="w-1.5 h-6 bg-yellow-400 rounded-sm" />
+                                  <div className="w-1.5 h-6 bg-yellow-400 rounded-sm" />
                                 </div>
-                                <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-lg p-3">
-                                  <div className="flex justify-center mb-2">
-                                    <Barcode
-                                      value={user.phone || user.id}
-                                      width={1.5}
-                                      height={40}
-                                      displayValue={false}
-                                      background="transparent"
-                                      lineColor="#1F2937"
-                                    />
-                                  </div>
-                                  <p className="text-center text-xs font-bold text-gray-800 tracking-wider">
-                                    {user.phone || user.id}
-                                  </p>
-                                </div>
-                                <div className="mt-3 grid grid-cols-3 gap-2">
-                                  <div className="text-center">
-                                    <div className="text-lg">💳</div>
-                                    <div className="text-xs font-semibold text-gray-800">{user.points}</div>
-                                  </div>
-                                  <div className="text-center">
-                                    <div className="text-lg">🎯</div>
-                                    <div className="text-xs font-semibold text-gray-800">{user.stampCount}</div>
-                                  </div>
-                                  <div className="text-center">
-                                    <div className="text-lg">⭐</div>
-                                    <div className="text-xs font-semibold text-gray-800">{user.starCount}</div>
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-                        <Button
-                          onClick={() => setShowFloatingBarcode(!showFloatingBarcode)}
-                          className="h-12 w-12 rounded-full bg-white shadow-lg hover:shadow-xl border-2 border-orange-300"
-                        >
-                          <AnimatePresence mode="wait">
-                            {showFloatingBarcode ? (
-                              <motion.div
-                                key="close"
-                                initial={{ rotate: -90, opacity: 0 }}
-                                animate={{ rotate: 0, opacity: 1 }}
-                                exit={{ rotate: 90, opacity: 0 }}
-                                transition={{ duration: 0.2 }}
-                              >
-                                <XCircle className="h-5 w-5 text-red-600" />
-                              </motion.div>
-                            ) : (
-                              <motion.div
-                                key="barcode"
-                                initial={{ rotate: 90, opacity: 0 }}
-                                animate={{ rotate: 0, opacity: 1 }}
-                                exit={{ rotate: -90, opacity: 0 }}
-                                transition={{ duration: 0.2 }}
-                              >
-                                <QrCode className="h-5 w-5 text-red-600" />
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </Button>
-                      </motion.div>
-                    </div>
-                  </motion.div>
-                )}
-
-                <CardContent className="p-5 relative">
-                  {user ? (
-                    <>
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="text-white">
-                          <div className="flex items-center gap-2 mb-1">
-                            <User className="h-4 w-4" />
-                            <p className="text-sm opacity-90">Halo, {user.name || 'Pelanggan'}!</p>
+                              </div>
+                              <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-blue-500 rounded-full border-2 border-white flex items-center justify-center">
+                                <QrCode className="h-2 w-2 text-white" />
+                              </div>
+                            </motion.button>
                           </div>
-                          <h2 className="text-xl font-bold flex items-center gap-2">
-                            Member {user.memberLevel}
-                            <Badge className="bg-yellow-400 text-yellow-900 text-xs font-bold">
-                              {user.memberLevel}
-                            </Badge>
-                          </h2>
-                        </div>
-                        <div className="bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2">
-                          <div className="flex items-center gap-1 text-white">
-                            <Star className="h-5 w-5 fill-yellow-300" />
-                            <span className="font-bold text-lg">{user.points}</span>
+
+                          {/* Stats Row - Compact */}
+                          <div className="grid grid-cols-4 gap-2 mb-3">
+                            {/* Points */}
+                            <div className="bg-white/20 backdrop-blur-sm rounded-xl p-2 text-center border border-white/15">
+                              <p className="text-base font-bold text-white leading-none">{user?.points || 0}</p>
+                              <p className="text-[8px] text-white/70 font-medium mt-0.5 tracking-wide">PTS</p>
+                            </div>
+
+                            {/* Vouchers */}
+                            <div className="bg-white/20 backdrop-blur-sm rounded-xl p-2 text-center border border-white/15">
+                              <p className="text-base font-bold text-white leading-none">{vouchers.length || 0}</p>
+                              <p className="text-[8px] text-white/70 font-medium mt-0.5 tracking-wide">VCH</p>
+                            </div>
+
+                            {/* Level */}
+                            <div className="bg-white/20 backdrop-blur-sm rounded-xl p-2 text-center border border-white/15">
+                              <p className="text-base font-bold text-white leading-none">{user?.memberLevel?.charAt(0) || 'B'}</p>
+                              <p className="text-[8px] text-white/70 font-medium mt-0.5 tracking-wide">LVL</p>
+                            </div>
+
+                            {/* Member ID */}
+                            <div className="bg-white/20 backdrop-blur-sm rounded-xl p-2 text-center border border-white/15">
+                              <p className="text-[10px] font-bold text-white leading-tight truncate">{user?.id?.slice(-6) || '------'}</p>
+                              <p className="text-[8px] text-white/70 font-medium mt-0.5 tracking-wide">ID</p>
+                            </div>
                           </div>
-                          <p className="text-white/80 text-xs text-center">Poin</p>
-                        </div>
-                      </div>
 
-                      <div className="grid grid-cols-3 gap-3 mt-4">
-                        <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-center">
-                          <div className="text-2xl mb-1">💳</div>
-                          <div className="text-white font-bold text-lg">{user.points}</div>
-                          <div className="text-white/80 text-xs">Total Poin</div>
-                        </div>
-                        <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-center">
-                          <div className="text-2xl mb-1">🎯</div>
-                          <div className="text-white font-bold text-lg">{user.stampCount}</div>
-                          <div className="text-white/80 text-xs">Stamp</div>
-                        </div>
-                        <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-center">
-                          <div className="text-2xl mb-1">⭐</div>
-                          <div className="text-white font-bold text-lg">{user.starCount}</div>
-                          <div className="text-white/80 text-xs">Star</div>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 pt-4 border-t border-white/20">
-                        <div className="flex items-center justify-between text-white/90 text-sm mb-3">
-                          <div className="flex items-center gap-2">
-                            <Tag className="h-4 w-4" />
-                            <span>ID Member: {user.id.slice(0, 8).toUpperCase()}</span>
+                          {/* Member Info */}
+                          <div className="space-y-2 flex-1">
+                            <div className="flex items-center gap-2">
+                              <User className="h-3.5 w-3.5 text-white/80" />
+                              <span className="text-[11px] font-semibold text-white tracking-wide truncate flex-1">{user?.name || 'Guest Member'}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Crown className="h-3.5 w-3.5 text-yellow-200 fill-yellow-200" />
+                              <span className="text-[11px] font-semibold text-white tracking-wide">{user?.memberLevel || 'Bronze'} Membership</span>
+                            </div>
                           </div>
-                          <Badge className="bg-white/20 text-white text-xs">
-                            {user.memberLevel}
-                          </Badge>
-                        </div>
 
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-full text-white hover:bg-white/20"
-                          onClick={() => setCurrentTab('account')}
-                        >
-                          Lihat Detail Member
-                          <ArrowRight className="h-4 w-4 ml-1" />
-                        </Button>
-                      </div>
-                    </>
+                          {/* Bottom Bar */}
+                          <div className="mt-auto pt-3 border-t border-white/20">
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => setShowMemberBarcode(true)}
+                              className="w-full py-2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white text-xs font-bold rounded-lg border border-white/20 transition-all flex items-center justify-center gap-1.5"
+                            >
+                              <QrCode className="h-3.5 w-3.5" />
+                              <span>Tap for Barcode</span>
+                            </motion.button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
                   ) : (
-                    <div className="text-center py-4">
-                      <div className="text-5xl mb-3">👤</div>
-                      <h3 className="text-xl font-bold text-white mb-2">Bergabung Menjadi Member</h3>
-                      <p className="text-white/90 text-sm mb-4">
-                        Dapatkan poin, stamp, dan star untuk setiap pembelian!
-                      </p>
-                      <Button
-                        className="bg-white text-red-600 hover:bg-gray-100 font-bold"
-                        onClick={() => setIsAuthModalOpen(true)}
-                      >
-                        Daftar / Login Sekarang
-                      </Button>
-                    </div>
+                    <motion.div
+                      key="barcode"
+                      initial={{ opacity: 0, scale: 0.95, rotateX: -10 }}
+                      animate={{ opacity: 1, scale: 1, rotateX: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, rotateX: -10 }}
+                      transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                    >
+                      <Card className="bg-white border-0 shadow-2xl overflow-hidden relative" style={{ width: '358px' }}>
+                        {/* Header */}
+                        <div className="bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 px-4 pt-4 pb-5 relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+
+                          <div className="flex items-center justify-between relative z-10">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-9 h-9 bg-white/25 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30">
+                                <span className="text-lg">🎁</span>
+                              </div>
+                              <div>
+                                <h3 className="text-sm font-bold text-white tracking-wide">Member Barcode</h3>
+                                <p className="text-[10px] text-white/75">Scan for points</p>
+                              </div>
+                            </div>
+
+                            <motion.button
+                              whileHover={{ scale: 1.08, rotate: 90 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => setShowMemberBarcode(false)}
+                              className="w-8 h-8 bg-white/25 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/30 hover:bg-white/35 transition-colors"
+                              aria-label="Tutup barcode"
+                            >
+                              <X className="h-4.5 w-4.5 text-white" />
+                            </motion.button>
+                          </div>
+                        </div>
+
+                        {/* Barcode Content */}
+                        <CardContent className="p-5">
+                          <div className="bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 p-5 mb-4">
+                            <div className="flex flex-col items-center">
+                              <div className="mb-3">
+                                <Barcode
+                                  value={user?.phone || '0000000000'}
+                                  width={2.5}
+                                  height={65}
+                                  format="CODE128"
+                                  displayValue={false}
+                                  background="#f9fafb"
+                                  lineColor="#1f2937"
+                                  margin={0}
+                                />
+                              </div>
+                              <div className="text-center">
+                                <p className="text-[9px] text-gray-500 font-medium tracking-wider mb-1">PHONE NUMBER</p>
+                                <p className="text-base font-mono font-bold text-gray-800 tracking-widest">
+                                  {user?.phone ? user.phone.replace(/(\d{4})(\d{4})(\d{4})/, '$1-$2-$3') : '0000-0000-0000'}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Member Info */}
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2.5 p-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl">
+                              <User className="h-4 w-4 text-blue-600" />
+                              <div className="flex-1">
+                                <p className="text-[9px] text-gray-500 font-medium tracking-wide">NAME</p>
+                                <p className="text-xs font-semibold text-gray-800">{user?.name || 'Guest'}</p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2.5 p-2.5 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl">
+                              <Tag className="h-4 w-4 text-purple-600" />
+                              <div className="flex-1">
+                                <p className="text-[9px] text-gray-500 font-medium tracking-wide">MEMBER ID</p>
+                                <p className="text-xs font-semibold text-gray-800 font-mono">{user?.id || 'N/A'}</p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2.5 p-2.5 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl">
+                              <Crown className="h-4 w-4 text-amber-600" />
+                              <div className="flex-1">
+                                <p className="text-[9px] text-gray-500 font-medium tracking-wide">LEVEL</p>
+                                <p className="text-xs font-semibold text-gray-800 flex items-center gap-1.5">
+                                  <span>{user?.memberLevel || 'Bronze'}</span>
+                                  <span className="px-2 py-0.5 bg-green-500 text-white text-[9px] font-bold rounded-full">ACTIVE</span>
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
                   )}
-                </CardContent>
-              </Card>
+                </AnimatePresence>
+              </div>
             </motion.div>
 
             {/* Promo Banner */}
