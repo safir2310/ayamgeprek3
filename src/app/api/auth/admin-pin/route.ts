@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { signToken } from '@/lib/auth'
+import { db } from '@/lib/db'
+import { hash } from 'bcryptjs'
 
 const ADMIN_PIN = '1234' // Default admin PIN
 
@@ -22,10 +24,38 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Generate admin token
+    // Get or create the admin user from database
+    let adminUser = await db.user.findFirst({
+      where: {
+        role: 'admin',
+        email: 'admin@ayamgeprek.com'
+      }
+    })
+
+    // Create admin user if doesn't exist
+    if (!adminUser) {
+      const hashedPassword = await hash('admin123', 10)
+      
+      adminUser = await db.user.create({
+        data: {
+          email: 'admin@ayamgeprek.com',
+          password: hashedPassword,
+          name: 'Administrator',
+          role: 'admin',
+          memberLevel: 'Platinum',
+          points: 0,
+          stampCount: 0,
+          starCount: 0,
+          phone: '085260812758',
+          address: 'Jl. Medan – Banda Aceh, Simpang Camat, Gampong Tijue, 24151',
+        }
+      })
+    }
+
+    // Generate admin token with real user ID
     const token = await signToken({
-      userId: 'admin',
-      email: 'admin@ayamgeprek.com',
+      userId: adminUser.id,
+      email: adminUser.email || 'admin@ayamgeprek.com',
       role: 'admin',
     })
 
@@ -33,14 +63,14 @@ export async function POST(request: NextRequest) {
       success: true,
       token,
       user: {
-        id: 'admin',
-        email: 'admin@ayamgeprek.com',
-        name: 'Administrator',
-        role: 'admin',
-        memberLevel: 'Platinum',
-        points: 0,
-        stampCount: 0,
-        starCount: 0,
+        id: adminUser.id,
+        email: adminUser.email,
+        name: adminUser.name,
+        role: adminUser.role,
+        memberLevel: adminUser.memberLevel,
+        points: adminUser.points,
+        stampCount: adminUser.stampCount,
+        starCount: adminUser.starCount,
       },
     })
 

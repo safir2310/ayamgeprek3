@@ -78,7 +78,7 @@ export function PointRedemptionManagement() {
     setIsLoading(true)
     try {
       if (!token) {
-        toast.error('Anda belum login. Silakan login dengan PIN admin terlebih dahulu.')
+        toast.error('Sesi telah berakhir. Silakan login ulang dengan PIN admin.')
         setIsLoading(false)
         return
       }
@@ -94,7 +94,13 @@ export function PointRedemptionManagement() {
         setRedemptions(data.redemptions || [])
       } else {
         const errorData = await res.json()
-        toast.error(errorData.error || 'Gagal mengambil data penukaran poin')
+        
+        // Handle specific error messages
+        if (res.status === 401 && errorData.error === 'Invalid token') {
+          toast.error('Sesi tidak valid. Silakan login ulang dengan PIN admin.')
+        } else {
+          toast.error(errorData.error || 'Gagal mengambil data penukaran poin')
+        }
       }
     } catch (error) {
       console.error('Error loading redemptions:', error)
@@ -154,7 +160,7 @@ export function PointRedemptionManagement() {
     }
 
     if (!token) {
-      toast.error('Anda belum login. Silakan login dengan PIN admin terlebih dahulu.')
+      toast.error('Sesi telah berakhir. Silakan login ulang dengan PIN admin.')
       return
     }
 
@@ -171,7 +177,13 @@ export function PointRedemptionManagement() {
         loadRedemptions()
       } else {
         const errorData = await res.json()
-        toast.error(errorData.error || 'Gagal menghapus opsi penukaran')
+        
+        // Handle specific error messages
+        if (res.status === 401 && errorData.error === 'Invalid token') {
+          toast.error('Sesi tidak valid. Silakan login ulang dengan PIN admin.')
+        } else {
+          toast.error(errorData.error || 'Gagal menghapus opsi penukaran')
+        }
       }
     } catch (error) {
       console.error('Error deleting redemption:', error)
@@ -181,7 +193,7 @@ export function PointRedemptionManagement() {
 
   const handleToggleActive = async (redemption: PointRedemption) => {
     if (!token) {
-      toast.error('Anda belum login. Silakan login dengan PIN admin terlebih dahulu.')
+      toast.error('Sesi telah berakhir. Silakan login ulang dengan PIN admin.')
       return
     }
 
@@ -203,7 +215,13 @@ export function PointRedemptionManagement() {
         loadRedemptions()
       } else {
         const errorData = await res.json()
-        toast.error(errorData.error || 'Gagal mengubah status opsi penukaran')
+        
+        // Handle specific error messages
+        if (res.status === 401 && errorData.error === 'Invalid token') {
+          toast.error('Sesi tidak valid. Silakan login ulang dengan PIN admin.')
+        } else {
+          toast.error(errorData.error || 'Gagal mengubah status opsi penukaran')
+        }
       }
     } catch (error) {
       console.error('Error toggling active:', error)
@@ -214,7 +232,7 @@ export function PointRedemptionManagement() {
   const handleSave = async () => {
     // Validate token
     if (!token) {
-      toast.error('Anda belum login. Silakan login dengan PIN admin terlebih dahulu.')
+      toast.error('Sesi telah berakhir. Silakan login ulang dengan PIN admin.')
       return
     }
 
@@ -256,7 +274,15 @@ export function PointRedemptionManagement() {
         loadRedemptions()
       } else {
         const errorData = await res.json()
-        toast.error(errorData.error || 'Gagal menyimpan opsi penukaran')
+        
+        // Handle specific error messages
+        if (res.status === 401 && errorData.error === 'Invalid token') {
+          toast.error('Sesi tidak valid. Silakan login ulang dengan PIN admin.')
+          // Optionally clear token and redirect to login
+          // logout()
+        } else {
+          toast.error(errorData.error || 'Gagal menyimpan opsi penukaran')
+        }
       }
     } catch (error) {
       console.error('Error saving redemption:', error)

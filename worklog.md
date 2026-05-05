@@ -625,3 +625,40 @@ Stage Summary:
 - Search, pagination, and filtering integrated
 - Export to Excel functionality preserved and working
 - Smooth animations and modern UI maintained
+
+---
+Task ID: fix-invalid-token-admin-pin
+Agent: zai-code
+Task: Fix "Invalid token" error when saving point redemption options
+
+Work Log:
+- Identified root cause: Admin PIN login was creating JWT token with userId='admin' (not a real database ID)
+- When API routes tried to verify user in database, failed because user with id='admin' doesn't exist
+- Fixed /home/z/my-project/src/app/api/auth/admin-pin/route.ts:
+  * Added import for 'hash' from 'bcryptjs'
+  * Modified admin user lookup to use db.user.findFirst()
+  * Added logic to auto-create admin user if doesn't exist in database:
+    - Email: admin@ayamgeprek.com
+    - Password: admin123 (hashed with bcrypt)
+    - Role: admin
+    - Name: Administrator
+    - Phone: 085260812758
+    - Address: Jl. Medan – Banda Aceh, Simpang Camat, Gampong Tijue, 24151
+  * Now generates JWT token with REAL user ID from database
+  * Updated error messages for better user experience
+- Updated /home/z/my-project/src/components/admin/PointRedemptionManagement.tsx:
+  * Improved error message for missing token: "Sesi telah berakhir. Silakan login ulang dengan PIN admin."
+  * Added specific error handling for 401 "Invalid token" responses
+  * Updated loadRedemptions() with better error handling
+  * Updated handleDelete() with better error handling
+  * Updated handleToggleActive() with better error handling
+  * Updated handleSave() with better error handling
+
+Stage Summary:
+- Successfully fixed "Invalid token" error when saving point redemption options
+- Admin PIN login now creates/uses real admin user from database
+- JWT tokens now contain valid database user IDs
+- All API routes can now properly verify admin user existence
+- Improved error messages for better user experience
+- Auto-creates admin user if missing from database
+- Dev server running successfully with no compilation errors
