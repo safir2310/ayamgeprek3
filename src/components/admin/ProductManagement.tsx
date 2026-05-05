@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Plus, Edit, Trash2, Package, X, Save, Upload, X as XIcon, Image as ImageIcon, Percent, FileSpreadsheet, Download } from 'lucide-react'
+import { Search, Plus, Edit, Trash2, Package, X, Save, Upload, X as XIcon, Image as ImageIcon, Percent, FileSpreadsheet, Download, Table, Grid as GridIcon } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toast } from 'sonner'
 import { downloadProductsExcel } from '@/lib/downloadExcel'
+import { DatabaseTableView } from './DatabaseTableView'
 
 interface Product {
   id: string
@@ -28,6 +29,7 @@ interface Product {
 export function ProductManagement() {
   const [products, setProducts] = useState<Product[]>([])
   const [isExporting, setIsExporting] = useState(false)
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('table')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -269,6 +271,22 @@ export function ProductManagement() {
         </div>
         <div className="flex gap-2">
           <Button
+            variant={viewMode === 'grid' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('grid')}
+            className={viewMode === 'grid' ? 'bg-gradient-to-r from-red-600 to-orange-500' : ''}
+          >
+            <GridIcon className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={viewMode === 'table' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('table')}
+            className={viewMode === 'table' ? 'bg-gradient-to-r from-red-600 to-orange-500' : ''}
+          >
+            <Table className="h-4 w-4" />
+          </Button>
+          <Button
             onClick={handleExportToExcel}
             disabled={isExporting || products.length === 0}
             className="bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600"
@@ -290,51 +308,114 @@ export function ProductManagement() {
         </div>
       </div>
 
-      {/* Search & Filters */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <Input
-                placeholder="Cari produk..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
+      {/* Search & Filters - Only show in Grid View */}
+      {viewMode === 'grid' && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Input
+                  placeholder="Cari produk..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                {categories.map(category => (
+                  <Button
+                    key={category}
+                    variant={selectedCategory === category ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSelectedCategory(category)}
+                    className={
+                      selectedCategory === category
+                        ? 'bg-gradient-to-r from-red-600 to-orange-500'
+                        : ''
+                    }
+                  >
+                    {category.charAt(0).toUpperCase() + category.slice(1)}
+                  </Button>
+                ))}
+              </div>
             </div>
-            <div className="flex gap-2 flex-wrap">
-              {categories.map(category => (
-                <Button
-                  key={category}
-                  variant={selectedCategory === category ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category)}
-                  className={
-                    selectedCategory === category
-                      ? 'bg-gradient-to-r from-red-600 to-orange-500'
-                      : ''
-                  }
-                >
-                  {category.charAt(0).toUpperCase() + category.slice(1)}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Products Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <AnimatePresence>
-          {filteredProducts.map((product, index) => (
-            <motion.div
-              key={product.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ delay: index * 0.05 }}
-            >
+      {/* Table View - Excel Style */}
+      {viewMode === 'table' && (
+        <DatabaseTableView
+          title="Database Produk"
+          data={filteredProducts}
+          columns={[
+            {
+              key: 'name',
+              label: 'Nama Produk',
+              width: '300px'
+            },
+            {
+              key: 'category',
+              label: 'Kategori',
+              width: '120px',
+              format: (value) => <Badge className="bg-blue-100 text-blue-700">{value}</Badge>
+            },
+            {
+              key: 'price',
+              label: 'Harga (Rp)',
+              width: '120px',
+              format: (value) => `Rp ${Number(value).toLocaleString()}`
+            },
+            {
+              key: 'promoPrice',
+              label: 'Harga Promo (Rp)',
+              width: '140px',
+              format: (value) => value ? `Rp ${Number(value).toLocaleString()}` : '-'
+            },
+            {
+              key: 'stock',
+              label: 'Stok',
+              width: '80px'
+            },
+            {
+              key: 'discountPercent',
+              label: 'Diskon %',
+              width: '80px',
+              format: (value) => value ? `${value}%` : '-'
+            },
+            {
+              key: 'createdAt',
+              label: 'Dibuat Pada',
+              width: '180px',
+              format: (value) => new Date(value).toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })
+            }
+          ]}
+          onExport={handleExportToExcel}
+          onAdd={handleAdd}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      )}
+
+      {/* Products Grid - Only show in Grid View */}
+      {viewMode === 'grid' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <AnimatePresence>
+            {filteredProducts.map((product, index) => (
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ delay: index * 0.05 }}
+              >
               <Card className="h-full hover:shadow-xl transition-all duration-300 relative">
                 {product.isPromo && (
                   <div className="absolute top-0 right-0 bg-gradient-to-r from-red-600 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg z-10">
@@ -432,8 +513,9 @@ export function ProductManagement() {
           ))}
         </AnimatePresence>
       </div>
+      )}
 
-      {filteredProducts.length === 0 && (
+      {viewMode === 'grid' && filteredProducts.length === 0 && (
         <div className="text-center py-12 text-gray-500">
           <Package className="h-16 w-16 mx-auto mb-4 opacity-50" />
           <p>Tidak ada produk ditemukan</p>

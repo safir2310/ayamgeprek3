@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, ShoppingBag, Eye, CheckCircle2, XCircle, Clock, Truck, Filter, Calendar, RefreshCw, FileSpreadsheet, Download } from 'lucide-react'
+import { Search, ShoppingBag, Eye, CheckCircle2, XCircle, Clock, Truck, Filter, Calendar, RefreshCw, FileSpreadsheet, Download, Table, List, Grid as GridIcon } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toast } from 'sonner'
 import { downloadOrdersExcel } from '@/lib/downloadExcel'
+import { DatabaseTableView } from './DatabaseTableView'
 
 interface OrderItem {
   id: string
@@ -39,6 +40,7 @@ interface Order {
 
 export function OrderManagement() {
   const [orders, setOrders] = useState<Order[]>([])
+  const [viewMode, setViewMode] = useState<'list' | 'table'>('table')
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
@@ -224,6 +226,22 @@ export function OrderManagement() {
         </div>
         <div className="flex gap-2">
           <Button
+            variant={viewMode === 'list' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('list')}
+            className={viewMode === 'list' ? 'bg-gradient-to-r from-red-600 to-orange-500' : ''}
+          >
+            <List className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={viewMode === 'table' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('table')}
+            className={viewMode === 'table' ? 'bg-gradient-to-r from-red-600 to-orange-500' : ''}
+          >
+            <Table className="h-4 w-4" />
+          </Button>
+          <Button
             onClick={handleExportToExcel}
             disabled={isExporting || orders.length === 0}
             className="bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600"
@@ -247,60 +265,133 @@ export function OrderManagement() {
         </div>
       </div>
 
-      {/* Search & Filters */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <Input
-                placeholder="Cari nomor pesanan atau nama pelanggan..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
+      {/* Search & Filters - Only show in List View */}
+      {viewMode === 'list' && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Input
+                  placeholder="Cari nomor pesanan atau nama pelanggan..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Filter className="h-4 w-4 text-gray-500" />
+                {statusOptions.map(status => (
+                  <Button
+                    key={status}
+                    variant={statusFilter === status ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setStatusFilter(status)}
+                    className={
+                      statusFilter === status
+                        ? 'bg-gradient-to-r from-red-600 to-orange-500'
+                        : ''
+                    }
+                  >
+                    {status === 'all' ? 'Semua' : getStatusLabel(status)}
+                  </Button>
+                ))}
+              </div>
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <Filter className="h-4 w-4 text-gray-500" />
-              {statusOptions.map(status => (
-                <Button
-                  key={status}
-                  variant={statusFilter === status ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setStatusFilter(status)}
-                  className={
-                    statusFilter === status
-                      ? 'bg-gradient-to-r from-red-600 to-orange-500'
-                      : ''
-                  }
-                >
-                  {status === 'all' ? 'Semua' : getStatusLabel(status)}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Orders List */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <ShoppingBag className="h-5 w-5 text-red-600" />
-              Pesanan ({filteredOrders.length})
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Calendar className="h-4 w-4" />
-              {new Date().toLocaleDateString('id-ID', {
-                weekday: 'long',
+      {/* Table View - Excel Style */}
+      {viewMode === 'table' && (
+        <DatabaseTableView
+          title="Database Pesanan"
+          data={filteredOrders}
+          columns={[
+            {
+              key: 'orderNumber',
+              label: 'Nomor Pesanan',
+              width: '150px'
+            },
+            {
+              key: 'customerName',
+              label: 'Nama Pelanggan',
+              width: '200px'
+            },
+            {
+              key: 'customerPhone',
+              label: 'No Telepon',
+              width: '130px',
+              format: (value) => value || '-'
+            },
+            {
+              key: 'items',
+              label: 'Jumlah Item',
+              width: '100px',
+              format: (value: any[]) => `${value.length} item`
+            },
+            {
+              key: 'total',
+              label: 'Total (Rp)',
+              width: '130px',
+              format: (value) => `Rp ${Number(value).toLocaleString()}`
+            },
+            {
+              key: 'paymentMethod',
+              label: 'Metode Pembayaran',
+              width: '120px'
+            },
+            {
+              key: 'orderStatus',
+              label: 'Status',
+              width: '120px',
+              format: (value) => (
+                <Badge className={getStatusColor(value)}>
+                  <span className="flex items-center gap-1">
+                    {getStatusIcon(value)}
+                    {getStatusLabel(value)}
+                  </span>
+                </Badge>
+              )
+            },
+            {
+              key: 'createdAt',
+              label: 'Dibuat Pada',
+              width: '180px',
+              format: (value) => new Date(value).toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: 'short',
                 year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
-            </div>
-          </CardTitle>
-        </CardHeader>
+                hour: '2-digit',
+                minute: '2-digit'
+              })
+            }
+          ]}
+          onExport={handleExportToExcel}
+          loading={isLoading}
+        />
+      )}
+
+      {/* Orders List - Only show in List View */}
+      {viewMode === 'list' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShoppingBag className="h-5 w-5 text-red-600" />
+                Pesanan ({filteredOrders.length})
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Calendar className="h-4 w-4" />
+                {new Date().toLocaleDateString('id-ID', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </div>
+            </CardTitle>
+          </CardHeader>
         <CardContent>
           <div className="space-y-3">
             <AnimatePresence mode="popLayout">
@@ -433,6 +524,7 @@ export function OrderManagement() {
           </div>
         </CardContent>
       </Card>
+      )}
 
       {/* Order Detail Modal */}
       <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
