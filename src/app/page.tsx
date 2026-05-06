@@ -1638,8 +1638,97 @@ export default function HomePage() {
                             </div>
                           </div>
 
+                          {/* Progress Level Bar */}
+                          <div className="mb-3">
+                            <div className="flex items-center justify-between mb-1.5">
+                              <div className="flex items-center gap-1">
+                                <Crown className="h-3 w-3 text-yellow-100" />
+                                <span className="text-[9px] font-semibold text-yellow-100">
+                                  {user?.memberLevel || 'Bronze'}
+                                </span>
+                              </div>
+                              <span className="text-[8px] text-yellow-100/80 font-medium">
+                                {(() => {
+                                  const currentPoints = user?.points || 0;
+                                  let nextLevel = 'Silver';
+                                  let pointsNeeded = 1000;
+                                  if (currentPoints >= 5000) {
+                                    nextLevel = 'Platinum Max';
+                                    pointsNeeded = 0;
+                                  } else if (currentPoints >= 2500) {
+                                    nextLevel = 'Platinum';
+                                    pointsNeeded = 5000 - currentPoints;
+                                  } else if (currentPoints >= 1000) {
+                                    nextLevel = 'Gold';
+                                    pointsNeeded = 2500 - currentPoints;
+                                  } else {
+                                    pointsNeeded = 1000 - currentPoints;
+                                  }
+                                  return pointsNeeded > 0 ? `${pointsNeeded} poin lagi` : 'Level Max';
+                                })()}
+                              </span>
+                            </div>
+                            <div className="relative h-2 bg-white/20 rounded-full overflow-hidden">
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={{
+                                  width: (() => {
+                                    const currentPoints = user?.points || 0;
+                                    let progress = 0;
+                                    if (currentPoints >= 5000) {
+                                      progress = 100;
+                                    } else if (currentPoints >= 2500) {
+                                      progress = ((currentPoints - 2500) / 2500) * 100;
+                                    } else if (currentPoints >= 1000) {
+                                      progress = ((currentPoints - 1000) / 1500) * 100;
+                                    } else {
+                                      progress = (currentPoints / 1000) * 100;
+                                    }
+                                    return Math.min(Math.max(progress, 0), 100);
+                                  })() + '%'
+                                }}
+                                transition={{ duration: 1, ease: [0.25, 0.46, 0.45, 0.94] }}
+                                className="absolute left-0 top-0 h-full bg-gradient-to-r from-yellow-200 via-yellow-100 to-white rounded-full"
+                              />
+                            </div>
+                            <div className="flex justify-between mt-1">
+                              <span className="text-[7px] text-white/70 font-medium">
+                                {(() => {
+                                  const currentPoints = user?.points || 0;
+                                  let rangeStart = 0;
+                                  let rangeEnd = 1000;
+                                  if (currentPoints >= 5000) {
+                                    rangeStart = 5000;
+                                    rangeEnd = 5000;
+                                  } else if (currentPoints >= 2500) {
+                                    rangeStart = 2500;
+                                    rangeEnd = 5000;
+                                  } else if (currentPoints >= 1000) {
+                                    rangeStart = 1000;
+                                    rangeEnd = 2500;
+                                  }
+                                  return rangeStart;
+                                })()}
+                              </span>
+                              <span className="text-[7px] text-white/70 font-medium">
+                                {(() => {
+                                  const currentPoints = user?.points || 0;
+                                  let rangeEnd = 1000;
+                                  if (currentPoints >= 5000) {
+                                    rangeEnd = 5000;
+                                  } else if (currentPoints >= 2500) {
+                                    rangeEnd = 5000;
+                                  } else if (currentPoints >= 1000) {
+                                    rangeEnd = 2500;
+                                  }
+                                  return rangeEnd;
+                                })()}
+                              </span>
+                            </div>
+                          </div>
+
                           {/* Member Info */}
-                          <div className="space-y-2 flex-1">
+                          <div className="space-y-1.5 flex-1">
                             <div className="flex items-center gap-2">
                               <div className="w-6 h-6 bg-white/25 rounded-lg flex items-center justify-center">
                                 <User className="h-3.5 w-3.5 text-white" />
@@ -1652,16 +1741,10 @@ export default function HomePage() {
                               </div>
                               <span className="text-[9px] font-mono text-white/90">{user?.id?.slice(-8) || '--------'}</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 bg-white/25 rounded-lg flex items-center justify-center">
-                                <Crown className="h-3.5 w-3.5 text-yellow-200" />
-                              </div>
-                              <span className="text-[9px] font-semibold text-yellow-100 uppercase tracking-wide">{user?.memberLevel || 'Bronze'}</span>
-                            </div>
                           </div>
 
                           {/* Button */}
-                          <div className="mt-auto pt-2.5">
+                          <div className="mt-auto pt-2">
                             <motion.button
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
@@ -1746,6 +1829,87 @@ export default function HomePage() {
                               <p className="text-[10px] font-semibold text-gray-800">
                                 {user?.memberLevel || 'Bronze'} Member
                               </p>
+                            </div>
+                          </div>
+
+                          {/* Progress Level Bar */}
+                          <div className="mt-3">
+                            <div className="flex items-center justify-between mb-1.5">
+                              <div className="flex items-center gap-1">
+                                <Crown className="h-3 w-3 text-orange-500" />
+                                <span className="text-[9px] font-semibold text-gray-800">
+                                  {user?.memberLevel || 'Bronze'}
+                                </span>
+                              </div>
+                              <span className="text-[8px] text-gray-600 font-medium">
+                                {(() => {
+                                  const currentPoints = user?.points || 0;
+                                  let pointsNeeded = 1000;
+                                  if (currentPoints >= 5000) {
+                                    pointsNeeded = 0;
+                                  } else if (currentPoints >= 2500) {
+                                    pointsNeeded = 5000 - currentPoints;
+                                  } else if (currentPoints >= 1000) {
+                                    pointsNeeded = 2500 - currentPoints;
+                                  } else {
+                                    pointsNeeded = 1000 - currentPoints;
+                                  }
+                                  return pointsNeeded > 0 ? `${pointsNeeded} poin lagi` : 'Level Max';
+                                })()}
+                              </span>
+                            </div>
+                            <div className="relative h-2 bg-orange-200 rounded-full overflow-hidden">
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={{
+                                  width: (() => {
+                                    const currentPoints = user?.points || 0;
+                                    let progress = 0;
+                                    if (currentPoints >= 5000) {
+                                      progress = 100;
+                                    } else if (currentPoints >= 2500) {
+                                      progress = ((currentPoints - 2500) / 2500) * 100;
+                                    } else if (currentPoints >= 1000) {
+                                      progress = ((currentPoints - 1000) / 1500) * 100;
+                                    } else {
+                                      progress = (currentPoints / 1000) * 100;
+                                    }
+                                    return Math.min(Math.max(progress, 0), 100);
+                                  })() + '%'
+                                }}
+                                transition={{ duration: 1, ease: [0.25, 0.46, 0.45, 0.94] }}
+                                className="absolute left-0 top-0 h-full bg-gradient-to-r from-orange-500 via-orange-400 to-yellow-400 rounded-full"
+                              />
+                            </div>
+                            <div className="flex justify-between mt-1">
+                              <span className="text-[7px] text-gray-500 font-medium">
+                                {(() => {
+                                  const currentPoints = user?.points || 0;
+                                  let rangeStart = 0;
+                                  if (currentPoints >= 5000) {
+                                    rangeStart = 5000;
+                                  } else if (currentPoints >= 2500) {
+                                    rangeStart = 2500;
+                                  } else if (currentPoints >= 1000) {
+                                    rangeStart = 1000;
+                                  }
+                                  return rangeStart;
+                                })()}
+                              </span>
+                              <span className="text-[7px] text-gray-500 font-medium">
+                                {(() => {
+                                  const currentPoints = user?.points || 0;
+                                  let rangeEnd = 1000;
+                                  if (currentPoints >= 5000) {
+                                    rangeEnd = 5000;
+                                  } else if (currentPoints >= 2500) {
+                                    rangeEnd = 5000;
+                                  } else if (currentPoints >= 1000) {
+                                    rangeEnd = 2500;
+                                  }
+                                  return rangeEnd;
+                                })()}
+                              </span>
                             </div>
                           </div>
                         </CardContent>
