@@ -93,6 +93,7 @@ export default function HomePage() {
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false)
   const [isQRISModalOpen, setIsQRISModalOpen] = useState(false)
   const [showFloatingBarcode, setShowFloatingBarcode] = useState(false)
+  const [showMemberBarcode, setShowMemberBarcode] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [orders, setOrders] = useState<any[]>([])
   const [qrisData, setQrisData] = useState<any>(null)
