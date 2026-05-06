@@ -1595,18 +1595,27 @@ export default function HomePage() {
                         {/* Card Content */}
                         <CardContent className="p-4 relative z-10 h-full flex flex-col">
                           {/* Header */}
-                          <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-start justify-between mb-3">
+                            {/* Gift Icon & Premium Text */}
                             <div className="flex items-center gap-2">
-                              <div className="w-9 h-9 bg-white/30 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/50 shadow-lg">
-                                <span className="text-lg">🎁</span>
+                              <div className="w-10 h-10 bg-white/30 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/50 shadow-lg">
+                                <span className="text-xl">🎁</span>
                               </div>
                               <div>
                                 <h3 className="text-[11px] font-bold text-white tracking-wide">MEMBER</h3>
-                                <p className="text-[8px] text-white/80 font-semibold tracking-wider">CARD</p>
+                                <p className="text-[8px] text-yellow-100 font-semibold tracking-wider">PREMIUM</p>
                               </div>
                             </div>
 
-                            {/* Chip Button */}
+                            {/* Name & ID - Top Right */}
+                            <div className="text-right">
+                              <p className="text-[10px] font-bold text-white truncate max-w-[120px]">{user?.name || 'Guest'}</p>
+                              <p className="text-[9px] font-mono text-white/90">{user?.id?.slice(-8) || '--------'}</p>
+                            </div>
+                          </div>
+
+                          {/* Chip Button - Centered */}
+                          <div className="flex justify-center mb-3">
                             <motion.button
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.95 }}
@@ -1724,22 +1733,6 @@ export default function HomePage() {
                                   return rangeEnd;
                                 })()}
                               </span>
-                            </div>
-                          </div>
-
-                          {/* Member Info */}
-                          <div className="space-y-1.5 flex-1">
-                            <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 bg-white/25 rounded-lg flex items-center justify-center">
-                                <User className="h-3.5 w-3.5 text-white" />
-                              </div>
-                              <span className="text-[10px] font-medium text-white truncate flex-1">{user?.name || 'Guest'}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 bg-white/25 rounded-lg flex items-center justify-center">
-                                <Tag className="h-3.5 w-3.5 text-white" />
-                              </div>
-                              <span className="text-[9px] font-mono text-white/90">{user?.id?.slice(-8) || '--------'}</span>
                             </div>
                           </div>
 
