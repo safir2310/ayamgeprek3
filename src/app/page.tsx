@@ -1552,97 +1552,136 @@ export default function HomePage() {
                   {!showMemberBarcode ? (
                     <motion.div
                       key="card"
-                      initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                      initial={{ opacity: 0, y: 30, scale: 0.9 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -20, scale: 0.9 }}
-                      transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
+                      exit={{ opacity: 0, y: -30, scale: 0.9 }}
+                      transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
                     >
-                      <Card className="bg-gradient-to-br from-red-500 via-orange-500 to-amber-400 border-0 shadow-xl overflow-hidden relative" style={{ aspectRatio: '1.586', width: '100%', minHeight: '189px' }}>
-                        {/* Animated Background */}
-                        <div className="absolute inset-0 opacity-15 pointer-events-none overflow-hidden">
-                          <svg className="absolute inset-0 w-full h-full animate-pulse" xmlns="http://www.w3.org/2000/svg">
+                      <Card className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-700/50 shadow-2xl overflow-hidden relative" style={{ aspectRatio: '1.586', width: '100%', minHeight: '189px' }}>
+                        {/* Premium Holographic Effect */}
+                        <div className="absolute inset-0 opacity-20 pointer-events-none">
+                          <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
                             <defs>
-                              <linearGradient id="shimmer" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="rgba(255,255,255,0)" />
-                                <stop offset="50%" stopColor="rgba(255,255,255,0.5)" />
-                                <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+                              <linearGradient id="holographic" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#FFD700" stopOpacity="0.3" />
+                                <stop offset="25%" stopColor="#FFA500" stopOpacity="0.2" />
+                                <stop offset="50%" stopColor="#FFD700" stopOpacity="0.3" />
+                                <stop offset="75%" stopColor="#FFA500" stopOpacity="0.2" />
+                                <stop offset="100%" stopColor="#FFD700" stopOpacity="0.3" />
                               </linearGradient>
+                              <pattern id="luxuryGrid" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="url(#holographic)" strokeWidth="0.5" opacity="0.5"/>
+                              </pattern>
                             </defs>
-                            <circle cx="80%" cy="20%" r="40" fill="url(#shimmer)" />
-                            <circle cx="20%" cy="80%" r="30" fill="url(#shimmer)" />
+                            <rect width="100%" height="100%" fill="url(#luxuryGrid)" />
                           </svg>
+                        </div>
+
+                        {/* Gold Foil Shine */}
+                        <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
+                          <motion.div
+                            animate={{
+                              background: [
+                                'linear-gradient(45deg, transparent 0%, rgba(255,215,0,0.4) 50%, transparent 100%)'
+                              ],
+                            }}
+                            transition={{
+                              duration: 3,
+                              repeat: Infinity,
+                              ease: "linear"
+                            }}
+                            style={{
+                              width: '200%',
+                              height: '100%',
+                              position: 'absolute',
+                              left: '-100%',
+                            }}
+                          />
+                        </div>
+
+                        {/* Premium Border Frame */}
+                        <div className="absolute inset-0 border-2 border-amber-500/30 rounded-xl pointer-events-none">
+                          <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-amber-400 rounded-tl-md" />
+                          <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-amber-400 rounded-tr-md" />
+                          <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-amber-400 rounded-bl-md" />
+                          <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-amber-400 rounded-br-md" />
                         </div>
 
                         {/* Card Content */}
                         <CardContent className="p-4 relative z-10 h-full flex flex-col">
-                          {/* Header */}
-                          <div className="flex items-center justify-between mb-2">
+                          {/* Premium Header */}
+                          <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 bg-white/30 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/50">
+                              <div className="w-9 h-9 bg-gradient-to-br from-amber-400 to-yellow-300 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/30">
                                 <span className="text-lg">🎁</span>
                               </div>
                               <div>
-                                <h3 className="text-[11px] font-bold text-white tracking-wide">MEMBER</h3>
+                                <h3 className="text-[11px] font-bold text-white tracking-widest uppercase">Premium</h3>
+                                <p className="text-[7px] text-amber-400/80 font-semibold tracking-wider">MEMBERSHIP</p>
                               </div>
                             </div>
 
-                            {/* Chip Button */}
+                            {/* Metallic Chip */}
                             <motion.button
-                              whileHover={{ scale: 1.1, rotate: 5 }}
-                              whileTap={{ scale: 0.9 }}
+                              whileHover={{ scale: 1.1, rotate: 3 }}
+                              whileTap={{ scale: 0.95 }}
                               onClick={() => setShowMemberBarcode(true)}
-                              className="w-10 h-6 bg-gradient-to-br from-yellow-200 to-amber-200 rounded-lg border border-yellow-300/70 flex items-center justify-center gap-0.5 shadow-lg"
+                              className="w-11 h-7 bg-gradient-to-br from-yellow-300 via-amber-400 to-yellow-500 rounded-lg border-2 border-yellow-200/80 flex items-center justify-center gap-0.5 shadow-lg shadow-amber-500/40 relative overflow-hidden"
                               aria-label="Tampilkan barcode"
                             >
-                              <div className="w-0.5 h-4 bg-yellow-500 rounded-sm" />
-                              <div className="w-0.5 h-4 bg-yellow-500 rounded-sm" />
-                              <div className="w-0.5 h-4 bg-yellow-500 rounded-sm" />
-                              <div className="w-0.5 h-4 bg-yellow-500 rounded-sm" />
+                              <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent" />
+                              <div className="w-0.5 h-4.5 bg-amber-700/60 rounded-sm" />
+                              <div className="w-0.5 h-4.5 bg-amber-700/60 rounded-sm" />
+                              <div className="w-0.5 h-4.5 bg-amber-700/60 rounded-sm" />
+                              <div className="w-0.5 h-4.5 bg-amber-700/60 rounded-sm" />
                             </motion.button>
                           </div>
 
-                          {/* Stats - Minimal */}
-                          <div className="flex items-center gap-1.5 mb-2.5">
-                            <div className="flex-1 bg-white/20 backdrop-blur-sm rounded-lg py-1.5 px-2 text-center border border-white/15">
-                              <p className="text-[10px] font-bold text-white">{user?.points || 0}</p>
-                              <p className="text-[7px] text-white/70">Poin</p>
+                          {/* Elite Stats - Gold Accents */}
+                          <div className="flex items-center gap-1.5 mb-3">
+                            <div className="flex-1 bg-gradient-to-br from-amber-500/20 to-yellow-500/10 backdrop-blur-sm rounded-lg py-2 px-2 text-center border border-amber-500/30 relative overflow-hidden">
+                              <div className="absolute inset-0 bg-gradient-to-t from-amber-500/10 to-transparent" />
+                              <p className="text-[11px] font-bold text-white relative z-10">{user?.points || 0}</p>
+                              <p className="text-[7px] text-amber-400 font-semibold tracking-wider">POIN</p>
                             </div>
-                            <div className="flex-1 bg-white/20 backdrop-blur-sm rounded-lg py-1.5 px-2 text-center border border-white/15">
-                              <p className="text-[10px] font-bold text-white">{vouchers.length || 0}</p>
-                              <p className="text-[7px] text-white/70">Voucher</p>
+                            <div className="flex-1 bg-gradient-to-br from-amber-500/20 to-yellow-500/10 backdrop-blur-sm rounded-lg py-2 px-2 text-center border border-amber-500/30 relative overflow-hidden">
+                              <div className="absolute inset-0 bg-gradient-to-t from-amber-500/10 to-transparent" />
+                              <p className="text-[11px] font-bold text-white relative z-10">{vouchers.length || 0}</p>
+                              <p className="text-[7px] text-amber-400 font-semibold tracking-wider">VOUCHER</p>
                             </div>
-                            <div className="flex-1 bg-white/20 backdrop-blur-sm rounded-lg py-1.5 px-2 text-center border border-white/15">
-                              <p className="text-[10px] font-bold text-white">{user?.memberLevel?.charAt(0) || 'B'}</p>
-                              <p className="text-[7px] text-white/70">Level</p>
-                            </div>
-                          </div>
-
-                          {/* Member Info */}
-                          <div className="space-y-1.5 flex-1">
-                            <div className="flex items-center gap-1.5">
-                              <User className="h-3 w-3 text-white/80" />
-                              <span className="text-[10px] font-medium text-white truncate">{user?.name || 'Guest'}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <Tag className="h-3 w-3 text-white/80" />
-                              <span className="text-[9px] font-mono text-white/90">{user?.id?.slice(-8) || '--------'}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <Crown className="h-3 w-3 text-yellow-200 fill-yellow-200" />
-                              <span className="text-[9px] font-medium text-yellow-200">{user?.memberLevel || 'Bronze'}</span>
+                            <div className="flex-1 bg-gradient-to-br from-amber-500/20 to-yellow-500/10 backdrop-blur-sm rounded-lg py-2 px-2 text-center border border-amber-500/30 relative overflow-hidden">
+                              <div className="absolute inset-0 bg-gradient-to-t from-amber-500/10 to-transparent" />
+                              <p className="text-[11px] font-bold text-white relative z-10">{user?.memberLevel?.charAt(0) || 'B'}</p>
+                              <p className="text-[7px] text-amber-400 font-semibold tracking-wider">LEVEL</p>
                             </div>
                           </div>
 
-                          {/* Bottom Action */}
-                          <div className="mt-auto pt-2">
+                          {/* VIP Member Info */}
+                          <div className="space-y-2 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <User className="h-3 w-3 text-amber-400" />
+                              <span className="text-[10px] font-medium text-gray-200 truncate">{user?.name || 'Guest'}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Tag className="h-3 w-3 text-amber-400" />
+                              <span className="text-[9px] font-mono text-amber-300/90">{user?.id?.slice(-8) || '--------'}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Crown className="h-3 w-3 text-amber-400 fill-amber-400/20" />
+                              <span className="text-[9px] font-semibold text-amber-400 uppercase tracking-wider">{user?.memberLevel || 'Bronze'}</span>
+                            </div>
+                          </div>
+
+                          {/* Premium CTA Button */}
+                          <div className="mt-auto pt-2.5">
                             <motion.button
-                              whileHover={{ scale: 1.02 }}
+                              whileHover={{ scale: 1.02, boxShadow: "0 0 20px rgba(245, 158, 11, 0.4)" }}
                               whileTap={{ scale: 0.98 }}
                               onClick={() => setShowMemberBarcode(true)}
-                              className="w-full py-1.5 bg-white/25 backdrop-blur-sm hover:bg-white/35 text-white text-[10px] font-semibold rounded-md border border-white/20 transition-all flex items-center justify-center gap-1"
+                              className="w-full py-2 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-gray-900 text-[10px] font-bold rounded-lg border border-amber-300/50 transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/30"
                             >
-                              <QrCode className="h-3 w-3" />
-                              <span>Lihat Barcode</span>
+                              <QrCode className="h-3.5 w-3.5" />
+                              <span className="tracking-wider">SCAN BARCODE</span>
                             </motion.button>
                           </div>
                         </CardContent>
@@ -1651,67 +1690,93 @@ export default function HomePage() {
                   ) : (
                     <motion.div
                       key="barcode"
-                      initial={{ opacity: 0, y: -20, scale: 0.9 }}
+                      initial={{ opacity: 0, y: -30, scale: 0.9 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 20, scale: 0.9 }}
-                      transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
+                      exit={{ opacity: 0, y: 30, scale: 0.9 }}
+                      transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
                     >
-                      <Card className="bg-white border-0 shadow-xl overflow-hidden" style={{ width: '100%' }}>
-                        {/* Header */}
-                        <div className="bg-gradient-to-r from-red-500 via-orange-500 to-amber-400 px-4 py-3">
-                          <div className="flex items-center justify-between">
+                      <Card className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-700/50 shadow-2xl overflow-hidden">
+                        {/* Premium Header */}
+                        <div className="bg-gradient-to-br from-gray-900 to-gray-800 px-4 py-3 relative overflow-hidden">
+                          <div className="absolute inset-0 opacity-10">
+                            <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                              <defs>
+                                <pattern id="premiumGrid" x="0" y="0" width="15" height="15" patternUnits="userSpaceOnUse">
+                                  <path d="M 15 0 L 0 0 0 15" fill="none" stroke="#FFD700" strokeWidth="0.3" opacity="0.5"/>
+                                </pattern>
+                              </defs>
+                              <rect width="100%" height="100%" fill="url(#premiumGrid)" />
+                            </svg>
+                          </div>
+                          <div className="flex items-center justify-between relative z-10">
                             <div className="flex items-center gap-2">
-                              <div className="w-7 h-7 bg-white/25 backdrop-blur-md rounded-lg flex items-center justify-center border border-white/30">
+                              <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-yellow-300 rounded-lg flex items-center justify-center shadow-lg shadow-amber-500/30">
                                 <span className="text-sm">🎁</span>
                               </div>
-                              <h3 className="text-xs font-bold text-white">Member Barcode</h3>
+                              <div>
+                                <h3 className="text-xs font-bold text-white tracking-widest uppercase">Premium</h3>
+                                <p className="text-[8px] text-amber-400/80 font-semibold">MEMBER BARCODE</p>
+                              </div>
                             </div>
                             <motion.button
                               whileHover={{ scale: 1.1, rotate: 90 }}
                               whileTap={{ scale: 0.9 }}
                               onClick={() => setShowMemberBarcode(false)}
-                              className="w-7 h-7 bg-white/25 backdrop-blur-md rounded-lg flex items-center justify-center border border-white/30"
+                              className="w-7 h-7 bg-gradient-to-br from-amber-500/20 to-yellow-500/10 backdrop-blur-sm rounded-lg flex items-center justify-center border border-amber-500/30 hover:border-amber-400/50 transition-colors"
                               aria-label="Tutup barcode"
                             >
-                              <X className="h-3.5 w-3.5 text-white" />
+                              <X className="h-3.5 w-3.5 text-amber-400" />
                             </motion.button>
                           </div>
                         </div>
 
                         {/* Barcode Content */}
                         <CardContent className="p-4">
-                          <div className="bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 p-4 mb-3">
-                            <div className="flex flex-col items-center">
+                          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-xl border-2 border-amber-500/30 p-4 mb-3 relative overflow-hidden">
+                            <div className="absolute inset-0 opacity-5">
+                              <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="100%" height="100%" fill="url(#premiumGrid)" />
+                              </svg>
+                            </div>
+                            <div className="flex flex-col items-center relative z-10">
                               <Barcode
                                 value={user?.phone || '0000000000'}
-                                width={2}
-                                height={50}
+                                width={2.2}
+                                height={52}
                                 format="CODE128"
                                 displayValue={false}
-                                background="#f9fafb"
-                                lineColor="#1f2937"
+                                background="#1f2937"
+                                lineColor="#FFD700"
                                 margin={0}
                               />
-                              <div className="text-center mt-2">
-                                <p className="text-[8px] text-gray-500 font-medium tracking-wider mb-0.5">PHONE NUMBER</p>
-                                <p className="text-sm font-mono font-bold text-gray-800 tracking-wider">
+                              <div className="text-center mt-2.5">
+                                <p className="text-[8px] text-amber-400/70 font-semibold tracking-wider mb-0.5">PHONE NUMBER</p>
+                                <p className="text-sm font-mono font-bold text-amber-300 tracking-wider">
                                   {user?.phone ? user.phone.replace(/(\d{4})(\d{4})(\d{4})/, '$1-$2-$3') : '0000-0000-0000'}
                                 </p>
                               </div>
                             </div>
                           </div>
 
-                          {/* Quick Info */}
-                          <div className="space-y-1.5">
-                            <div className="flex items-center gap-2 p-2 bg-gradient-to-r from-red-50 to-orange-50 rounded-lg">
-                              <User className="h-3 w-3 text-red-600" />
-                              <p className="text-[10px] font-semibold text-gray-800 truncate">{user?.name || 'Guest'}</p>
+                          {/* VIP Info Cards */}
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 p-2.5 bg-gradient-to-r from-amber-500/20 to-yellow-500/10 rounded-lg border border-amber-500/30">
+                              <div className="w-6 h-6 bg-gradient-to-br from-amber-400 to-yellow-300 rounded-md flex items-center justify-center shadow-lg">
+                                <User className="h-3 w-3 text-gray-900" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-[10px] font-semibold text-white truncate">{user?.name || 'Guest'}</p>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-2 p-2 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg">
-                              <Crown className="h-3 w-3 text-amber-600" />
-                              <p className="text-[10px] font-semibold text-gray-800">
-                                {user?.memberLevel || 'Bronze'} Member
-                              </p>
+                            <div className="flex items-center gap-2 p-2.5 bg-gradient-to-r from-amber-500/20 to-yellow-500/10 rounded-lg border border-amber-500/30">
+                              <div className="w-6 h-6 bg-gradient-to-br from-amber-400 to-yellow-300 rounded-md flex items-center justify-center shadow-lg">
+                                <Crown className="h-3 w-3 text-gray-900" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-[10px] font-semibold text-amber-300">
+                                  {user?.memberLevel || 'Bronze'} Member
+                                </p>
+                              </div>
                             </div>
                           </div>
                         </CardContent>
