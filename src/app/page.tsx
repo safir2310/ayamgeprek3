@@ -2551,10 +2551,9 @@ export default function HomePage() {
                     Login Sekarang
                   </Button>
                 </Card>
-              </motion.div>
-            )}
           </motion.div>
         )}
+          </motion.div>
 
         {currentTab === 'redeem' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
