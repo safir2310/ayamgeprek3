@@ -2210,6 +2210,8 @@ export default function HomePage() {
 
         {currentTab === 'account' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="min-h-screen bg-gradient-to-b from-purple-100 to-purple-50">
+            {user ? (
+              <>
             {/* Header */}
             <div className="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-6 shadow-lg">
               <div className="flex items-center justify-between">
@@ -2226,7 +2228,8 @@ export default function HomePage() {
 
             {/* Content Card */}
             <div className="px-4 -mt-4">
-              <div className="bg-white rounded-3xl shadow-2xl p-6 max-w-md mx-auto">
+              {selectedAccountSection === 'overview' && (
+                <div className="bg-white rounded-3xl shadow-2xl p-6 max-w-md mx-auto">
                 {/* Profile Header */}
                 <div className="flex flex-col items-center mb-8">
                   <div className="relative mb-4">
@@ -2321,139 +2324,11 @@ export default function HomePage() {
                 >
                   Logout
                 </motion.button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-                            Keamanan & Privasi
-                          </span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3 pt-6">
-                        {/* Security Options */}
-                        <div className="space-y-3">
-                          <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => setIsForgotPasswordOpen(true)}
-                            className="w-full flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 hover:shadow-md transition-all text-left"
-                          >
-                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
-                              <Lock className="h-6 w-6 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              <h6 className="font-bold text-gray-800 mb-1">Ganti Password</h6>
-                              <p className="text-sm text-gray-600">Ubah password akun Anda</p>
-                            </div>
-                            <ArrowRight className="h-5 w-5 text-blue-400" />
-                          </motion.button>
-
-                          <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => {
-                              setEmailUpdateData({ newEmail: user?.email || '', currentPassword: '' })
-                              setIsEmailModalOpen(true)
-                            }}
-                            className="w-full flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 hover:shadow-md transition-all text-left"
-                          >
-                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
-                              <Mail className="h-6 w-6 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              <h6 className="font-bold text-gray-800 mb-1">Ubah Email</h6>
-                              <p className="text-sm text-gray-600">Update email akun Anda</p>
-                            </div>
-                            <ArrowRight className="h-5 w-5 text-blue-400" />
-                          </motion.button>
-
-                          <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => {
-                              setPhoneUpdateData({ newPhone: user?.phone || '', currentPassword: '' })
-                              setIsPhoneModalOpen(true)
-                            }}
-                            className="w-full flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 hover:shadow-md transition-all text-left"
-                          >
-                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
-                              <Phone className="h-6 w-6 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              <h6 className="font-bold text-gray-800 mb-1">Ubah Nomor Telepon</h6>
-                              <p className="text-sm text-gray-600">Update nomor telepon akun Anda</p>
-                            </div>
-                            <ArrowRight className="h-5 w-5 text-blue-400" />
-                          </motion.button>
-
-                          <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => {
-                              setAddressUpdateData({ newAddress: user?.address || '', currentPassword: '' })
-                              setIsUpdateAddressModal(true)
-                            }}
-                            className="w-full flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 hover:shadow-md transition-all text-left"
-                          >
-                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
-                              <MapPin className="h-6 w-6 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              <h6 className="font-bold text-gray-800 mb-1">Ubah Alamat</h6>
-                              <p className="text-sm text-gray-600">Update alamat pengiriman Anda</p>
-                            </div>
-                            <ArrowRight className="h-5 w-5 text-blue-400" />
-                          </motion.button>
-                        </div>
-
-                        <Separator className="my-6" />
-
-                        {/* Privacy Policy */}
-                        <div>
-                          <h6 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                            Kebijakan & Privasi
-                          </h6>
-                          <div className="space-y-3">
-                            <motion.button
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              onClick={() => setIsTermsModalOpen(true)}
-                              className="w-full flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 hover:shadow-md transition-all text-left"
-                            >
-                              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
-                                <FileText className="h-6 w-6 text-white" />
-                              </div>
-                              <div className="flex-1">
-                                <h6 className="font-bold text-gray-800 mb-1">Syarat & Ketentuan</h6>
-                                <p className="text-sm text-gray-600">Baca syarat dan ketentuan penggunaan</p>
-                              </div>
-                              <ArrowRight className="h-5 w-5 text-purple-400" />
-                            </motion.button>
-
-                            <motion.button
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              onClick={() => setIsPrivacyModalOpen(true)}
-                              className="w-full flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 hover:shadow-md transition-all text-left"
-                            >
-                              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
-                                <Shield className="h-6 w-6 text-white" />
-                              </div>
-                              <div className="flex-1">
-                                <h6 className="font-bold text-gray-800 mb-1">Kebijakan Privasi</h6>
-                                <p className="text-sm text-gray-600">Pelajari bagaimana kami melindungi data Anda</p>
-                              </div>
-                              <ArrowRight className="h-5 w-5 text-purple-400" />
-                            </motion.button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                )}
+                </div>
+              )}
 
                 {selectedAccountSection === 'settings' && (
+                  <div className="px-4 mt-4">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -2649,6 +2524,7 @@ export default function HomePage() {
                       </CardContent>
                     </Card>
                   </motion.div>
+                  </div>
                 )}
               </>
             ) : (
