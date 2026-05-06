@@ -2551,8 +2551,8 @@ export default function HomePage() {
                     Login Sekarang
                   </Button>
                 </Card>
-          </motion.div>
-        )}
+              </motion.div>
+            )}
           </motion.div>
 
         {currentTab === 'redeem' && (
