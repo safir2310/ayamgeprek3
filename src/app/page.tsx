@@ -1556,196 +1556,283 @@ export default function HomePage() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -30, scale: 0.9 }}
                       transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+                      className="relative"
                     >
-                      <Card className="bg-gradient-to-br from-orange-500 via-orange-400 to-yellow-400 border-0 shadow-2xl overflow-hidden relative" style={{ aspectRatio: '1.586', width: '100%', minHeight: '189px' }}>
-                        {/* Premium Decorative Pattern */}
-                        <div className="absolute inset-0 opacity-10 pointer-events-none">
-                          <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
-                            <defs>
-                              <pattern id="orangePattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                                <circle cx="10" cy="10" r="1.5" fill="rgba(255,255,255,0.4)" />
-                              </pattern>
-                            </defs>
-                            <rect width="100%" height="100%" fill="url(#orangePattern)" />
-                          </svg>
-                        </div>
+                      {/* Glow Effect */}
+                      <motion.div
+                        animate={{
+                          scale: [1, 1.05, 1],
+                          opacity: [0.5, 0.8, 0.5],
+                        }}
+                        transition={{
+                          duration: 3,
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                        className="absolute inset-0 -z-10 bg-gradient-to-r from-orange-500 to-yellow-400 blur-3xl opacity-60 rounded-2xl"
+                      />
 
-                        {/* Shimmer Effect */}
-                        <div className="absolute inset-0 opacity-15 pointer-events-none overflow-hidden">
+                      <Card className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-2 border-orange-500/30 shadow-2xl overflow-hidden relative" style={{ aspectRatio: '1.586', width: '100%', minHeight: '189px' }}>
+                        {/* Animated Holographic Pattern */}
+                        <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden">
                           <motion.div
                             animate={{
-                              background: [
-                                'linear-gradient(45deg, transparent 0%, rgba(255,255,255,0.5) 50%, transparent 100%)'
-                              ],
+                              x: ['-100%', '100%'],
                             }}
                             transition={{
                               duration: 4,
                               repeat: Infinity,
                               ease: "linear"
                             }}
-                            style={{
-                              width: '200%',
-                              height: '100%',
-                              position: 'absolute',
-                              left: '-100%',
-                            }}
-                          />
+                            className="absolute inset-0"
+                          >
+                            <svg className="absolute inset-0 w-[200%] h-full" xmlns="http://www.w3.org/2000/svg">
+                              <defs>
+                                <linearGradient id="holoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                  <stop offset="0%" stopColor="rgba(255,215,0,0.5)" />
+                                  <stop offset="50%" stopColor="rgba(255,165,0,0.8)" />
+                                  <stop offset="100%" stopColor="rgba(255,215,0,0.5)" />
+                                </linearGradient>
+                              </defs>
+                              <rect width="100%" height="100%" fill="url(#holoGrad)" />
+                            </svg>
+                          </motion.div>
+                        </div>
+
+                        {/* Floating Particles */}
+                        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                          {[...Array(6)].map((_, i) => (
+                            <motion.div
+                              key={i}
+                              className="absolute w-1 h-1 bg-yellow-400 rounded-full"
+                              style={{
+                                left: `${20 + i * 15}%`,
+                                top: `${Math.random() * 100}%`,
+                              }}
+                              animate={{
+                                y: [0, -20, 0],
+                                opacity: [0.2, 1, 0.2],
+                                scale: [1, 1.5, 1],
+                              }}
+                              transition={{
+                                duration: 2 + i * 0.3,
+                                repeat: Infinity,
+                                delay: i * 0.2,
+                              }}
+                            />
+                          ))}
                         </div>
 
                         {/* Card Content */}
                         <CardContent className="p-4 relative z-10 h-full flex flex-col">
-                          {/* Header */}
-                          <div className="flex items-start justify-between mb-3">
-                            {/* Gift Icon & Premium Text */}
-                            <div className="flex items-center gap-2">
-                              <div className="w-10 h-10 bg-white/30 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/50 shadow-lg">
-                                <span className="text-xl">🎁</span>
-                              </div>
-                              <div>
-                                <h3 className="text-[11px] font-bold text-white tracking-wide">MEMBER</h3>
-                                <p className="text-[8px] text-yellow-100 font-semibold tracking-wider">PREMIUM</p>
-                              </div>
+                          {/* Header with Glow Badge */}
+                          <div className="flex items-start justify-between mb-2">
+                            {/* Gift Icon with Pulse Effect */}
+                            <div className="relative">
+                              <motion.div
+                                animate={{
+                                  scale: [1, 1.1, 1],
+                                }}
+                                transition={{
+                                  duration: 2,
+                                  repeat: Infinity,
+                                }}
+                                className="w-11 h-11 bg-gradient-to-br from-orange-500 to-yellow-400 rounded-xl flex items-center justify-center shadow-lg relative overflow-hidden"
+                              >
+                                <motion.div
+                                  animate={{
+                                    x: ['-100%', '200%'],
+                                  }}
+                                  transition={{
+                                    duration: 2,
+                                    repeat: Infinity,
+                                  }}
+                                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                                />
+                                <span className="text-2xl">🎁</span>
+                              </motion.div>
+                              {/* Notification Badge */}
+                              <motion.div
+                                animate={{
+                                  scale: [1, 1.2, 1],
+                                }}
+                                transition={{
+                                  duration: 1.5,
+                                  repeat: Infinity,
+                                }}
+                                className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center border-2 border-gray-900"
+                              >
+                                <span className="text-[8px] font-bold text-white">3</span>
+                              </motion.div>
                             </div>
 
-                            {/* Name & ID - Top Right */}
-                            <div className="text-right">
-                              <p className="text-[10px] font-bold text-white truncate max-w-[120px]">{user?.name || 'Guest'}</p>
-                              <p className="text-[9px] font-mono text-white/90">{user?.id?.slice(-8) || '--------'}</p>
-                            </div>
-                          </div>
-
-                          {/* Chip Button - Centered */}
-                          <div className="flex justify-center mb-3">
-                            <motion.button
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => setShowMemberBarcode(true)}
-                              className="w-11 h-7 bg-gradient-to-br from-yellow-200 to-amber-200 rounded-lg border-2 border-yellow-300/80 flex items-center justify-center gap-0.5 shadow-lg relative overflow-hidden"
-                              aria-label="Tampilkan barcode"
+                            {/* Premium Badge with Glow */}
+                            <motion.div
+                              animate={{
+                                boxShadow: [
+                                  '0 0 5px rgba(251, 191, 36, 0.5)',
+                                  '0 0 20px rgba(251, 191, 36, 0.8)',
+                                  '0 0 5px rgba(251, 191, 36, 0.5)',
+                                ],
+                              }}
+                              transition={{
+                                duration: 2,
+                                repeat: Infinity,
+                              }}
+                              className="px-2 py-1 bg-gradient-to-r from-amber-500 to-yellow-400 rounded-md border border-yellow-300/50"
                             >
-                              <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent" />
-                              <div className="w-0.5 h-4.5 bg-yellow-500 rounded-sm" />
-                              <div className="w-0.5 h-4.5 bg-yellow-500 rounded-sm" />
-                              <div className="w-0.5 h-4.5 bg-yellow-500 rounded-sm" />
-                              <div className="w-0.5 h-4.5 bg-yellow-500 rounded-sm" />
-                            </motion.button>
+                              <span className="text-[8px] font-bold text-gray-900 tracking-wider">PREMIUM</span>
+                            </motion.div>
                           </div>
 
-                          {/* Stats */}
-                          <div className="grid grid-cols-3 gap-2 mb-3">
-                            <div className="bg-white/25 backdrop-blur-sm rounded-lg py-2 px-2 text-center border border-white/20">
-                              <p className="text-[12px] font-bold text-white">{user?.points || 0}</p>
-                              <p className="text-[7px] text-white/80 font-medium tracking-wide">POIN</p>
-                            </div>
-                            <div className="bg-white/25 backdrop-blur-sm rounded-lg py-2 px-2 text-center border border-white/20">
-                              <p className="text-[12px] font-bold text-white">{vouchers.length || 0}</p>
-                              <p className="text-[7px] text-white/80 font-medium tracking-wide">VOUCHER</p>
-                            </div>
-                            <div className="bg-white/25 backdrop-blur-sm rounded-lg py-2 px-2 text-center border border-white/20">
-                              <p className="text-[12px] font-bold text-white">{user?.memberLevel?.charAt(0) || 'B'}</p>
-                              <p className="text-[7px] text-white/80 font-medium tracking-wide">LEVEL</p>
-                            </div>
+                          {/* Name & ID with Gradient Text */}
+                          <div className="text-right mb-2">
+                            <motion.p
+                              whileHover={{ scale: 1.05 }}
+                              className="text-[10px] font-bold text-white truncate max-w-[140px] ml-auto bg-gradient-to-r from-yellow-200 to-orange-200 bg-clip-text text-transparent"
+                            >
+                              {user?.name || 'Guest'}
+                            </motion.p>
+                            <motion.p
+                              whileHover={{ scale: 1.05 }}
+                              className="text-[9px] font-mono text-orange-300 bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent"
+                            >
+                              {user?.id?.slice(-8) || '--------'}
+                            </motion.p>
                           </div>
 
-                          {/* Progress Level Bar */}
-                          <div className="mb-3">
-                            <div className="flex items-center justify-between mb-1.5">
-                              <div className="flex items-center gap-1">
-                                <Crown className="h-3 w-3 text-yellow-100" />
-                                <span className="text-[9px] font-semibold text-yellow-100">
-                                  {user?.memberLevel || 'Bronze'}
-                                </span>
-                              </div>
-                              <span className="text-[8px] text-yellow-100/80 font-medium">
+                          {/* Interactive Level Badge */}
+                          <motion.div
+                            whileHover={{ scale: 1.05, rotate: 2 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="flex items-center justify-center gap-2 mb-2 p-1.5 bg-gradient-to-r from-orange-500/20 to-yellow-500/20 rounded-lg border border-orange-500/30 backdrop-blur-sm relative overflow-hidden"
+                          >
+                            <motion.div
+                              animate={{
+                                x: ['-100%', '100%'],
+                              }}
+                              transition={{
+                                duration: 3,
+                                repeat: Infinity,
+                              }}
+                              className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-400/20 to-transparent"
+                            />
+                            <Crown className="h-4 w-4 text-yellow-400" />
+                            <span className="text-[10px] font-bold text-yellow-100 tracking-wide">
+                              {user?.memberLevel || 'Bronze'}
+                            </span>
+                          </motion.div>
+
+                          {/* Stats with Hover Lift Effect */}
+                          <div className="grid grid-cols-3 gap-2 mb-2">
+                            {[
+                              { label: 'POIN', value: user?.points || 0, icon: '✨' },
+                              { label: 'VOUCHER', value: vouchers.length || 0, icon: '🎫' },
+                              { label: 'LEVEL', value: (user?.memberLevel || 'B').charAt(0), icon: '⭐' },
+                            ].map((stat, i) => (
+                              <motion.div
+                                key={i}
+                                whileHover={{ y: -3, scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="bg-white/10 backdrop-blur-sm rounded-lg py-2 px-1 text-center border border-white/10 hover:bg-white/20 hover:border-orange-400/50 transition-all cursor-pointer"
+                              >
+                                <span className="text-xs mb-0.5">{stat.icon}</span>
+                                <p className="text-[11px] font-bold text-white">{stat.value}</p>
+                                <p className="text-[7px] text-white/70 font-medium">{stat.label}</p>
+                              </motion.div>
+                            ))}
+                          </div>
+
+                          {/* Progress Bar with Glowing Effect */}
+                          <div className="mb-2">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-[8px] font-semibold text-orange-300">Progress</span>
+                              <motion.span
+                                animate={{
+                                  opacity: [0.5, 1, 0.5],
+                                }}
+                                transition={{
+                                  duration: 1.5,
+                                  repeat: Infinity,
+                                }}
+                                className="text-[8px] font-bold text-yellow-300"
+                              >
                                 {(() => {
                                   const currentPoints = user?.points || 0;
-                                  let nextLevel = 'Silver';
                                   let pointsNeeded = 1000;
-                                  if (currentPoints >= 5000) {
-                                    nextLevel = 'Platinum Max';
-                                    pointsNeeded = 0;
-                                  } else if (currentPoints >= 2500) {
-                                    nextLevel = 'Platinum';
-                                    pointsNeeded = 5000 - currentPoints;
-                                  } else if (currentPoints >= 1000) {
-                                    nextLevel = 'Gold';
-                                    pointsNeeded = 2500 - currentPoints;
-                                  } else {
-                                    pointsNeeded = 1000 - currentPoints;
-                                  }
-                                  return pointsNeeded > 0 ? `${pointsNeeded} poin lagi` : 'Level Max';
+                                  if (currentPoints >= 5000) return 'MAX';
+                                  else if (currentPoints >= 2500) pointsNeeded = 5000 - currentPoints;
+                                  else if (currentPoints >= 1000) pointsNeeded = 2500 - currentPoints;
+                                  else pointsNeeded = 1000 - currentPoints;
+                                  return `${pointsNeeded}`;
                                 })()}
-                              </span>
+                              </motion.span>
                             </div>
-                            <div className="relative h-2 bg-white/20 rounded-full overflow-hidden">
+                            <div className="relative h-2.5 bg-white/10 rounded-full overflow-hidden">
                               <motion.div
                                 initial={{ width: 0 }}
                                 animate={{
                                   width: (() => {
                                     const currentPoints = user?.points || 0;
                                     let progress = 0;
-                                    if (currentPoints >= 5000) {
-                                      progress = 100;
-                                    } else if (currentPoints >= 2500) {
-                                      progress = ((currentPoints - 2500) / 2500) * 100;
-                                    } else if (currentPoints >= 1000) {
-                                      progress = ((currentPoints - 1000) / 1500) * 100;
-                                    } else {
-                                      progress = (currentPoints / 1000) * 100;
-                                    }
+                                    if (currentPoints >= 5000) progress = 100;
+                                    else if (currentPoints >= 2500) progress = ((currentPoints - 2500) / 2500) * 100;
+                                    else if (currentPoints >= 1000) progress = ((currentPoints - 1000) / 1500) * 100;
+                                    else progress = (currentPoints / 1000) * 100;
                                     return Math.min(Math.max(progress, 0), 100);
                                   })() + '%'
                                 }}
                                 transition={{ duration: 1, ease: [0.25, 0.46, 0.45, 0.94] }}
-                                className="absolute left-0 top-0 h-full bg-gradient-to-r from-yellow-200 via-yellow-100 to-white rounded-full"
-                              />
-                            </div>
-                            <div className="flex justify-between mt-1">
-                              <span className="text-[7px] text-white/70 font-medium">
-                                {(() => {
-                                  const currentPoints = user?.points || 0;
-                                  let rangeStart = 0;
-                                  let rangeEnd = 1000;
-                                  if (currentPoints >= 5000) {
-                                    rangeStart = 5000;
-                                    rangeEnd = 5000;
-                                  } else if (currentPoints >= 2500) {
-                                    rangeStart = 2500;
-                                    rangeEnd = 5000;
-                                  } else if (currentPoints >= 1000) {
-                                    rangeStart = 1000;
-                                    rangeEnd = 2500;
-                                  }
-                                  return rangeStart;
-                                })()}
-                              </span>
-                              <span className="text-[7px] text-white/70 font-medium">
-                                {(() => {
-                                  const currentPoints = user?.points || 0;
-                                  let rangeEnd = 1000;
-                                  if (currentPoints >= 5000) {
-                                    rangeEnd = 5000;
-                                  } else if (currentPoints >= 2500) {
-                                    rangeEnd = 5000;
-                                  } else if (currentPoints >= 1000) {
-                                    rangeEnd = 2500;
-                                  }
-                                  return rangeEnd;
-                                })()}
-                              </span>
+                                className="absolute left-0 top-0 h-full bg-gradient-to-r from-orange-500 via-yellow-400 to-orange-500 rounded-full relative overflow-hidden"
+                              >
+                                <motion.div
+                                  animate={{
+                                    x: ['-100%', '100%'],
+                                  }}
+                                  transition={{
+                                    duration: 1.5,
+                                    repeat: Infinity,
+                                  }}
+                                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent"
+                                />
+                              </motion.div>
                             </div>
                           </div>
 
-                          {/* Button */}
-                          <div className="mt-auto pt-2">
+                          {/* Interactive Button */}
+                          <div className="mt-auto">
                             <motion.button
-                              whileHover={{ scale: 1.02 }}
+                              whileHover={{
+                                scale: 1.02,
+                                boxShadow: "0 0 20px rgba(251, 191, 36, 0.6)",
+                              }}
                               whileTap={{ scale: 0.98 }}
                               onClick={() => setShowMemberBarcode(true)}
-                              className="w-full py-2 bg-white/30 backdrop-blur-sm hover:bg-white/40 text-white text-[10px] font-bold rounded-lg border border-white/30 transition-all flex items-center justify-center gap-1.5"
+                              className="w-full py-2 bg-gradient-to-r from-orange-500 via-yellow-400 to-orange-500 hover:from-orange-400 hover:via-yellow-300 hover:to-orange-400 text-gray-900 text-[10px] font-bold rounded-lg border border-yellow-300/50 transition-all flex items-center justify-center gap-1.5 relative overflow-hidden group"
                             >
-                              <QrCode className="h-3.5 w-3.5" />
-                              <span>LIHAT BARCODE</span>
+                              <motion.div
+                                animate={{
+                                  x: ['-100%', '200%'],
+                                }}
+                                transition={{
+                                  duration: 2,
+                                  repeat: Infinity,
+                                }}
+                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                              />
+                              <QrCode className="h-3.5 w-3.5 relative z-10" />
+                              <motion.span
+                                animate={{
+                                  opacity: [1, 0.7, 1],
+                                }}
+                                transition={{
+                                  duration: 1,
+                                  repeat: Infinity,
+                                }}
+                                className="relative z-10 tracking-wider"
+                              >
+                                SCAN BARCODE
+                              </motion.span>
                             </motion.button>
                           </div>
                         </CardContent>
