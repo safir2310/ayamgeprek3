@@ -2526,7 +2526,8 @@ export default function HomePage() {
                   </motion.div>
                   </div>
                 )}
-              </>
+              </div>
+            </>
             ) : (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
