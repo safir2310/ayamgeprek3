@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { User, Crown, Gift, Activity, Bell, Settings, QrCode, Award, Sparkles, ChevronRight, LogOut, Mail, Phone, MapPin, Lock, Volume2, Globe, History, Ticket } from 'lucide-react'
+import { User, Crown, Gift, Activity, Bell, Settings, QrCode, Award, Sparkles, ChevronRight, LogOut, Mail, Phone, MapPin, Lock, Volume2, Globe, History, Ticket, Edit2, Shield, Sun, Moon, Music, FileText, HelpCircle } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -39,6 +39,31 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
   const [showActivityModal, setShowActivityModal] = useState(false)
   const [showNotificationModal, setShowNotificationModal] = useState(false)
   const [showSettingsModal, setShowSettingsModal] = useState(false)
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false)
+  const [showSecurityModal, setShowSecurityModal] = useState(false)
+  const [showThemeModal, setShowThemeModal] = useState(false)
+  const [showNotificationToneModal, setShowNotificationToneModal] = useState(false)
+  const [showTermsModal, setShowTermsModal] = useState(false)
+  const [showHelpCenterModal, setShowHelpCenterModal] = useState(false)
+
+  // Edit profile form state
+  const [editProfile, setEditProfile] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    address: user?.address || ''
+  })
+
+  // Security state
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+
+  // Theme state
+  const [isDarkMode, setIsDarkMode] = useState(false)
+
+  // Notification tone state
+  const [selectedTone, setSelectedTone] = useState('chime')
 
   // Get membership level based on points
   const getMembershipLevel = () => {
@@ -167,6 +192,51 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
 
   const progress = calculateProgress()
   const pointsNeeded = getPointsNeeded()
+
+  // Edit profile handler
+  const handleEditProfile = async () => {
+    try {
+      // Here you would typically call an API to update the profile
+      toast.success('Profil berhasil diperbarui')
+      setShowEditProfileModal(false)
+    } catch (error) {
+      toast.error('Gagal memperbarui profil')
+    }
+  }
+
+  // Security handler
+  const handleSecurityUpdate = async () => {
+    if (newPassword !== confirmPassword) {
+      toast.error('Password baru tidak cocok')
+      return
+    }
+    if (newPassword.length < 6) {
+      toast.error('Password minimal 6 karakter')
+      return
+    }
+    try {
+      // Here you would typically call an API to update the password
+      toast.success('Password berhasil diperbarui')
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+      setShowSecurityModal(false)
+    } catch (error) {
+      toast.error('Gagal memperbarui password')
+    }
+  }
+
+  // Theme toggle handler
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode)
+    toast.success(isDarkMode ? 'Tema terang diaktifkan' : 'Tema gelap diaktifkan')
+  }
+
+  // Notification tone handler
+  const handleToneSelect = (tone: string) => {
+    setSelectedTone(tone)
+    toast.success(`Nada notifikasi: ${tone}`)
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
@@ -725,18 +795,75 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
           </DialogHeader>
           <ScrollArea className="max-h-[60vh]">
             <div className="space-y-3 mt-4">
-              <div className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl">
+              {/* Edit Profile */}
+              <div
+                onClick={() => setShowEditProfileModal(true)}
+                className="flex items-center justify-between p-3 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl cursor-pointer hover:shadow-md transition-all"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
-                    <Volume2 className="w-5 h-5 text-gray-500" />
+                    <Edit2 className="w-5 h-5 text-red-500" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-gray-800">Notifikasi Suara</p>
-                    <p className="text-xs text-gray-500">Aktifkan suara notifikasi</p>
+                    <p className="text-sm font-semibold text-gray-800">Edit Profile</p>
+                    <p className="text-xs text-gray-500">Ubah informasi profil</p>
                   </div>
                 </div>
-                <div className="w-12 h-6 bg-green-500 rounded-full cursor-pointer" />
+                <ChevronRight className="w-5 h-5 text-gray-400" />
               </div>
+
+              {/* Security & Privacy */}
+              <div
+                onClick={() => setShowSecurityModal(true)}
+                className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl cursor-pointer hover:shadow-md transition-all"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                    <Shield className="w-5 h-5 text-purple-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">Keamanan & Privasi</p>
+                    <p className="text-xs text-gray-500">Password dan privasi</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              </div>
+
+              {/* Theme */}
+              <div
+                onClick={() => setShowThemeModal(true)}
+                className="flex items-center justify-between p-3 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl cursor-pointer hover:shadow-md transition-all"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                    {isDarkMode ? <Moon className="w-5 h-5 text-amber-600" /> : <Sun className="w-5 h-5 text-amber-500" />}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">Tema</p>
+                    <p className="text-xs text-gray-500">{isDarkMode ? 'Tema Gelap' : 'Tema Terang'}</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              </div>
+
+              {/* Notification Tone */}
+              <div
+                onClick={() => setShowNotificationToneModal(true)}
+                className="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl cursor-pointer hover:shadow-md transition-all"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                    <Music className="w-5 h-5 text-green-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">Nada Notifikasi</p>
+                    <p className="text-xs text-gray-500">Pilih nada pesan masuk</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              </div>
+
+              {/* Language */}
               <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
@@ -749,17 +876,446 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
                 </div>
                 <span className="text-sm font-semibold text-gray-600">Bahasa Indonesia</span>
               </div>
-              <div className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl">
+
+              {/* Terms & Conditions */}
+              <div
+                onClick={() => setShowTermsModal(true)}
+                className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl cursor-pointer hover:shadow-md transition-all"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
-                    <Lock className="w-5 h-5 text-purple-500" />
+                    <FileText className="w-5 h-5 text-gray-500" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-gray-800">Privasi</p>
-                    <p className="text-xs text-gray-500">Pengaturan privasi akun</p>
+                    <p className="text-sm font-semibold text-gray-800">Persyaratan & Persetujuan</p>
+                    <p className="text-xs text-gray-500">Syarat dan ketentuan</p>
                   </div>
                 </div>
                 <ChevronRight className="w-5 h-5 text-gray-400" />
+              </div>
+
+              {/* Help Center */}
+              <div
+                onClick={() => setShowHelpCenterModal(true)}
+                className="flex items-center justify-between p-3 bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl cursor-pointer hover:shadow-md transition-all"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                    <HelpCircle className="w-5 h-5 text-teal-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">Pusat Bantuan</p>
+                    <p className="text-xs text-gray-500">FAQ dan dukungan</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              </div>
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Profile Modal */}
+      <Dialog open={showEditProfileModal} onOpenChange={setShowEditProfileModal}>
+        <DialogContent className="sm:max-w-md w-[95vw] max-w-[400px] mx-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit2 className="w-5 h-5 text-red-600" />
+              Edit Profile
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700">Nama Lengkap</label>
+                <input
+                  type="text"
+                  value={editProfile.name}
+                  onChange={(e) => setEditProfile({ ...editProfile, name: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:outline-none transition-all text-sm"
+                  placeholder="Masukkan nama lengkap"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700">Email</label>
+                <input
+                  type="email"
+                  value={editProfile.email}
+                  onChange={(e) => setEditProfile({ ...editProfile, email: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:outline-none transition-all text-sm"
+                  placeholder="Masukkan email"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700">Nomor Telepon</label>
+                <input
+                  type="tel"
+                  value={editProfile.phone}
+                  onChange={(e) => setEditProfile({ ...editProfile, phone: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:outline-none transition-all text-sm"
+                  placeholder="Masukkan nomor telepon"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700">Alamat</label>
+                <textarea
+                  value={editProfile.address}
+                  onChange={(e) => setEditProfile({ ...editProfile, address: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:outline-none transition-all text-sm resize-none"
+                  rows={3}
+                  placeholder="Masukkan alamat"
+                />
+              </div>
+              <Button
+                onClick={handleEditProfile}
+                className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-semibold"
+              >
+                Simpan Perubahan
+              </Button>
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Security & Privacy Modal */}
+      <Dialog open={showSecurityModal} onOpenChange={setShowSecurityModal}>
+        <DialogContent className="sm:max-w-md w-[95vw] max-w-[400px] mx-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-purple-600" />
+              Keamanan & Privasi
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-4 mt-4">
+              {/* Password Change Section */}
+              <div className="p-4 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200">
+                <h4 className="font-bold text-gray-800 mb-3">Ubah Password</h4>
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-gray-600">Password Saat Ini</label>
+                    <input
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition-all text-sm"
+                      placeholder="••••••••"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-gray-600">Password Baru</label>
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition-all text-sm"
+                      placeholder="••••••••"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-gray-600">Konfirmasi Password</label>
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition-all text-sm"
+                      placeholder="••••••••"
+                    />
+                  </div>
+                  <Button
+                    onClick={handleSecurityUpdate}
+                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold"
+                  >
+                    Update Password
+                  </Button>
+                </div>
+              </div>
+
+              {/* Privacy Settings */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-gray-800">Pengaturan Privasi</h4>
+                <div className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <Lock className="w-5 h-5 text-gray-500" />
+                    <div>
+                      <p className="text-sm font-semibold text-gray-800">Profil Privat</p>
+                      <p className="text-xs text-gray-500">Sembunyikan profil dari orang lain</p>
+                    </div>
+                  </div>
+                  <div className="w-12 h-6 bg-green-500 rounded-full cursor-pointer" />
+                </div>
+                <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <Mail className="w-5 h-5 text-blue-500" />
+                    <div>
+                      <p className="text-sm font-semibold text-gray-800">Notifikasi Email</p>
+                      <p className="text-xs text-gray-500">Terima update via email</p>
+                    </div>
+                  </div>
+                  <div className="w-12 h-6 bg-gray-300 rounded-full cursor-pointer" />
+                </div>
+                <div className="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <Phone className="w-5 h-5 text-green-500" />
+                    <div>
+                      <p className="text-sm font-semibold text-gray-800">Notifikasi SMS</p>
+                      <p className="text-xs text-gray-500">Terima update via SMS</p>
+                    </div>
+                  </div>
+                  <div className="w-12 h-6 bg-green-500 rounded-full cursor-pointer" />
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Theme Modal */}
+      <Dialog open={showThemeModal} onOpenChange={setShowThemeModal}>
+        <DialogContent className="sm:max-w-md w-[95vw] max-w-[400px] mx-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sun className="w-5 h-5 text-amber-600" />
+              Tema
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-4 mt-4">
+              <p className="text-sm text-gray-600">Pilih tema untuk tampilan aplikasi</p>
+              
+              <div
+                onClick={toggleTheme}
+                className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                  !isDarkMode
+                    ? 'bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-400'
+                    : 'bg-white border-gray-200'
+                }`}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-yellow-400 rounded-xl flex items-center justify-center shadow-md">
+                    <Sun className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-gray-800">Tema Terang</h4>
+                    <p className="text-xs text-gray-500">Tampilan terang dan cerah</p>
+                  </div>
+                  {!isDarkMode && (
+                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                      <div className="w-3 h-3 bg-white rounded-full" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div
+                onClick={toggleTheme}
+                className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                  isDarkMode
+                    ? 'bg-gradient-to-r from-slate-700 to-slate-800 border-slate-600'
+                    : 'bg-white border-gray-200'
+                }`}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-slate-600 to-slate-700 rounded-xl flex items-center justify-center shadow-md">
+                    <Moon className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className={`font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Tema Gelap</h4>
+                    <p className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-500'}`}>Tampilan gelap dan nyaman di mata</p>
+                  </div>
+                  {isDarkMode && (
+                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                      <div className="w-3 h-3 bg-white rounded-full" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Notification Tone Modal */}
+      <Dialog open={showNotificationToneModal} onOpenChange={setShowNotificationToneModal}>
+        <DialogContent className="sm:max-w-md w-[95vw] max-w-[400px] mx-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Music className="w-5 h-5 text-green-600" />
+              Nada Notifikasi
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-4 mt-4">
+              <p className="text-sm text-gray-600">Pilih nada notifikasi untuk pesan masuk</p>
+
+              {[
+                { id: 'chime', name: 'Chime', description: 'Nada notifikasi standar' },
+                { id: 'bell', name: 'Bell', description: 'Nada lonceng klasik' },
+                { id: 'whistle', name: 'Whistle', description: 'Nada peluit' },
+                { id: 'pop', name: 'Pop', description: 'Nada pop ringan' },
+                { id: 'cheer', name: 'Cheer', description: 'Nada semangat' },
+                { id: 'melody', name: 'Melody', description: 'Melodi musik' },
+              ].map((tone) => (
+                <div
+                  key={tone.id}
+                  onClick={() => handleToneSelect(tone.name)}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md ${
+                    selectedTone === tone.name
+                      ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-400'
+                      : 'bg-white border-gray-200'
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-400 rounded-xl flex items-center justify-center shadow-md">
+                      <Music className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-bold text-gray-800">{tone.name}</h4>
+                      <p className="text-xs text-gray-500">{tone.description}</p>
+                    </div>
+                    {selectedTone === tone.name && (
+                      <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                        <div className="w-3 h-3 bg-white rounded-full" />
+                      </div>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-shrink-0"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        toast.success(`Memutar: ${tone.name}`)
+                      }}
+                    >
+                      <Volume2 className="w-4 h-4 mr-2" />
+                      Putar
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Terms & Conditions Modal */}
+      <Dialog open={showTermsModal} onOpenChange={setShowTermsModal}>
+        <DialogContent className="sm:max-w-md w-[95vw] max-w-[400px] mx-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-gray-600" />
+              Persyaratan & Persetujuan
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-4 mt-4">
+              <div className="p-4 rounded-xl bg-gradient-to-r from-gray-50 to-slate-50 border-2 border-gray-200">
+                <h4 className="font-bold text-gray-800 mb-3">Syarat dan Ketentuan</h4>
+                <div className="space-y-3 text-sm text-gray-600">
+                  <p>
+                    Selamat datang di aplikasi membership kami. Dengan menggunakan aplikasi ini, Anda menyetujui syarat dan ketentuan berikut:
+                  </p>
+                  <ol className="list-decimal list-inside space-y-2">
+                    <li>
+                      <strong>Pendaftaran Member:</strong> Setiap pendaftaran member berlaku selamanya dan tidak dapat dipindahtangankan.
+                    </li>
+                    <li>
+                      <strong>Pengumpulan Poin:</strong> Poin dapat dikumpulkan dari setiap transaksi pembelian. 1 poin = Rp 1.000.
+                    </li>
+                    <li>
+                      <strong>Membership Level:</strong> Level membership ditentukan berdasarkan total poin yang terkumpul.
+                    </li>
+                    <li>
+                      <strong>Voucher dan Reward:</strong> Voucher yang diterima memiliki masa berlaku tertentu dan tidak dapat digabungkan.
+                    </li>
+                    <li>
+                      <strong>Privasi Data:</strong> Kami menjaga kerahasiaan data pribadi Anda dan tidak akan membagikannya kepada pihak ketiga tanpa izin.
+                    </li>
+                    <li>
+                      <strong>Penggunaan Aplikasi:</strong> Penggunaan aplikasi yang melanggar hukum dapat mengakibatkan pemblokiran akun.
+                    </li>
+                    <li>
+                      <strong>Perubahan Ketentuan:</strong> Kami berhak mengubah syarat dan ketentuan sewaktu-waktu dengan pemberitahuan sebelumnya.
+                    </li>
+                  </ol>
+                  <p className="text-xs text-gray-500 mt-4">
+                    Terakhir diperbarui: 1 Januari 2025
+                  </p>
+                </div>
+              </div>
+              <Button
+                className="w-full bg-gradient-to-r from-gray-500 to-slate-600 hover:from-gray-600 hover:to-slate-700 text-white font-semibold"
+                onClick={() => toast.success('Syarat dan ketentuan disetujui')}
+              >
+                Saya Setuju
+              </Button>
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Help Center Modal */}
+      <Dialog open={showHelpCenterModal} onOpenChange={setShowHelpCenterModal}>
+        <DialogContent className="sm:max-w-md w-[95vw] max-w-[400px] mx-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <HelpCircle className="w-5 h-5 text-teal-600" />
+              Pusat Bantuan
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-4 mt-4">
+              {/* Search Bar */}
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Cari bantuan..."
+                  className="w-full px-4 py-3 pl-10 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:outline-none transition-all text-sm"
+                />
+                <HelpCircle className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              </div>
+
+              {/* FAQ Section */}
+              <div>
+                <h4 className="font-bold text-gray-800 mb-3">Pertanyaan Umum (FAQ)</h4>
+                <div className="space-y-2">
+                  {[
+                    { q: 'Bagaimana cara mengumpulkan poin?', a: 'Setiap pembelian Rp 1.000 = 1 poin. Tunjukkan barcode member Anda di kasir untuk mendapatkan poin.' },
+                    { q: 'Bagaimana cara upgrade membership?', a: 'Kumpulkan poin untuk mencapai level berikutnya: Bronze (0), Silver (500), Gold (1000), Platinum (2500), VIP (5000).' },
+                    { q: 'Bagaimana cara menggunakan voucher?', a: 'Pilih voucher yang ingin digunakan dan tunjukkan ke kasir saat checkout. Voucher tidak dapat digabungkan.' },
+                    { q: 'Berapa lama masa berlaku voucher?', a: 'Masa berlaku voucher bervariasi tergantung jenis voucher. Cek detail voucher untuk informasi lebih lanjut.' },
+                    { q: 'Bagaimana cara mengubah password?', a: 'Buka menu Pengaturan > Keamanan & Privasi > Ubah Password.' },
+                    { q: 'Bagaimana cara menghubungi dukungan?', a: 'Anda dapat menghubungi kami melalui email support@example.com atau WhatsApp 0812-3456-7890.' },
+                  ].map((faq, index) => (
+                    <div key={index} className="p-3 rounded-xl bg-gradient-to-r from-teal-50 to-cyan-50 border-2 border-teal-200">
+                      <p className="text-sm font-semibold text-gray-800 mb-1">{faq.q}</p>
+                      <p className="text-xs text-gray-600">{faq.a}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Contact Support */}
+              <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200">
+                <h4 className="font-bold text-gray-800 mb-3">Butuh Bantuan Lebih?</h4>
+                <div className="space-y-2">
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => toast.success('Membuka WhatsApp...')}
+                  >
+                    <Phone className="w-4 h-4 mr-2" />
+                    WhatsApp: 0812-3456-7890
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => toast.success('Membuka email...')}
+                  >
+                    <Mail className="w-4 h-4 mr-2" />
+                    Email: support@example.com
+                  </Button>
+                </div>
               </div>
             </div>
           </ScrollArea>
