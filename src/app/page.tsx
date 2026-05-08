@@ -1649,19 +1649,19 @@ export default function HomePage() {
               className="mb-6"
             >
               <div className="w-full max-w-sm mx-auto">
-                <Card className={`overflow-hidden rounded-2xl shadow-xl border-2 ${glassCardStyle}`}>
+                <Card className={`overflow-hidden rounded-2xl shadow-xl border-2`}>
                   {/* Card Header */}
-                  <div className="relative bg-gradient-to-br from-slate-800 to-slate-900 p-6">
+                  <div className="relative bg-gradient-to-br from-orange-500 via-orange-500 to-orange-600 p-6">
                     <BatikPattern />
                     <div className="relative z-10">
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-xl flex items-center justify-center shadow-lg border-2 border-yellow-300">
-                            <Gift className="w-6 h-6 text-white" />
+                          <div className="w-12 h-12 bg-gradient-to-br from-white to-orange-50 rounded-xl flex items-center justify-center shadow-lg border-2 border-white/50">
+                            <Gift className="w-6 h-6 text-orange-600" />
                           </div>
                           <div>
                             <h3 className="text-white font-bold text-lg">Member Card</h3>
-                            <p className={`text-xs ${membership.textColor} font-semibold`}>
+                            <p className={`text-xs font-semibold bg-white/20 px-2 py-0.5 rounded-full inline-block`}>
                               {membership.level} Member
                             </p>
                           </div>
@@ -1670,15 +1670,15 @@ export default function HomePage() {
                           animate={{ rotate: 360 }}
                           transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
                         >
-                          <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
-                            <Award className="w-5 h-5 text-yellow-400" />
+                          <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border-2 border-white/30">
+                            <Award className="w-5 h-5 text-white" />
                           </div>
                         </motion.div>
                       </div>
 
                       {/* Card Number */}
                       <div className="mb-4">
-                        <p className="text-[10px] text-gray-400 mb-1 font-medium">MEMBER NUMBER</p>
+                        <p className="text-[10px] text-white/70 mb-1 font-medium">MEMBER NUMBER</p>
                         <p className="text-white font-mono text-lg tracking-widest">
                           {user?.phone ? user.phone.replace(/(\d{4})(\d{4})(\d{4})/, '$1 $2 $3') : '**** **** ****'}
                         </p>
@@ -1687,7 +1687,7 @@ export default function HomePage() {
                       {/* Card Footer */}
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-[9px] text-gray-400 mb-1">NAMA MEMBER</p>
+                          <p className="text-[9px] text-white/70 mb-1">NAMA MEMBER</p>
                           <p className="text-white text-xs font-semibold">
                             {user?.name || 'Guest'}
                           </p>
@@ -1696,7 +1696,7 @@ export default function HomePage() {
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           onClick={() => setShowMemberBarcode(true)}
-                          className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20 cursor-pointer hover:bg-white/20 transition-all"
+                          className="flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-xl border-2 border-white/30 cursor-pointer hover:bg-white/30 transition-all"
                         >
                           <QrCode className="w-4 h-4 text-white" />
                           <span className="text-white text-xs font-semibold">Barcode</span>
@@ -1706,7 +1706,7 @@ export default function HomePage() {
                   </div>
 
                   {/* Card Progress */}
-                  <div className="p-4 bg-white/80 backdrop-blur-md">
+                  <div className="p-4 bg-gradient-to-br from-white to-orange-50">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <Crown className="w-4 h-4 text-orange-500" />
@@ -1714,16 +1714,16 @@ export default function HomePage() {
                           Progress ke {membership.level === 'VIP' ? 'MAX' : 'level selanjutnya'}
                         </span>
                       </div>
-                      <span className={`text-xs font-bold ${membership.textColor}`}>
+                      <span className={`text-xs font-bold text-orange-600`}>
                         {pointsNeeded}
                       </span>
                     </div>
-                    <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="relative h-3 bg-orange-100 rounded-full overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${progress}%` }}
                         transition={{ duration: 1.5, ease: 'easeOut' }}
-                        className={`absolute left-0 top-0 h-full bg-gradient-to-r ${membership.color} rounded-full`}
+                        className={`absolute left-0 top-0 h-full bg-gradient-to-r from-orange-400 to-orange-600 rounded-full`}
                       />
                     </div>
                     <div className="flex justify-between mt-1">
