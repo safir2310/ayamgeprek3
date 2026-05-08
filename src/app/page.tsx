@@ -1409,8 +1409,8 @@ export default function HomePage() {
                   <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
 
                   {/* Logo Container */}
-                  <div className="relative w-12 h-12 sm:w-13 sm:h-13 lg:w-14 lg:h-14 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl flex items-center justify-center shadow-lg shadow-gray-200/50 border-2 border-gray-200 group-hover:border-red-300 transition-all duration-300 group-hover:scale-105 active:scale-95 cursor-pointer select-none">
-                    <svg viewBox="0 0 100 100" className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10">
+                  <div className="relative w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl flex items-center justify-center shadow-lg shadow-gray-200/50 border-2 border-gray-200 group-hover:border-red-300 transition-all duration-300 group-hover:scale-105 active:scale-95 cursor-pointer select-none">
+                    <svg viewBox="0 0 100 100" className="w-6.5 h-6.5 sm:w-7 sm:h-7 lg:w-8 lg:h-8">
                       <defs>
                         <linearGradient id="logoGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
                           <stop offset="0%" stopColor="#DC2626" stopOpacity={1} />
@@ -1510,7 +1510,7 @@ export default function HomePage() {
                     onClick={() => setIsAddressModalOpen(true)}
                     className="flex items-center gap-1.5 text-gray-600 text-[10px] sm:text-xs hover:text-red-600 transition-colors cursor-pointer truncate group mt-1"
                   >
-                    <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0 text-gray-400 group-hover:text-red-500 transition-colors" />
+                    <MapPin className="h-2 w-2 sm:h-2.5 sm:w-2.5 flex-shrink-0 text-gray-400 group-hover:text-red-500 transition-colors" />
                     <span className="truncate max-w-[130px] sm:max-w-[170px] lg:max-w-[220px] font-medium">
                       Jl. Medan - Banda Aceh, Simpang Camat
                     </span>
@@ -1552,13 +1552,13 @@ export default function HomePage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12 bg-gray-50 hover:bg-red-50 text-gray-700 hover:text-red-600 rounded-xl border-2 border-gray-200 hover:border-red-300 transition-all duration-300 group-hover:scale-105 active:scale-95"
+                    className="h-9 w-9 sm:h-10 sm:w-10 lg:h-11 lg:w-11 bg-gray-50 hover:bg-red-50 text-gray-700 hover:text-red-600 rounded-xl border-2 border-gray-200 hover:border-red-300 transition-all duration-300 group-hover:scale-105 active:scale-95"
                     onClick={() => setIsCartOpen(true)}
                   >
-                    <ShoppingCart className="h-5 w-5 sm:h-5.5 sm:w-5.5 lg:h-6 lg:w-6" />
+                    <ShoppingCart className="h-4 w-4 sm:h-4.5 sm:w-4.5 lg:h-5 lg:w-5" />
                   </Button>
                   {cartCount > 0 && (
-                    <div className="absolute -top-1 -right-1 h-5 w-5 sm:h-5.5 sm:w-5.5 lg:h-6 lg:w-6 bg-gradient-to-br from-red-500 to-orange-500 text-white text-[10px] sm:text-[11px] font-bold rounded-xl shadow-lg shadow-red-500/30 flex items-center justify-center ring-2 ring-white">
+                    <div className="absolute -top-1 -right-1 h-4.5 w-4.5 sm:h-5 sm:w-5 lg:h-5.5 lg:w-5.5 bg-gradient-to-br from-red-500 to-orange-500 text-white text-[9px] sm:text-[10px] font-bold rounded-xl shadow-lg shadow-red-500/30 flex items-center justify-center ring-2 ring-white">
                       {cartCount}
                     </div>
                   )}
@@ -1569,7 +1569,7 @@ export default function HomePage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12 bg-gray-50 hover:bg-orange-50 text-gray-700 hover:text-orange-600 rounded-xl border-2 border-gray-200 hover:border-orange-300 transition-all duration-300 group-hover:scale-105 active:scale-95"
+                    className="h-9 w-9 sm:h-10 sm:w-10 lg:h-11 lg:w-11 bg-gray-50 hover:bg-orange-50 text-gray-700 hover:text-orange-600 rounded-xl border-2 border-gray-200 hover:border-orange-300 transition-all duration-300 group-hover:scale-105 active:scale-95"
                     onClick={() => {
                       if (user) {
                         setIsChatOpen(true)
@@ -1579,10 +1579,10 @@ export default function HomePage() {
                       }
                     }}
                   >
-                    <MessageCircle className="h-5 w-5 sm:h-5.5 sm:w-5.5 lg:h-6 lg:w-6" />
+                    <MessageCircle className="h-4 w-4 sm:h-4.5 sm:w-4.5 lg:h-5 lg:w-5" />
                   </Button>
                   {unreadChatCount > 0 && (
-                    <div className="absolute -top-1 -right-1 h-5 w-5 sm:h-5.5 sm:w-5.5 lg:h-6 lg:w-6 bg-gradient-to-br from-orange-500 to-red-500 text-white text-[10px] sm:text-[11px] font-bold rounded-xl shadow-lg shadow-orange-500/30 flex items-center justify-center ring-2 ring-white animate-pulse">
+                    <div className="absolute -top-1 -right-1 h-4.5 w-4.5 sm:h-5 sm:w-5 lg:h-5.5 lg:w-5.5 bg-gradient-to-br from-orange-500 to-red-500 text-white text-[9px] sm:text-[10px] font-bold rounded-xl shadow-lg shadow-orange-500/30 flex items-center justify-center ring-2 ring-white animate-pulse">
                       {unreadChatCount > 9 ? '9+' : unreadChatCount}
                     </div>
                   )}
@@ -1593,10 +1593,10 @@ export default function HomePage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12 bg-gray-50 hover:bg-yellow-50 text-gray-700 hover:text-yellow-600 rounded-xl border-2 border-gray-200 hover:border-yellow-300 transition-all duration-300 group-hover:scale-105 active:scale-95"
+                    className="h-9 w-9 sm:h-10 sm:w-10 lg:h-11 lg:w-11 bg-gray-50 hover:bg-yellow-50 text-gray-700 hover:text-yellow-600 rounded-xl border-2 border-gray-200 hover:border-yellow-300 transition-all duration-300 group-hover:scale-105 active:scale-95"
                     onClick={() => (user ? handleLogout() : setIsAuthModalOpen(true))}
                   >
-                    <User className="h-5 w-5 sm:h-5.5 sm:w-5.5 lg:h-6 lg:w-6" />
+                    <User className="h-4 w-4 sm:h-4.5 sm:w-4.5 lg:h-5 lg:w-5" />
                   </Button>
                   {user && (
                     <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-green-500 rounded-full"></div>
