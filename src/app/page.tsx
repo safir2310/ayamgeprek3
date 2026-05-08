@@ -1564,29 +1564,45 @@ export default function HomePage() {
                   )}
                 </div>
 
-                {/* Chat Button */}
-                <div className="relative group">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 sm:h-10 sm:w-10 lg:h-11 lg:w-11 bg-white/10 hover:bg-white/20 text-white rounded-xl border-2 border-white/20 hover:border-white/40 transition-all duration-300 group-hover:scale-105 active:scale-95"
-                    onClick={() => {
-                      if (user) {
-                        setIsChatOpen(true)
-                      } else {
-                        toast.info('Silakan login untuk menggunakan fitur chat')
-                        setIsAuthModalOpen(true)
-                      }
-                    }}
-                  >
-                    <MessageCircle className="h-4 w-4 sm:h-4.5 sm:w-4.5 lg:h-5 lg:w-5" />
-                  </Button>
-                  {unreadChatCount > 0 && (
-                    <div className="absolute -top-1 -right-1 h-4.5 w-4.5 sm:h-5 sm:w-5 lg:h-5.5 lg:w-5.5 bg-white text-orange-600 text-[9px] sm:text-[10px] font-bold rounded-xl shadow-lg shadow-white/30 flex items-center justify-center ring-2 ring-orange-500 animate-pulse">
-                      {unreadChatCount > 9 ? '9+' : unreadChatCount}
-                    </div>
-                  )}
-                </div>
+                {/* Chat Button - Only for non-admin users */}
+                {user?.role !== 'admin' && (
+                  <div className="relative group">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9 sm:h-10 sm:w-10 lg:h-11 lg:w-11 bg-white/10 hover:bg-white/20 text-white rounded-xl border-2 border-white/20 hover:border-white/40 transition-all duration-300 group-hover:scale-105 active:scale-95"
+                      onClick={() => {
+                        if (user) {
+                          setIsChatOpen(true)
+                        } else {
+                          toast.info('Silakan login untuk menggunakan fitur chat')
+                          setIsAuthModalOpen(true)
+                        }
+                      }}
+                    >
+                      <MessageCircle className="h-4 w-4 sm:h-4.5 sm:w-4.5 lg:h-5 lg:w-5" />
+                    </Button>
+                    {unreadChatCount > 0 && (
+                      <div className="absolute -top-1 -right-1 h-4.5 w-4.5 sm:h-5 sm:w-5 lg:h-5.5 lg:w-5.5 bg-white text-orange-600 text-[9px] sm:text-[10px] font-bold rounded-xl shadow-lg shadow-white/30 flex items-center justify-center ring-2 ring-orange-500 animate-pulse">
+                        {unreadChatCount > 9 ? '9+' : unreadChatCount}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Admin Dashboard Button - Only for admin users */}
+                {user?.role === 'admin' && (
+                  <div className="relative group">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9 sm:h-10 sm:w-10 lg:h-11 lg:w-11 bg-white/10 hover:bg-white/20 text-white rounded-xl border-2 border-white/20 hover:border-white/40 transition-all duration-300 group-hover:scale-105 active:scale-95"
+                      onClick={() => setShowAdminDashboard(true)}
+                    >
+                      <LayoutDashboard className="h-4 w-4 sm:h-4.5 sm:w-4.5 lg:h-5 lg:w-5" />
+                    </Button>
+                  </div>
+                )}
 
                 {/* User Button */}
                 <div className="relative group">
