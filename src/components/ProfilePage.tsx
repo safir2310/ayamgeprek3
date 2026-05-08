@@ -137,6 +137,92 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
     ko: '한국어'
   }
 
+  // Play notification sound
+  const playNotificationSound = (sound: string) => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+      const oscillator = audioContext.createOscillator()
+      const gainNode = audioContext.createGain()
+
+      oscillator.connect(gainNode)
+      gainNode.connect(audioContext.destination)
+
+      const now = audioContext.currentTime
+
+      // Different sounds for different notification tones
+      if (sound === 'chime') {
+        // Chime: Three pleasant tones
+        const frequencies = [523.25, 659.25, 783.99] // C5, E5, G5
+        frequencies.forEach((freq, i) => {
+          const osc = audioContext.createOscillator()
+          const gain = audioContext.createGain()
+          osc.connect(gain)
+          gain.connect(audioContext.destination)
+          osc.frequency.setValueAtTime(freq, now + i * 0.15)
+          gain.gain.setValueAtTime(0.2, now + i * 0.15)
+          gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.15 + 0.3)
+          osc.start(now + i * 0.15)
+          osc.stop(now + i * 0.15 + 0.3)
+        })
+      } else if (sound === 'bell') {
+        // Bell: Classic ding
+        oscillator.frequency.setValueAtTime(800, now)
+        oscillator.frequency.setValueAtTime(600, now + 0.2)
+        gainNode.gain.setValueAtTime(0.3, now)
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5)
+        oscillator.start(now)
+        oscillator.stop(now + 0.5)
+      } else if (sound === 'whistle') {
+        // Whistle: High pitch sound
+        oscillator.frequency.setValueAtTime(2000, now)
+        oscillator.frequency.setValueAtTime(1500, now + 0.1)
+        oscillator.frequency.setValueAtTime(2000, now + 0.2)
+        gainNode.gain.setValueAtTime(0.15, now)
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3)
+        oscillator.start(now)
+        oscillator.stop(now + 0.3)
+      } else if (sound === 'pop') {
+        // Pop: Short bubbly sound
+        oscillator.frequency.setValueAtTime(600, now)
+        oscillator.frequency.exponentialRampToValueAtTime(300, now + 0.05)
+        gainNode.gain.setValueAtTime(0.25, now)
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1)
+        oscillator.start(now)
+        oscillator.stop(now + 0.1)
+      } else if (sound === 'cheer') {
+        // Cheer: Two enthusiastic tones
+        const frequencies = [523.25, 659.25, 783.99, 1046.50]
+        frequencies.forEach((freq, i) => {
+          const osc = audioContext.createOscillator()
+          const gain = audioContext.createGain()
+          osc.connect(gain)
+          gain.connect(audioContext.destination)
+          osc.frequency.setValueAtTime(freq, now + i * 0.1)
+          gain.gain.setValueAtTime(0.15, now + i * 0.1)
+          gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.2)
+          osc.start(now + i * 0.1)
+          osc.stop(now + i * 0.1 + 0.2)
+        })
+      } else if (sound === 'melody') {
+        // Melody: Musical sequence
+        const notes = [523.25, 587.33, 659.25, 698.46, 783.99, 880.00] // C major scale
+        notes.forEach((freq, i) => {
+          const osc = audioContext.createOscillator()
+          const gain = audioContext.createGain()
+          osc.connect(gain)
+          gain.connect(audioContext.destination)
+          osc.frequency.setValueAtTime(freq, now + i * 0.15)
+          gain.gain.setValueAtTime(0.15, now + i * 0.15)
+          gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.15 + 0.25)
+          osc.start(now + i * 0.15)
+          osc.stop(now + i * 0.15 + 0.25)
+        })
+      }
+    } catch (error) {
+      console.error('Error playing notification sound:', error)
+    }
+  }
+
   // Get membership level based on points
   const getMembershipLevel = () => {
     const points = user?.points || 0
@@ -367,6 +453,7 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
 
       setIsDarkMode(!isDarkMode)
       toast.success(!isDarkMode ? 'Tema gelap diaktifkan' : 'Tema terang diaktifkan')
+      setShowThemeModal(false) // Close modal after selecting theme
     } catch (error) {
       console.error('Error updating theme:', error)
       toast.error('Gagal mengubah tema')
@@ -398,6 +485,7 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
 
       setSelectedTone(tone)
       toast.success(`Nada notifikasi: ${tone}`)
+      setShowNotificationToneModal(false) // Close modal after selecting
     } catch (error) {
       console.error('Error updating notification tone:', error)
       toast.error('Gagal mengubah nada notifikasi')
@@ -465,6 +553,7 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
       setSelectedLanguage(language)
       const languageName = languageNames[language] || language
       toast.success(`Bahasa diubah ke ${languageName}`)
+      setShowLanguageModal(false) // Close modal after selecting language
     } catch (error) {
       console.error('Error updating language:', error)
       toast.error('Gagal mengubah bahasa')
@@ -1484,9 +1573,9 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
               ].map((tone) => (
                 <div
                   key={tone.id}
-                  onClick={() => handleToneSelect(tone.name)}
+                  onClick={() => handleToneSelect(tone.id)}
                   className={`p-4 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md ${
-                    selectedTone === tone.name
+                    selectedTone === tone.id
                       ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-400'
                       : 'bg-white border-gray-200'
                   }`}
@@ -1510,7 +1599,8 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
                       className="flex-shrink-0"
                       onClick={(e) => {
                         e.stopPropagation()
-                        toast.success(`Memutar: ${tone.name}`)
+                        playNotificationSound(tone.id)
+                        toast.success(`Memutar nada: ${tone.name}`)
                       }}
                     >
                       <Volume2 className="w-4 h-4 mr-2" />
