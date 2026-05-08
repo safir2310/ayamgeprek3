@@ -1619,7 +1619,7 @@ export default function HomePage() {
               className="mb-6"
             >
               <div className="w-full max-w-sm mx-auto">
-                <Card className={`overflow-hidden ${glassCardStyle}`}>
+                <Card className={`overflow-hidden rounded-2xl shadow-xl border-2 ${glassCardStyle}`}>
                   {/* Card Header */}
                   <div className="relative bg-gradient-to-br from-slate-800 to-slate-900 p-6">
                     <BatikPattern />
