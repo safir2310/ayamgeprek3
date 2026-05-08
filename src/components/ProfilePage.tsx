@@ -539,12 +539,11 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
                     className={`absolute left-0 top-0 h-full bg-gradient-to-r ${membership.color} rounded-full`}
                   />
                 </div>
-                </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-sm mb-2">
                   <span className="text-gray-600">{getCurrentLevelStart()} poin</span>
                   <span className="text-gray-600">{getNextLevelPoints()} poin</span>
                 </div>
-                <p className="text-center text-sm font-semibold text-gray-700 mt-2">
+                <p className="text-center text-sm font-semibold text-gray-700">
                   {pointsNeeded} ke level selanjutnya
                 </p>
               </div>
@@ -563,7 +562,7 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
                       key={level}
                       className={`p-3 rounded-lg border-2 ${
                         membership.level === level
-                          ? 'bg-gradient-to-r border-white ' + levelColor + ' text-white'
+                          ? `bg-gradient-to-r border-white ${levelColor} text-white`
                           : 'bg-white border-gray-200'
                       }`}
                     >
