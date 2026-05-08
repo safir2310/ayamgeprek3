@@ -148,7 +148,7 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
                 {membership.level} Member
               </Badge>
             </motion.div>
-          </motion.div>
+          </div>
 
           {/* Stats */}
           <motion.div
