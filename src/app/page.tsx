@@ -1387,7 +1387,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-red-50 via-orange-50 to-white">
       {/* Header - Brand New Design */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-2xl shadow-xl shadow-gray-900/10 border-b border-gray-100">
+      <header className="sticky top-0 z-50 bg-gradient-to-br from-orange-500 via-orange-500 to-orange-600 shadow-xl shadow-orange-900/20 border-b border-orange-400/30">
         {/* Top Accent Bar */}
         <div className="h-1.5 bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 animate-gradient-x"></div>
 
@@ -1409,7 +1409,7 @@ export default function HomePage() {
                   <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
 
                   {/* Logo Container */}
-                  <div className="relative w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl flex items-center justify-center shadow-lg shadow-gray-200/50 border-2 border-gray-200 group-hover:border-red-300 transition-all duration-300 group-hover:scale-105 active:scale-95 cursor-pointer select-none">
+                  <div className="relative w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg shadow-black/10 border-2 border-white/30 group-hover:bg-white/30 transition-all duration-300 group-hover:scale-105 active:scale-95 cursor-pointer select-none">
                     <svg viewBox="0 0 100 100" className="w-6.5 h-6.5 sm:w-7 sm:h-7 lg:w-8 lg:h-8">
                       <defs>
                         <linearGradient id="logoGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -1501,16 +1501,16 @@ export default function HomePage() {
                   )}
                 </div>
                 <div>
-                  <div className="inline-block bg-gradient-to-r from-orange-500 to-orange-600 px-2 py-0.5 rounded-lg shadow-sm shadow-orange-500/20">
+                  <div className="inline-block bg-white/10 backdrop-blur-sm px-2 py-0.5 rounded-lg border border-white/20">
                     <h1 className="text-[10px] sm:text-[11px] lg:text-xs font-black text-white tracking-tight leading-none whitespace-nowrap">
                       AYAM GEPREK SAMBAL IJO
                     </h1>
                   </div>
                   <button
                     onClick={() => setIsAddressModalOpen(true)}
-                    className="flex items-center gap-1.5 text-gray-600 text-[10px] sm:text-xs hover:text-red-600 transition-colors cursor-pointer truncate group mt-1"
+                    className="flex items-center gap-1.5 text-white/90 text-[10px] sm:text-xs hover:text-white transition-colors cursor-pointer truncate group mt-1"
                   >
-                    <MapPin className="h-2 w-2 sm:h-2.5 sm:w-2.5 flex-shrink-0 text-gray-400 group-hover:text-red-500 transition-colors" />
+                    <MapPin className="h-2 w-2 sm:h-2.5 sm:w-2.5 flex-shrink-0 text-white/70 group-hover:text-white transition-colors" />
                     <span className="truncate max-w-[130px] sm:max-w-[170px] lg:max-w-[220px] font-medium">
                       Jl. Medan - Banda Aceh, Simpang Camat
                     </span>
@@ -1523,12 +1523,12 @@ export default function HomePage() {
                           <div
                             key={i}
                             className={`w-4 h-0.5 rounded-full transition-all duration-200 ${
-                              i <= adminTapCount ? 'bg-gradient-to-r from-red-500 to-orange-500' : 'bg-gray-200'
+                              i <= adminTapCount ? 'bg-white' : 'bg-white/30'
                             }`}
                           />
                         ))}
                       </div>
-                      <span className="text-[9px] text-gray-500 font-medium">
+                      <span className="text-[9px] text-white/80 font-medium">
                         {2 - adminTapCount} lagi...
                       </span>
                     </div>
@@ -1536,10 +1536,10 @@ export default function HomePage() {
                   {/* Long-press hint */}
                   {isPressing && (
                     <div className="md:hidden flex items-center gap-2 mt-1.5">
-                      <div className="w-16 h-1 bg-gray-300 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-red-500 to-orange-500 animate-[width_2s_ease-in-out_forwards]" style={{ width: '100%' }} />
+                      <div className="w-16 h-1 bg-white/30 rounded-full overflow-hidden">
+                        <div className="h-full bg-white animate-[width_2s_ease-in-out_forwards]" style={{ width: '100%' }} />
                       </div>
-                      <span className="text-[9px] text-gray-500 font-medium">Tahan...</span>
+                      <span className="text-[9px] text-white/80 font-medium">Tahan...</span>
                     </div>
                   )}
                 </div>
@@ -1552,13 +1552,13 @@ export default function HomePage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-9 w-9 sm:h-10 sm:w-10 lg:h-11 lg:w-11 bg-gray-50 hover:bg-red-50 text-gray-700 hover:text-red-600 rounded-xl border-2 border-gray-200 hover:border-red-300 transition-all duration-300 group-hover:scale-105 active:scale-95"
+                    className="h-9 w-9 sm:h-10 sm:w-10 lg:h-11 lg:w-11 bg-white/10 hover:bg-white/20 text-white rounded-xl border-2 border-white/20 hover:border-white/40 transition-all duration-300 group-hover:scale-105 active:scale-95"
                     onClick={() => setIsCartOpen(true)}
                   >
                     <ShoppingCart className="h-4 w-4 sm:h-4.5 sm:w-4.5 lg:h-5 lg:w-5" />
                   </Button>
                   {cartCount > 0 && (
-                    <div className="absolute -top-1 -right-1 h-4.5 w-4.5 sm:h-5 sm:w-5 lg:h-5.5 lg:w-5.5 bg-gradient-to-br from-red-500 to-orange-500 text-white text-[9px] sm:text-[10px] font-bold rounded-xl shadow-lg shadow-red-500/30 flex items-center justify-center ring-2 ring-white">
+                    <div className="absolute -top-1 -right-1 h-4.5 w-4.5 sm:h-5 sm:w-5 lg:h-5.5 lg:w-5.5 bg-white text-orange-600 text-[9px] sm:text-[10px] font-bold rounded-xl shadow-lg shadow-white/30 flex items-center justify-center ring-2 ring-orange-500">
                       {cartCount}
                     </div>
                   )}
@@ -1569,7 +1569,7 @@ export default function HomePage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-9 w-9 sm:h-10 sm:w-10 lg:h-11 lg:w-11 bg-gray-50 hover:bg-orange-50 text-gray-700 hover:text-orange-600 rounded-xl border-2 border-gray-200 hover:border-orange-300 transition-all duration-300 group-hover:scale-105 active:scale-95"
+                    className="h-9 w-9 sm:h-10 sm:w-10 lg:h-11 lg:w-11 bg-white/10 hover:bg-white/20 text-white rounded-xl border-2 border-white/20 hover:border-white/40 transition-all duration-300 group-hover:scale-105 active:scale-95"
                     onClick={() => {
                       if (user) {
                         setIsChatOpen(true)
@@ -1582,7 +1582,7 @@ export default function HomePage() {
                     <MessageCircle className="h-4 w-4 sm:h-4.5 sm:w-4.5 lg:h-5 lg:w-5" />
                   </Button>
                   {unreadChatCount > 0 && (
-                    <div className="absolute -top-1 -right-1 h-4.5 w-4.5 sm:h-5 sm:w-5 lg:h-5.5 lg:w-5.5 bg-gradient-to-br from-orange-500 to-red-500 text-white text-[9px] sm:text-[10px] font-bold rounded-xl shadow-lg shadow-orange-500/30 flex items-center justify-center ring-2 ring-white animate-pulse">
+                    <div className="absolute -top-1 -right-1 h-4.5 w-4.5 sm:h-5 sm:w-5 lg:h-5.5 lg:w-5.5 bg-white text-orange-600 text-[9px] sm:text-[10px] font-bold rounded-xl shadow-lg shadow-white/30 flex items-center justify-center ring-2 ring-orange-500 animate-pulse">
                       {unreadChatCount > 9 ? '9+' : unreadChatCount}
                     </div>
                   )}
@@ -1593,13 +1593,13 @@ export default function HomePage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-9 w-9 sm:h-10 sm:w-10 lg:h-11 lg:w-11 bg-gray-50 hover:bg-yellow-50 text-gray-700 hover:text-yellow-600 rounded-xl border-2 border-gray-200 hover:border-yellow-300 transition-all duration-300 group-hover:scale-105 active:scale-95"
+                    className="h-9 w-9 sm:h-10 sm:w-10 lg:h-11 lg:w-11 bg-white/10 hover:bg-white/20 text-white rounded-xl border-2 border-white/20 hover:border-white/40 transition-all duration-300 group-hover:scale-105 active:scale-95"
                     onClick={() => (user ? handleLogout() : setIsAuthModalOpen(true))}
                   >
                     <User className="h-4 w-4 sm:h-4.5 sm:w-4.5 lg:h-5 lg:w-5" />
                   </Button>
                   {user && (
-                    <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-green-500 rounded-full"></div>
+                    <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-green-400 rounded-full shadow-lg shadow-green-400/50"></div>
                   )}
                 </div>
               </div>
@@ -1608,7 +1608,7 @@ export default function HomePage() {
         </div>
 
         {/* Bottom Accent Line */}
-        <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+        <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
       </header>
 
       {/* Search Bar - Below Header (Home & Products tabs only) */}
