@@ -63,6 +63,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { POS } from '@/components/admin/POS'
 import AdminDashboard from '@/components/admin/AdminDashboard'
 import { UserChatDialog } from '@/components/UserChatDialog'
+import ProfilePage from '@/components/ProfilePage'
 
 // Mock data removed - products are fetched from database via /api/products
 
@@ -122,7 +123,6 @@ export default function HomePage() {
   const [hasInitialRender, setHasInitialRender] = useState(false)
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false)
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
-  const [selectedAccountSection, setSelectedAccountSection] = useState('overview')
   const [profilePhotoPreview, setProfilePhotoPreview] = useState<string | null>(null)
   const [editProfileData, setEditProfileData] = useState({
     name: '',
@@ -2210,351 +2210,33 @@ export default function HomePage() {
         )}
 
         {currentTab === 'account' && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="min-h-screen bg-gradient-to-b from-purple-100 to-purple-50">
-            {user ? (
-              <>
-            {/* Header */}
-            <div className="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-6 shadow-lg">
-              <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-white">Your Profile</h1>
-                <motion.button
-                  whileHover={{ scale: 1.1, rotate: 90 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
+          user ? (
+            <ProfilePage user={user} vouchers={vouchers} onLogout={handleLogout} />
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Card className="p-12 text-center shadow-xl border-gray-200">
+                <motion.div
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="w-24 h-24 bg-gradient-to-br from-red-100 to-orange-100 rounded-full flex items-center justify-center mx-auto mb-6"
                 >
-                  <Settings className="h-5 w-5 text-white" />
-                </motion.button>
-              </div>
-            </div>
-
-            {/* Content Card */}
-            <div className="px-4 -mt-4">
-              {selectedAccountSection === 'overview' && (
-                <div className="bg-white rounded-3xl shadow-2xl p-6 max-w-md mx-auto">
-                {/* Profile Header */}
-                <div className="flex flex-col items-center mb-8">
-                  <div className="relative mb-4">
-                    <div className="w-24 h-24 bg-gradient-to-br from-purple-600 to-purple-700 rounded-full flex items-center justify-center shadow-lg ring-4 ring-purple-100">
-                      <Avatar className="w-20 h-20">
-                        <AvatarFallback className="text-3xl bg-purple-700 text-white font-bold">
-                          {user?.name?.charAt(0)?.toUpperCase() || 'P'}
-                        </AvatarFallback>
-                      </Avatar>
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <h2 className="text-2xl font-bold text-purple-700 mb-1">{user?.name || 'Pelanggan'}</h2>
-                    <p className="text-sm text-gray-500">UI/UX Designer</p>
-                  </div>
-                </div>
-
-                {/* Form Fields */}
-                <div className="space-y-6">
-                  {/* Email */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">Your Email</label>
-                    <div className="relative">
-                      <Input
-                        type="email"
-                        value={user?.email || ''}
-                        readOnly
-                        className="w-full h-12 pl-12 pr-4 text-gray-700 bg-gray-50 border border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
-                      />
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    </div>
-                  </div>
-
-                  {/* Phone */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">Phone Number</label>
-                    <div className="relative">
-                      <Input
-                        type="tel"
-                        value={user?.phone || ''}
-                        readOnly
-                        className="w-full h-12 pl-12 pr-4 text-gray-700 bg-gray-50 border border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
-                      />
-                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    </div>
-                  </div>
-
-                  {/* Website */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">Website</label>
-                    <div className="relative">
-                      <Input
-                        type="text"
-                        value={`www.${user?.name?.toLowerCase().replace(/\s+/g, '') || 'user'}.com`}
-                        readOnly
-                        className="w-full h-12 pl-12 pr-4 text-gray-700 bg-gray-50 border border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
-                      />
-                      <Globe className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    </div>
-                  </div>
-
-                  {/* Password */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">Password</label>
-                    <div className="relative">
-                      <Input
-                        type="password"
-                        value="•••••••••"
-                        readOnly
-                        className="w-full h-12 pl-12 pr-4 text-gray-700 bg-gray-50 border border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
-                      />
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Edit Button */}
-                <motion.button
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full mt-8 py-4 bg-gradient-to-r from-purple-600 to-purple-700 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all"
+                  <User className="h-12 w-12 text-red-400" />
+                </motion.div>
+                <h3 className="text-2xl font-bold text-gray-800 mb-3">Selamat Datang!</h3>
+                <p className="text-gray-600 mb-6">Silakan login untuk mengakses akun dan semua fitur menarik kami.</p>
+                <Button
+                  className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-lg px-8 py-3 shadow-lg"
+                  onClick={() => setIsAuthModalOpen(true)}
                 >
-                  Edit Profile
-                </motion.button>
-
-                {/* Logout Button */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleLogout}
-                  className="w-full mt-4 py-3 text-gray-600 font-medium hover:text-gray-800 transition-colors"
-                >
-                  Logout
-                </motion.button>
-                </div>
-              )}
-
-                {selectedAccountSection === 'settings' && (
-                  <div className="px-4 mt-4">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
-                  >
-                    <Card className="shadow-lg border-gray-200">
-                      <CardHeader className="bg-gradient-to-r from-gray-50 to-slate-50">
-                        <CardTitle className="flex items-center gap-2">
-                          <Settings className="h-5 w-5 text-gray-600" />
-                          <span className="bg-gradient-to-r from-gray-600 to-slate-600 bg-clip-text text-transparent font-bold">
-                            Pengaturan
-                          </span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-6 pt-6">
-                        {/* Theme Selection */}
-                        <div className="p-5 rounded-xl bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-200">
-                          <h6 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                            <span className="w-2 h-2 bg-gray-500 rounded-full"></span>
-                            Tema Aplikasi
-                          </h6>
-                          <div className="grid grid-cols-2 gap-4">
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => {
-                                if (user) {
-                                  fetch('/api/user/profile', {
-                                    method: 'PUT',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ userId: user.id, theme: 'light' })
-                                  }).then(res => res.json()).then(data => {
-                                    if (data.success) {
-                                      setUser(data.user)
-                                      toast.success('Tema berhasil diubah!')
-                                    }
-                                  })
-                                }
-                              }}
-                              className={`relative overflow-hidden p-5 rounded-xl border-2 transition-all ${
-                                (user as any).theme === 'light'
-                                  ? 'bg-gradient-to-br from-yellow-100 to-amber-100 border-yellow-400 shadow-xl'
-                                  : 'bg-white border-gray-200 hover:shadow-md'
-                              }`}
-                            >
-                              <div className="absolute top-3 right-3">
-                                {(user as any).theme === 'light' && (
-                                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                                    <CheckCircle className="h-4 w-4 text-white" />
-                                  </div>
-                                )}
-                              </div>
-                              <div className="flex flex-col items-center gap-3">
-                                <div className="w-16 h-16 bg-gradient-to-br from-yellow-300 to-amber-400 rounded-full flex items-center justify-center shadow-lg">
-                                  <span className="text-3xl">☀️</span>
-                                </div>
-                                <span className="font-bold text-gray-800">Light</span>
-                              </div>
-                            </motion.button>
-
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => {
-                                if (user) {
-                                  fetch('/api/user/profile', {
-                                    method: 'PUT',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ userId: user.id, theme: 'dark' })
-                                  }).then(res => res.json()).then(data => {
-                                    if (data.success) {
-                                      setUser(data.user)
-                                      toast.success('Tema berhasil diubah!')
-                                    }
-                                  })
-                                }
-                              }}
-                              className={`relative overflow-hidden p-5 rounded-xl border-2 transition-all ${
-                                (user as any).theme === 'dark'
-                                  ? 'bg-gradient-to-br from-gray-700 to-slate-800 border-gray-500 shadow-xl'
-                                  : 'bg-white border-gray-200 hover:shadow-md'
-                              }`}
-                            >
-                              <div className="absolute top-3 right-3">
-                                {(user as any).theme === 'dark' && (
-                                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                                    <CheckCircle className="h-4 w-4 text-white" />
-                                  </div>
-                                )}
-                              </div>
-                              <div className="flex flex-col items-center gap-3">
-                                <div className="w-16 h-16 bg-gradient-to-br from-gray-600 to-slate-700 rounded-full flex items-center justify-center shadow-lg">
-                                  <span className="text-3xl">🌙</span>
-                                </div>
-                                <span className={`font-bold ${(user as any).theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Dark</span>
-                              </div>
-                            </motion.button>
-                          </div>
-                        </div>
-
-                        {/* Notification Sound */}
-                        <div className="p-5 rounded-xl bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-200">
-                          <h6 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                            <span className="w-2 h-2 bg-gray-500 rounded-full"></span>
-                            Nada Notifikasi
-                          </h6>
-                          <div className="space-y-3">
-                            {['default', 'chime', 'silent'].map((sound, index) => (
-                              <motion.button
-                                key={sound}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                onClick={() => {
-                                  if (sound !== 'silent') playNotificationSound(sound)
-                                  if (user) {
-                                    fetch('/api/user/profile', {
-                                      method: 'PUT',
-                                      headers: { 'Content-Type': 'application/json' },
-                                      body: JSON.stringify({ userId: user.id, notificationSound: sound })
-                                    }).then(res => res.json()).then(data => {
-                                      if (data.success) {
-                                        setUser(data.user)
-                                        toast.success('Nada notifikasi berhasil diubah!')
-                                      }
-                                    })
-                                  }
-                                }}
-                                className={`relative flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left ${
-                                  (user as any).notificationSound === sound
-                                    ? 'bg-gradient-to-r from-red-500 to-orange-500 border-red-500 shadow-xl'
-                                    : 'bg-white border-gray-200 hover:shadow-md'
-                                }`}
-                              >
-                                <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
-                                  <span className="text-2xl">
-                                    {sound === 'default' ? '🔔' : sound === 'chime' ? '🎵' : '🔕'}
-                                  </span>
-                                </div>
-                                <div className="flex-1">
-                                  <h6 className={`font-bold mb-1 ${(user as any).notificationSound === sound ? 'text-white' : 'text-gray-800'}`}>
-                                    {sound === 'default' ? 'Default' : sound === 'chime' ? 'Chime' : 'Silent'}
-                                  </h6>
-                                  <p className={`text-sm ${(user as any).notificationSound === sound ? 'text-white/80' : 'text-gray-600'}`}>
-                                    {sound === 'default' ? 'Suara notifikasi standar' : sound === 'chime' ? 'Tiga nada musik yang menyenangkan' : 'Tanpa suara notifikasi'}
-                                  </p>
-                                </div>
-                                {(user as any).notificationSound === sound && (
-                                  <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                                    <CheckCircle className="h-5 w-5 text-green-500" />
-                                  </div>
-                                )}
-                                {sound !== 'silent' && (user as any).notificationSound !== sound && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      playNotificationSound(sound)
-                                    }}
-                                    className="h-8 w-8 p-0"
-                                  >
-                                    <Volume2 className={`h-4 w-4 ${(user as any).notificationSound === sound ? 'text-white' : 'text-gray-400'}`} />
-                                  </Button>
-                                )}
-                              </motion.button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <Separator />
-
-                        {/* App Info */}
-                        <div className="p-5 rounded-xl bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-200">
-                          <h6 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                            <span className="w-2 h-2 bg-gray-500 rounded-full"></span>
-                            Tentang Aplikasi
-                          </h6>
-                          <div className="space-y-3 text-sm">
-                            <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
-                              <span className="text-gray-600">Versi Aplikasi</span>
-                              <span className="font-bold text-gray-800">1.0.0</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
-                              <span className="text-gray-600">Terakhir Update</span>
-                              <span className="font-bold text-gray-800">Januari 2025</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
-                              <span className="text-gray-600">Platform</span>
-                              <span className="font-bold text-gray-800">Next.js 16</span>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                  </div>
-                )}
-              </div>
-            </>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Card className="p-12 text-center shadow-xl border-gray-200">
-                  <motion.div
-                    animate={{ scale: [1, 1.1, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="w-24 h-24 bg-gradient-to-br from-red-100 to-orange-100 rounded-full flex items-center justify-center mx-auto mb-6"
-                  >
-                    <User className="h-12 w-12 text-red-400" />
-                  </motion.div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-3">Selamat Datang!</h3>
-                  <p className="text-gray-600 mb-6">Silakan login untuk mengakses akun dan semua fitur menarik kami.</p>
-                  <Button
-                    className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-lg px-8 py-3 shadow-lg"
-                    onClick={() => setIsAuthModalOpen(true)}
-                  >
-                    Login Sekarang
-                  </Button>
-                </Card>
-              </motion.div>
-            )}
-          </motion.div>
+                  Login Sekarang
+                </Button>
+              </Card>
+            </motion.div>
+          )
         )}
 
         {currentTab === 'redeem' && (

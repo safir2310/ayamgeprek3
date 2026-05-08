@@ -1,14 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { User, Crown, Gift, Activity, Bell, Settings, QrCode, X, Award, Sparkles, ChevronRight, CreditCard, Shield } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { User, Crown, Gift, Activity, Bell, Settings, QrCode, Award, Sparkles, ChevronRight } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import Barcode from 'react-barcode'
-import { useStore } from '@/store/useStore'
 
 interface ProfilePageProps {
   user: any
@@ -18,7 +17,6 @@ interface ProfilePageProps {
 
 export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePageProps) {
   const [showBarcodeModal, setShowBarcodeModal] = useState(false)
-  const [selectedMenu, setSelectedMenu] = useState<string | null>(null)
 
   // Get membership level based on points
   const getMembershipLevel = () => {
@@ -31,6 +29,43 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
   }
 
   const membership = getMembershipLevel()
+
+  // Calculate progress
+  const calculateProgress = () => {
+    const currentPoints = user?.points || 0
+    let progress = 0
+    if (currentPoints >= 5000) progress = 100
+    else if (currentPoints >= 2500) progress = ((currentPoints - 2500) / 2500) * 100
+    else if (currentPoints >= 1000) progress = ((currentPoints - 1000) / 1500) * 100
+    else if (currentPoints >= 500) progress = ((currentPoints - 500) / 500) * 100
+    else progress = (currentPoints / 500) * 100
+    return Math.min(Math.max(progress, 5), 100)
+  }
+
+  const getNextLevelPoints = () => {
+    const currentPoints = user?.points || 0
+    const nextLevelPoints = [500, 1000, 2500, 5000].find(p => p > currentPoints)
+    return nextLevelPoints || 5000
+  }
+
+  const getCurrentLevelStart = () => {
+    const currentPoints = user?.points || 0
+    const levels = [0, 500, 1000, 2500, 5000]
+    let rangeStart = 0
+    for (let i = levels.length - 1; i >= 0; i--) {
+      if (currentPoints >= levels[i]) {
+        rangeStart = levels[i]
+        break
+      }
+    }
+    return rangeStart
+  }
+
+  const getPointsNeeded = () => {
+    const currentPoints = user?.points || 0
+    const nextLevelPoints = [500, 1000, 2500, 5000].find(p => p > currentPoints)
+    return nextLevelPoints ? `${nextLevelPoints - currentPoints} poin lagi` : 'Level Max'
+  }
 
   // Menu items
   const menuItems = [
@@ -55,24 +90,11 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
     </svg>
   )
 
-  // Batik ornament
-  const BatikOrnament = () => (
-    <svg className="absolute opacity-20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-      <defs>
-        <radialGradient id="ornamentGrad" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="currentColor" stopOpacity="0.3"/>
-          <stop offset="100%" stopColor="currentColor" stopOpacity="0"/>
-        </radialGradient>
-      </defs>
-      <circle cx="100" cy="100" r="80" fill="url(#ornamentGrad)"/>
-      <path d="M100 40 Q120 60 120 100 Q120 140 100 160 Q80 140 80 100 Q80 60 100 40" fill="none" stroke="currentColor" strokeWidth="2"/>
-      <path d="M100 50 Q115 65 115 100 Q115 135 100 150 Q85 135 85 100 Q85 65 100 50" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.7"/>
-      <circle cx="100" cy="100" r="10" fill="currentColor" opacity="0.3"/>
-    </svg>
-  )
-
   // Glassmorphism card style
   const glassCardStyle = "bg-white/70 backdrop-blur-xl border border-white/50 shadow-2xl shadow-black/5"
+
+  const progress = calculateProgress()
+  const pointsNeeded = getPointsNeeded()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
@@ -96,7 +118,7 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
                 ) : (
                   <User className="w-12 h-12 text-purple-400" />
                 )}
-              </div>
+              </motion.div>
               {/* Sparkle effects */}
               <motion.div
                 animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
@@ -233,53 +255,23 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
                     </span>
                   </div>
                   <span className={`text-xs font-bold ${membership.textColor}`}>
-                    {(() => {
-                      const currentPoints = user?.points || 0
-                      const nextLevelPoints = [500, 1000, 2500, 5000].find(p => p > currentPoints)
-                      return nextLevelPoints ? `${nextLevelPoints - currentPoints} poin lagi` : 'Level Max'
-                    })()}
+                    {pointsNeeded}
                   </span>
                 </div>
                 <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
-                    animate={{
-                      width: (() => {
-                        const currentPoints = user?.points || 0
-                        let progress = 0
-                        if (currentPoints >= 5000) progress = 100
-                        else if (currentPoints >= 2500) progress = ((currentPoints - 2500) / 2500) * 100
-                        else if (currentPoints >= 1000) progress = ((currentPoints - 1000) / 1500) * 100
-                        else if (currentPoints >= 500) progress = ((currentPoints - 500) / 500) * 100
-                        else progress = (currentPoints / 500) * 100
-                        return Math.min(Math.max(progress, 5), 100)
-                      })() + '%'
-                    }}
+                    animate={{ width: `${progress}%` }}
                     transition={{ duration: 1.5, ease: 'easeOut' }}
                     className={`absolute left-0 top-0 h-full bg-gradient-to-r ${membership.color} rounded-full`}
                   />
                 </div>
                 <div className="flex justify-between mt-1">
                   <span className="text-[9px] text-gray-400 font-medium">
-                    {(() => {
-                      const currentPoints = user?.points || 0
-                      const levels = [0, 500, 1000, 2500, 5000]
-                      let rangeStart = 0
-                      for (let i = levels.length - 1; i >= 0; i--) {
-                        if (currentPoints >= levels[i]) {
-                          rangeStart = levels[i]
-                          break
-                        }
-                      }
-                      return rangeStart
-                    })()}
+                    {getCurrentLevelStart()}
                   </span>
                   <span className="text-[9px] text-gray-400 font-medium">
-                    {(() => {
-                      const currentPoints = user?.points || 0
-                      const nextLevelPoints = [500, 1000, 2500, 5000].find(p => p > currentPoints)
-                      return nextLevelPoints || 5000
-                    })()}
+                    {getNextLevelPoints()}
                   </span>
                 </div>
               </div>
