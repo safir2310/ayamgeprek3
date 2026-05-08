@@ -25,37 +25,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if menu access tracking already exists
-    const existingAccess = await db.menuAccess.findFirst({
+    // Use upsert to either create new or update existing menu access
+    await db.menuAccess.upsert({
       where: {
         userId_menuId: {
           userId,
           menuId
         }
+      },
+      update: {
+        accessCount: {
+          increment: 1
+        },
+        lastAccessedAt: new Date(),
+        menuName: menuName || menuId
+      },
+      create: {
+        userId,
+        menuId,
+        menuName: menuName || menuId,
+        accessCount: 1,
+        lastAccessedAt: new Date()
       }
     })
-
-    if (existingAccess) {
-      // Update access count and last accessed time
-      await db.menuAccess.update({
-        where: { id: existingAccess.id },
-        data: {
-          accessCount: existingAccess.accessCount + 1,
-          lastAccessedAt: new Date()
-        }
-      })
-    } else {
-      // Create new menu access record
-      await db.menuAccess.create({
-        data: {
-          userId,
-          menuId,
-          menuName: menuName || menuId,
-          accessCount: 1,
-          lastAccessedAt: new Date()
-        }
-      })
-    }
 
     return NextResponse.json({
       success: true,

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { User, Crown, Gift, Activity, Bell, Settings, QrCode, Award, Sparkles, ChevronRight } from 'lucide-react'
+import { User, Crown, Gift, Activity, Bell, Settings, QrCode, Award, Sparkles, ChevronRight, LogOut } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -15,6 +15,19 @@ interface ProfilePageProps {
   vouchers?: any[]
   onLogout?: () => void
 }
+
+// Batik pattern SVG - moved outside component to avoid recreation during render
+const BatikPattern = () => (
+  <svg className="absolute inset-0 opacity-10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+    <defs>
+      <pattern id="batik" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+        <path d="M0 10 L10 0 L20 10 L10 20 Z" fill="currentColor" className="text-white"/>
+        <circle cx="10" cy="10" r="3" fill="currentColor" className="text-white" opacity="0.5"/>
+      </pattern>
+    </defs>
+    <rect width="100" height="100" fill="url(#batik)"/>
+  </svg>
+)
 
 export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePageProps) {
   const [showBarcodeModal, setShowBarcodeModal] = useState(false)
@@ -77,19 +90,6 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
     { id: 'notification', icon: Bell, label: 'Notifikasi', color: 'from-blue-500 to-cyan-500', badge: null },
     { id: 'settings', icon: Settings, label: 'Pengaturan', color: 'from-gray-500 to-gray-600', badge: null },
   ]
-
-  // Batik pattern SVG
-  const BatikPattern = () => (
-    <svg className="absolute inset-0 opacity-10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-      <defs>
-        <pattern id="batik" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-          <path d="M0 10 L10 0 L20 10 L10 20 Z" fill="currentColor" className="text-white"/>
-          <circle cx="10" cy="10" r="3" fill="currentColor" className="text-white" opacity="0.5"/>
-        </pattern>
-      </defs>
-      <rect width="100" height="100" fill="url(#batik)"/>
-    </svg>
-  )
 
   // Glassmorphism card style
   const glassCardStyle = "bg-white/70 backdrop-blur-xl border border-white/50 shadow-2xl shadow-black/5"
@@ -380,46 +380,48 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
 
       {/* Barcode Modal */}
       <Dialog open={showBarcodeModal} onOpenChange={setShowBarcodeModal}>
-        <DialogContent className="sm:max-w-md mx-4">
+        <DialogContent className="sm:max-w-md w-[95vw] max-w-[400px] mx-auto p-0 overflow-hidden">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="relative"
+            className="p-4 sm:p-6"
           >
             <div className="text-center mb-4">
-              <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br ${membership.color} mb-4`}>
-                <QrCode className="w-8 h-8 text-white" />
+              <div className={`inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br ${membership.color} mb-4`}>
+                <QrCode className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
-              <h3 className="text-lg font-bold text-gray-800">Barcode Member</h3>
-              <p className="text-sm text-gray-500 mt-1">Scan barcode ini di kasir</p>
+              <h3 className="text-lg sm:text-xl font-bold text-gray-800">Barcode Member</h3>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1">Scan barcode ini di kasir</p>
             </div>
 
-            <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-2xl border-2 border-orange-200/50 p-4 sm:p-6 mb-4">
-              <Barcode
-                value={user?.phone || '0000000000'}
-                width={1.8}
-                height={50}
-                format="CODE128"
-                displayValue={false}
-                background="#fffbf0"
-                lineColor="#ea580c"
-                margin={0}
-              />
-              <div className="text-center mt-3 sm:mt-4">
-                <p className="text-[9px] sm:text-[10px] text-orange-400/70 font-semibold tracking-wider mb-1">PHONE NUMBER</p>
-                <p className="text-base sm:text-lg font-mono font-bold text-orange-600 tracking-wider">
+            <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-2xl border-2 border-orange-200/50 p-3 sm:p-6 mb-4">
+              <div className="w-full flex justify-center">
+                <Barcode
+                  value={user?.phone || '0000000000'}
+                  width={2}
+                  height={45}
+                  format="CODE128"
+                  displayValue={false}
+                  background="#fffbf0"
+                  lineColor="#ea580c"
+                  margin={0}
+                />
+              </div>
+              <div className="text-center mt-2 sm:mt-4">
+                <p className="text-[8px] sm:text-[10px] text-orange-400/70 font-semibold tracking-wider mb-1">PHONE NUMBER</p>
+                <p className="text-sm sm:text-lg font-mono font-bold text-orange-600 tracking-wider break-all">
                   {user?.phone ? user.phone.replace(/(\d{4})(\d{4})(\d{4})/, '$1-$2-$3') : '0000-0000-0000'}
                 </p>
               </div>
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-orange-100 to-yellow-100 rounded-xl">
-                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
-                  <User className="w-5 h-5 text-orange-500" />
+              <div className="flex items-center gap-3 p-2 sm:p-3 bg-gradient-to-r from-orange-100 to-yellow-100 rounded-xl">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                  <User className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-gray-800 truncate">{user?.name || 'Guest'}</p>
                   <p className="text-xs text-gray-500">{membership.level} Member</p>
                 </div>
@@ -429,15 +431,5 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
         </DialogContent>
       </Dialog>
     </div>
-  )
-}
-
-function LogOut(props: any) {
-  return (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-      <polyline points="16 17 21 12 16 7" />
-      <line x1="21" x2="9" y1="12" y2="12" />
-    </svg>
   )
 }
