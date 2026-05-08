@@ -197,7 +197,7 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-xl flex items-center justify-center shadow-lg border-2 border-yellow-300">
-                        <span className="text-2xl">🎴</span>
+                        <Gift className="w-6 h-6 text-white" />
                       </div>
                       <div>
                         <h3 className="text-white font-bold text-lg">Member Card</h3>
@@ -286,7 +286,7 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
           transition={{ delay: 0.6 }}
           className="max-w-sm mx-auto"
         >
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-3">
             {menuItems.map((item, index) => (
               <motion.div
                 key={item.id}
@@ -297,23 +297,25 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
                 whileTap={{ scale: 0.98 }}
               >
                 <Card className={`${glassCardStyle} p-4 cursor-pointer hover:shadow-2xl transition-all duration-300 group`}>
-                  <div className="flex flex-col h-full">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow`}>
-                        <item.icon className="w-6 h-6 text-white" />
-                      </div>
-                      {item.badge && (
-                        <Badge variant="secondary" className="text-[9px] font-semibold">
-                          {item.badge}
-                        </Badge>
-                      )}
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow flex-shrink-0`}>
+                      <item.icon className="w-6 h-6 text-white" />
                     </div>
-                    <h3 className="font-bold text-gray-800 mb-1 group-hover:text-purple-600 transition-colors">
-                      {item.label}
-                    </h3>
-                    <div className="mt-auto flex items-center text-gray-400 group-hover:text-purple-500 transition-colors">
-                      <span className="text-xs font-medium">Akses</span>
-                      <ChevronRight className="w-4 h-4 ml-1" />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className="font-bold text-gray-800 group-hover:text-purple-600 transition-colors">
+                          {item.label}
+                        </h3>
+                        {item.badge && (
+                          <Badge variant="secondary" className="text-[9px] font-semibold">
+                            {item.badge}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center text-gray-400 group-hover:text-purple-500 transition-colors">
+                        <span className="text-xs font-medium">Akses</span>
+                        <ChevronRight className="w-4 h-4 ml-1" />
+                      </div>
                     </div>
                   </div>
                 </Card>
