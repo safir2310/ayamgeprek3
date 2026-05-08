@@ -6,7 +6,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { userId, menuId, menuName } = body
 
+    console.log('Menu access request:', { userId, menuId, menuName })
+
     if (!userId || !menuId) {
+      console.error('Missing required fields:', { userId, menuId })
       return NextResponse.json(
         { success: false, error: 'userId and menuId are required' },
         { status: 400 }
@@ -19,11 +22,14 @@ export async function POST(request: NextRequest) {
     })
 
     if (!user) {
+      console.error('User not found:', userId)
       return NextResponse.json(
         { success: false, error: 'User not found' },
         { status: 404 }
       )
     }
+
+    console.log('User found, proceeding with upsert...')
 
     // Use upsert to either create new or update existing menu access
     await db.menuAccess.upsert({
@@ -49,14 +55,16 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    console.log('Menu access tracked successfully')
+
     return NextResponse.json({
       success: true,
       message: 'Menu access tracked successfully'
     })
   } catch (error) {
-    console.error('Error tracking menu access:', error)
+    console.error('Error in menu-access route:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to track menu access' },
+      { success: false, error: 'Failed to track menu access', details: String(error) },
       { status: 500 }
     )
   }

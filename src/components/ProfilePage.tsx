@@ -108,6 +108,8 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
       return
     }
 
+    const menuLabel = menuItems.find(m => m.id === menuId)?.label || menuId
+
     // Track menu access in database
     try {
       const response = await fetch('/api/user/menu-access', {
@@ -118,18 +120,24 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
         body: JSON.stringify({
           userId: user.id,
           menuId,
-          menuName: menuItems.find(m => m.id === menuId)?.label || menuId
+          menuName: menuLabel
         })
       })
 
+      const result = await response.json()
+
       if (!response.ok) {
-        console.error('Failed to track menu access')
+        console.error('Failed to track menu access:', result.error)
+        toast.error(`Gagal menyimpan akses ${menuLabel}`)
+      } else {
+        console.log('Menu access tracked successfully:', menuLabel)
       }
     } catch (error) {
       console.error('Error tracking menu access:', error)
+      toast.error('Terjadi kesalahan saat menyimpan akses')
     }
 
-    // Open corresponding modal based on menu ID
+    // Open corresponding modal based on menu ID (always open modal even if tracking fails)
     switch (menuId) {
       case 'account':
         setShowAccountModal(true)
@@ -150,7 +158,7 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
         setShowSettingsModal(true)
         break
       default:
-        toast.success(`Anda mengakses menu ${menuItems.find(m => m.id === menuId)?.label || menuId}`)
+        toast.success(`Anda membuka ${menuLabel}`)
     }
   }
 
