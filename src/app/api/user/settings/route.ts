@@ -17,10 +17,9 @@ export async function GET(request: NextRequest) {
         id: true,
         theme: true,
         notificationSound: true,
-        // Temporarily disabled new fields due to cache issues
-        // profilePrivate: true,
-        // emailNotifications: true,
-        // smsNotifications: true,
+        profilePrivate: true,
+        emailNotifications: true,
+        smsNotifications: true,
       }
     })
 
@@ -30,11 +29,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       settings: {
-        ...user,
-        // Default values for new fields
-        profilePrivate: false,
-        emailNotifications: true,
-        smsNotifications: false,
+        theme: user.theme,
+        notificationSound: user.notificationSound,
+        profilePrivate: user.profilePrivate,
+        emailNotifications: user.emailNotifications,
+        smsNotifications: user.smsNotifications,
       }
     })
   } catch (error) {
@@ -62,31 +61,28 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Update user settings - only update fields that work
+    // Update user settings
     const updatedSettings = await db.user.update({
       where: { id: userId },
       data: {
         ...(theme !== undefined && { theme }),
         ...(notificationSound !== undefined && { notificationSound }),
-        // Temporarily disabled new fields due to cache issues
-        // ...(profilePrivate !== undefined && { profilePrivate }),
-        // ...(emailNotifications !== undefined && { emailNotifications }),
-        // ...(smsNotifications !== undefined && { smsNotifications }),
+        ...(profilePrivate !== undefined && { profilePrivate }),
+        ...(emailNotifications !== undefined && { emailNotifications }),
+        ...(smsNotifications !== undefined && { smsNotifications }),
       },
       select: {
         id: true,
         theme: true,
         notificationSound: true,
+        profilePrivate: true,
+        emailNotifications: true,
+        smsNotifications: true,
       }
     })
 
     return NextResponse.json({
-      settings: {
-        ...updatedSettings,
-        profilePrivate: false,
-        emailNotifications: true,
-        smsNotifications: false,
-      },
+      settings: updatedSettings,
       message: 'Settings updated successfully'
     })
   } catch (error) {

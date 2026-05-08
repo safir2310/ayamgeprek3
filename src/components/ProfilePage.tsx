@@ -75,9 +75,16 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
     if (user?.id) {
       // Load settings
       fetch(`/api/user/settings?userId=${user.id}`)
-        .then((res) => res.json())
+        .then(async (res) => {
+          if (res.status === 404) {
+            console.error('User not found in database')
+            toast.error('Sesi kedaluwarsa, silakan login kembali')
+            return null
+          }
+          return res.json()
+        })
         .then((data) => {
-          if (data.settings) {
+          if (data && data.settings) {
             setIsDarkMode(data.settings.theme === 'dark')
             setSelectedTone(data.settings.notificationSound || 'chime')
             setProfilePrivate(data.settings.profilePrivate || false)
@@ -91,9 +98,16 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
 
       // Load profile data for edit form
       fetch(`/api/user/profile?userId=${user.id}`)
-        .then((res) => res.json())
+        .then(async (res) => {
+          if (res.status === 404) {
+            console.error('User not found in database')
+            toast.error('Sesi kedaluwarsa, silakan login kembali')
+            return null
+          }
+          return res.json()
+        })
         .then((data) => {
-          if (data.user) {
+          if (data && data.user) {
             setEditProfile({
               name: data.user.name || '',
               email: data.user.email || '',
@@ -376,14 +390,38 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
   }
 
   // Privacy toggle handler
-  const handlePrivacyToggle = (setting: 'profilePrivate' | 'emailNotifications' | 'smsNotifications', value: boolean) => {
-    // Temporarily disabled due to cache issues - just update local state
-    // TODO: Re-enable after cache issue is resolved
-    if (setting === 'profilePrivate') setProfilePrivate(value)
-    if (setting === 'emailNotifications') setEmailNotifications(value)
-    if (setting === 'smsNotifications') setSmsNotifications(value)
+  const handlePrivacyToggle = async (setting: 'profilePrivate' | 'emailNotifications' | 'smsNotifications', value: boolean) => {
+    if (!user?.id) {
+      toast.error('User ID tidak ditemukan')
+      return
+    }
 
-    toast.success('Pengaturan berhasil diperbarui')
+    try {
+      const response = await fetch('/api/user/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          [setting]: value
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Gagal memperbarui pengaturan')
+      }
+
+      // Update local state
+      if (setting === 'profilePrivate') setProfilePrivate(value)
+      if (setting === 'emailNotifications') setEmailNotifications(value)
+      if (setting === 'smsNotifications') setSmsNotifications(value)
+
+      toast.success('Pengaturan berhasil diperbarui')
+    } catch (error) {
+      console.error('Error updating privacy settings:', error)
+      toast.error('Gagal memperbarui pengaturan')
+    }
   }
 
   // Terms accept handler
