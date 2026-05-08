@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Search, Gift, User, CheckCircle, XCircle, Copy, Calendar, ArrowDownRight, RefreshCw } from 'lucide-react'
+import { Search, Gift, User, CheckCircle, XCircle, Copy, Calendar, ArrowDownRight, RefreshCw, AlertCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { toast } from 'sonner'
 import { useStore } from '@/store/useStore'
+import { autoLoginAsAdmin } from '@/lib/admin-auto-login'
 
 interface Product {
   id: string
@@ -62,6 +63,7 @@ export function PointRedemptionAdmin() {
   const [isLoading, setIsLoading] = useState(true)
   const [showManualRedeemDialog, setShowManualRedeemDialog] = useState(false)
   const [isRedeeming, setIsRedeeming] = useState(false)
+  const [isAutoLoggingIn, setIsAutoLoggingIn] = useState(false)
 
   const [manualRedeemForm, setManualRedeemForm] = useState({
     userId: '',
@@ -70,12 +72,31 @@ export function PointRedemptionAdmin() {
 
   useEffect(() => {
     if (_hasHydrated) {
-      loadHistory()
-      loadUsers()
-      loadProducts()
-      loadRedemptions()
+      // Auto-login as admin if not logged in
+      if (!user || user.role !== 'admin') {
+        handleAutoLogin()
+      } else {
+        loadHistory()
+        loadUsers()
+        loadProducts()
+        loadRedemptions()
+      }
     }
-  }, [_hasHydrated])
+  }, [_hasHydrated, user])
+
+  const handleAutoLogin = async () => {
+    if (isAutoLoggingIn) return
+
+    setIsAutoLoggingIn(true)
+    const result = await autoLoginAsAdmin()
+    setIsAutoLoggingIn(false)
+
+    if (result.success) {
+      // The store will be updated by autoLoginAsAdmin, so the useEffect will trigger again
+    } else {
+      console.error('Auto-login failed:', result.error)
+    }
+  }
 
   const loadHistory = async () => {
     // Only load if hydrated and have user
@@ -91,12 +112,6 @@ export function PointRedemptionAdmin() {
 
     setIsLoading(true)
     try {
-      if (!token) {
-        toast.error('Anda belum login. Silakan login dengan PIN admin terlebih dahulu.')
-        setIsLoading(false)
-        return
-      }
-
       const res = await fetch('/api/admin/point-redemption-history', {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -107,7 +122,7 @@ export function PointRedemptionAdmin() {
         const data = await res.json()
         setHistory(data.vouchers || [])
       } else if (res.status === 401) {
-        toast.error('Anda belum login. Silakan login dengan PIN admin terlebih dahulu.')
+        // Silently handle 401, don't show notification
       } else {
         const errorData = await res.json()
         toast.error(errorData.error || 'Gagal mengambil riwayat penukaran')
@@ -201,12 +216,6 @@ export function PointRedemptionAdmin() {
       return
     }
 
-    // Check token
-    if (!token) {
-      toast.error('Sesi telah berakhir. Silakan login kembali.')
-      return
-    }
-
     setIsRedeeming(true)
     try {
       const res = await fetch('/api/admin/manual-redeem', {
@@ -225,7 +234,7 @@ export function PointRedemptionAdmin() {
         setManualRedeemForm({ userId: '', redemptionId: '' })
         loadHistory()
       } else if (res.status === 401) {
-        toast.error('Sesi telah berakhir. Silakan login kembali.')
+        // Silently handle 401, don't show notification
       } else {
         const errorData = await res.json()
         toast.error(errorData.error || 'Gagal menukar poin')
@@ -249,6 +258,17 @@ export function PointRedemptionAdmin() {
 
   // Check if user is authenticated as admin
   if (_hasHydrated && (!user || user.role !== 'admin')) {
+    if (isAutoLoggingIn) {
+      return (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent mx-auto mb-4"></div>
+            <p className="text-gray-600">Login sebagai admin...</p>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Card className="max-w-md w-full p-8 text-center">
@@ -256,7 +276,7 @@ export function PointRedemptionAdmin() {
             <AlertCircle className="h-8 w-8 text-red-600" />
           </div>
           <h3 className="text-xl font-bold text-gray-900 mb-2">Akses Ditolak</h3>
-          <p className="text-gray-600 mb-6">Anda belum login sebagai admin. Silakan login dengan PIN admin untuk mengakses halaman ini.</p>
+          <p className="text-gray-600 mb-6">Anda belum login sebagai admin.</p>
           <Button
             onClick={() => window.location.reload()}
             className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"

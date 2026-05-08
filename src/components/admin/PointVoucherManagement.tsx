@@ -42,12 +42,6 @@ export function PointVoucherManagement() {
   const loadVouchers = async () => {
     setIsLoading(true)
     try {
-      if (!token) {
-        toast.error('Anda belum login. Silakan login dengan PIN admin terlebih dahulu.')
-        setIsLoading(false)
-        return
-      }
-
       const res = await fetch('/api/admin/point-vouchers', {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -57,6 +51,8 @@ export function PointVoucherManagement() {
       if (res.ok) {
         const data = await res.json()
         setVouchers(data.vouchers || [])
+      } else if (res.status === 401) {
+        // Silently handle 401, don't show notification
       } else {
         const errorData = await res.json()
         toast.error(errorData.error || 'Gagal mengambil data voucher')

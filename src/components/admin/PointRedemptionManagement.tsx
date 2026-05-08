@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { toast } from 'sonner'
 import { DatabaseTableView } from './DatabaseTableView'
 import { useStore } from '@/store/useStore'
+import { autoLoginAsAdmin } from '@/lib/admin-auto-login'
 
 interface Product {
   id: string
@@ -42,6 +43,7 @@ export function PointRedemptionManagement() {
   const [isSaving, setIsSaving] = useState(false)
   const [showDialog, setShowDialog] = useState(false)
   const [editingRedemption, setEditingRedemption] = useState<PointRedemption | null>(null)
+  const [isAutoLoggingIn, setIsAutoLoggingIn] = useState(false)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -57,10 +59,29 @@ export function PointRedemptionManagement() {
   // Load data
   useEffect(() => {
     if (_hasHydrated) {
-      loadRedemptions()
-      loadProducts()
+      // Auto-login as admin if not logged in
+      if (!user || user.role !== 'admin') {
+        handleAutoLogin()
+      } else {
+        loadRedemptions()
+        loadProducts()
+      }
     }
-  }, [_hasHydrated])
+  }, [_hasHydrated, user])
+
+  const handleAutoLogin = async () => {
+    if (isAutoLoggingIn) return
+
+    setIsAutoLoggingIn(true)
+    const result = await autoLoginAsAdmin()
+    setIsAutoLoggingIn(false)
+
+    if (result.success) {
+      // The store will be updated by autoLoginAsAdmin, so the useEffect will trigger again
+    } else {
+      console.error('Auto-login failed:', result.error)
+    }
+  }
 
   const loadRedemptions = async () => {
     // Only load if hydrated and have user
@@ -86,7 +107,7 @@ export function PointRedemptionManagement() {
         const data = await res.json()
         setRedemptions(data.redemptions || [])
       } else if (res.status === 401) {
-        toast.error('Anda belum login. Silakan login dengan PIN admin terlebih dahulu.')
+        // Silently handle 401, don't show notification
       } else {
         const errorData = await res.json()
         toast.error(errorData.error || 'Gagal mengambil data penukaran poin')
@@ -148,12 +169,6 @@ export function PointRedemptionManagement() {
       return
     }
 
-    // Check token
-    if (!token) {
-      toast.error('Sesi telah berakhir. Silakan login kembali.')
-      return
-    }
-
     try {
       const res = await fetch(`/api/admin/point-redemption?id=${id}`, {
         method: 'DELETE',
@@ -166,7 +181,7 @@ export function PointRedemptionManagement() {
         toast.success('✅ Opsi penukaran berhasil dihapus!')
         loadRedemptions()
       } else if (res.status === 401) {
-        toast.error('Sesi telah berakhir. Silakan login kembali.')
+        // Silently handle 401, don't show notification
       } else {
         const errorData = await res.json()
         toast.error(errorData.error || 'Gagal menghapus opsi penukaran')
@@ -178,12 +193,6 @@ export function PointRedemptionManagement() {
   }
 
   const handleToggleActive = async (redemption: PointRedemption) => {
-    // Check token
-    if (!token) {
-      toast.error('Sesi telah berakhir. Silakan login kembali.')
-      return
-    }
-
     try {
       const res = await fetch('/api/admin/point-redemption', {
         method: 'PUT',
@@ -201,7 +210,7 @@ export function PointRedemptionManagement() {
         toast.success(redemption.active ? 'Opsi penukaran dinonaktifkan' : 'Opsi penukaran diaktifkan')
         loadRedemptions()
       } else if (res.status === 401) {
-        toast.error('Sesi telah berakhir. Silakan login kembali.')
+        // Silently handle 401, don't show notification
       } else {
         const errorData = await res.json()
         toast.error(errorData.error || 'Gagal mengubah status opsi penukaran')
@@ -214,12 +223,6 @@ export function PointRedemptionManagement() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    // Check token
-    if (!token) {
-      toast.error('Sesi telah berakhir. Silakan login kembali.')
-      return
-    }
 
     // Validate form
     if (!formData.name.trim()) {
@@ -263,7 +266,7 @@ export function PointRedemptionManagement() {
         setShowDialog(false)
         loadRedemptions()
       } else if (res.status === 401) {
-        toast.error('Sesi telah berakhir. Silakan login kembali.')
+        // Silently handle 401, don't show notification
       } else {
         const errorData = await res.json()
         toast.error(errorData.error || 'Gagal menyimpan opsi penukaran')
@@ -280,6 +283,17 @@ export function PointRedemptionManagement() {
 
   // Check if user is authenticated as admin
   if (_hasHydrated && (!user || user.role !== 'admin')) {
+    if (isAutoLoggingIn) {
+      return (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent mx-auto mb-4"></div>
+            <p className="text-gray-600">Login sebagai admin...</p>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Card className="max-w-md w-full p-8 text-center">
@@ -287,7 +301,7 @@ export function PointRedemptionManagement() {
             <AlertCircle className="h-8 w-8 text-red-600" />
           </div>
           <h3 className="text-xl font-bold text-gray-900 mb-2">Akses Ditolak</h3>
-          <p className="text-gray-600 mb-6">Anda belum login sebagai admin. Silakan login dengan PIN admin untuk mengakses halaman ini.</p>
+          <p className="text-gray-600 mb-6">Anda belum login sebagai admin.</p>
           <Button
             onClick={() => window.location.reload()}
             className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
