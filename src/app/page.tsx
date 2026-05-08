@@ -1386,192 +1386,213 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-red-50 via-orange-50 to-white">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-gradient-to-br from-red-600 via-red-500 to-orange-500 shadow-xl shadow-red-900/20 backdrop-blur-sm">
-        <div className="container mx-auto px-3 py-2.5 sm:px-5 sm:py-3">
-          <div className="flex items-center justify-between gap-2 sm:gap-3">
-            {/* Logo Section */}
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-              <div
-                className="w-9 h-9 sm:w-10 sm:h-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center shadow-lg shadow-black/10 cursor-pointer select-none active:scale-95 transition-all hover:scale-105 hover:bg-white/20 md:cursor-default relative border-2 border-white/20"
-                onClick={handleLogoTap}
-                onTouchStart={handleLogoPressStart}
-                onMouseDown={handleLogoPressStart}
-                onTouchEnd={handleLogoPressEnd}
-                onMouseUp={handleLogoPressEnd}
-                onMouseLeave={handleLogoPressEnd}
-              >
-                <svg viewBox="0 0 100 100" className="w-7 h-7 sm:w-8 sm:h-8">
-                  <defs>
-                    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#DC2626" stopOpacity={1} />
-                      <stop offset="100%" stopColor="#F97316" stopOpacity={1} />
-                    </linearGradient>
-                    <linearGradient id="chickenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#FCD34D" stopOpacity={1} />
-                      <stop offset="100%" stopColor="#F59E0B" stopOpacity={1} />
-                    </linearGradient>
-                    <linearGradient id="flameGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#EF4444" stopOpacity={1} />
-                      <stop offset="100%" stopColor="#DC2626" stopOpacity={1} />
-                    </linearGradient>
-                    <filter id="glow">
-                      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-                      <feMerge>
-                        <feMergeNode in="coloredBlur"/>
-                        <feMergeNode in="SourceGraphic"/>
-                      </feMerge>
-                    </filter>
-                  </defs>
-                  <circle cx="50" cy="50" r="46" fill="url(#logoGrad)" filter="url(#glow)" opacity="0.15" />
-                  <circle cx="50" cy="50" r="44" fill="url(#logoGrad)" />
-                  
-                  {/* Spicy flames background */}
-                  <path d="M25 55 Q20 45 28 35 Q35 40 32 55 Z" fill="#F97316" opacity="0.3" />
-                  <path d="M75 55 Q80 45 72 35 Q65 40 68 55 Z" fill="#F97316" opacity="0.3" />
-                  
-                  {/* Spicy droplets */}
-                  <circle cx="22" cy="62" r="4" fill="#DC2626" opacity="0.4" />
-                  <circle cx="78" cy="62" r="4" fill="#DC2626" opacity="0.4" />
-                  
-                  {/* Sambal chili peppers */}
-                  <ellipse cx="15" cy="70" rx="6" ry="12" fill="#DC2626" transform="rotate(-30 15 70)" />
-                  <ellipse cx="85" cy="70" rx="6" ry="12" fill="#DC2626" transform="rotate(30 85 70)" />
-                  <ellipse cx="20" cy="75" rx="4" ry="10" fill="#EF4444" transform="rotate(-45 20 75)" />
-                  <ellipse cx="80" cy="75" rx="4" ry="10" fill="#EF4444" transform="rotate(45 80 75)" />
-                  
-                  {/* Chicken body - main */}
-                  <ellipse cx="50" cy="52" rx="20" ry="18" fill="url(#chickenGrad)" stroke="#B45309" strokeWidth="1.5" />
-                  
-                  {/* Crispy effect */}
-                  <ellipse cx="50" cy="52" rx="18" ry="16" fill="none" stroke="#FCD34D" strokeWidth="2" strokeDasharray="3 3" opacity="0.3" />
-                  
-                  {/* Head */}
-                  <circle cx="50" cy="42" r="11" fill="url(#chickenGrad)" stroke="#B45309" strokeWidth="1.5" />
-                  
-                  {/* Comb */}
-                  <path d="M50 31 Q45 25 48 28 Q50 26 52 28 Q55 25 50 31 Z" fill="#DC2626" />
-                  <path d="M45 28 L40 26 L47 29 Z" fill="#F97316" opacity="0.8" />
-                  <path d="M55 28 L60 26 L53 29 Z" fill="#F97316" opacity="0.8" />
-                  
-                  {/* Eyes */}
-                  <ellipse cx="46" cy="40" rx="3" ry="3.5" fill="#FFF" />
-                  <ellipse cx="54" cy="40" rx="3" ry="3.5" fill="#FFF" />
-                  <circle cx="46" cy="40" r="1.5" fill="#1F2937" />
-                  <circle cx="54" cy="40" r="1.5" fill="#1F2937" />
-                  
-                  {/* Beak */}
-                  <path d="M50 44 L47 48 L53 48 Z" fill="#F97316" stroke="#B45309" strokeWidth="0.5" />
-                  <path d="M48 48 L50 46 L52 48 Z" fill="#FBBF24" opacity="0.5" />
-                  
-                  {/* Wattle */}
-                  <ellipse cx="50" cy="51" rx="3" ry="4" fill="#EF4444" opacity="0.8" />
-                  
-                  {/* Wings */}
-                  <path d="M30 48 Q25 42 28 50 Q32 48 30 48 Z" fill="url(#chickenGrad)" stroke="#B45309" strokeWidth="1" />
-                  <path d="M70 48 Q75 42 72 50 Q68 48 70 48 Z" fill="url(#chickenGrad)" stroke="#B45309" strokeWidth="1" />
-                  
-                  {/* Feet */}
-                  <path d="M42 68 L40 75 L44 75 L42 68 Z" fill="#F97316" />
-                  <path d="M58 68 L56 75 L60 75 L58 68 Z" fill="#F97316" />
-                  
-                  {/* Spicy accent glow */}
-                  <circle cx="50" cy="52" r="25" fill="url(#flameGrad)" opacity="0.08" />
-                  
-                  {/* Small spice particles */}
-                  <circle cx="35" cy="35" r="2" fill="#FCD34D" opacity="0.6" />
-                  <circle cx="65" cy="35" r="2" fill="#FCD34D" opacity="0.6" />
-                  <circle cx="42" cy="30" r="1.5" fill="#F97316" opacity="0.5" />
-                  <circle cx="58" cy="30" r="1.5" fill="#F97316" opacity="0.5" />
-                </svg>
-                {/* Press indicator */}
-                {isPressing && (
-                  <div className="absolute inset-0 bg-white/20 rounded-lg animate-pulse" />
-                )}
-              </div>
-              <div>
-                <h1 className="text-[11px] sm:text-xs lg:text-[13px] font-bold text-white tracking-wide leading-tight whitespace-nowrap">AYAM GEPREK SAMBAL IJO</h1>
-                <button
-                  onClick={() => setIsAddressModalOpen(true)}
-                  className="flex items-center gap-1 text-white/90 text-[9px] sm:text-[10px] hover:text-white transition-colors cursor-pointer truncate"
-                >
-                  <MapPin className="h-2 w-2 sm:h-2.5 sm:w-2.5 flex-shrink-0" />
-                  <span className="truncate max-w-[100px] sm:max-w-[140px] lg:max-w-[180px]">Jl. Medan - Banda Aceh, Simpang Camat, Gampong Tijue, 24151</span>
-                </button>
-                {/* Mobile Admin Tap Indicator - Changed to 2 for double-tap */}
-                {adminTapCount > 0 && (
-                  <div className="md:hidden flex items-center gap-1 mt-1">
-                    <div className="flex gap-0.5">
-                      {[1, 2].map((i) => (
-                        <div
-                          key={i}
-                          className={`w-4 h-0.5 rounded-full transition-colors ${
-                            i <= adminTapCount ? 'bg-white' : 'bg-white/30'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-[8px] text-white/80">
-                      {2 - adminTapCount} lagi...
-                    </span>
-                  </div>
-                )}
-                {/* Long-press hint */}
-                {isPressing && (
-                  <div className="md:hidden flex items-center gap-1 mt-1">
-                    <div className="w-16 h-1 bg-white/60 rounded-full overflow-hidden">
-                      <div className="h-full bg-white animate-[width_2s_ease-in-out_forwards]" style={{ width: '100%' }} />
-                    </div>
-                    <span className="text-[8px] text-white/80">Tahan...</span>
-                  </div>
-                )}
-              </div>
-            </div>
+      {/* Header - New Design */}
+      <header className="sticky top-0 z-50 bg-gradient-to-br from-red-700 via-red-600 to-orange-600 shadow-2xl shadow-red-900/30 backdrop-blur-lg border-b-4 border-white/10">
+        {/* Decorative Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="headerPattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                <circle cx="20" cy="20" r="2" fill="white"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#headerPattern)"/>
+          </svg>
+        </div>
 
-            {/* Right Side Buttons */}
-            <div className="flex items-center gap-1.5">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/20 hover:scale-110 active:scale-95 relative h-9 w-9 sm:h-9 sm:w-9 rounded-xl transition-all"
-                onClick={() => setIsCartOpen(true)}
-              >
-                <ShoppingCart className="h-4.5 w-4.5 sm:h-4.5 sm:w-4.5" />
-                {cartCount > 0 && (
-                  <Badge className="absolute -top-0.5 -right-0.5 h-4.5 w-4.5 sm:h-4.5 sm:w-4.5 flex items-center justify-center bg-yellow-400 text-red-900 text-[9px] sm:text-[9px] font-bold rounded-full shadow-md shadow-yellow-400/30">
-                    {cartCount}
-                  </Badge>
-                )}
-              </Button>
-              {/* Chat Button */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/20 hover:scale-110 active:scale-95 relative h-9 w-9 sm:h-9 sm:w-9 rounded-xl transition-all"
-                onClick={() => {
-                  if (user) {
-                    setIsChatOpen(true)
-                  } else {
-                    toast.info('Silakan login untuk menggunakan fitur chat')
-                    setIsAuthModalOpen(true)
-                  }
-                }}
-              >
-                <MessageCircle className="h-4.5 w-4.5 sm:h-4.5 sm:w-4.5" />
-                {unreadChatCount > 0 && (
-                  <Badge className="absolute -top-0.5 -right-0.5 h-4.5 w-4.5 sm:h-4.5 sm:w-4.5 flex items-center justify-center bg-red-500 text-white text-[9px] sm:text-[9px] font-bold rounded-full shadow-md shadow-red-500/30 animate-pulse">
-                    {unreadChatCount > 9 ? '9+' : unreadChatCount}
-                  </Badge>
-                )}
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/20 hover:scale-110 active:scale-95 h-9 w-9 sm:h-9 sm:w-9 rounded-xl transition-all"
-                onClick={() => (user ? handleLogout() : setIsAuthModalOpen(true))}
-              >
-                <User className="h-4.5 w-4.5 sm:h-4.5 sm:w-4.5" />
-              </Button>
+        {/* Gradient Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-full bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
+
+        <div className="container mx-auto px-3 sm:px-5">
+          <div className="py-4 sm:py-5">
+            <div className="flex items-center justify-between gap-3 sm:gap-4">
+              {/* Logo Section */}
+              <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                <div
+                  className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-white/15 backdrop-blur-xl rounded-2xl flex items-center justify-center shadow-2xl shadow-black/20 cursor-pointer select-none active:scale-95 transition-all hover:scale-105 hover:bg-white/25 md:cursor-default relative border-3 border-white/30"
+                  onClick={handleLogoTap}
+                  onTouchStart={handleLogoPressStart}
+                  onMouseDown={handleLogoPressStart}
+                  onTouchEnd={handleLogoPressEnd}
+                  onMouseUp={handleLogoPressEnd}
+                  onMouseLeave={handleLogoPressEnd}
+                >
+                  <svg viewBox="0 0 100 100" className="w-9 h-9 sm:w-10 sm:h-10 lg:w-11 lg:h-11">
+                    <defs>
+                      <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#DC2626" stopOpacity={1} />
+                        <stop offset="100%" stopColor="#F97316" stopOpacity={1} />
+                      </linearGradient>
+                      <linearGradient id="chickenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#FCD34D" stopOpacity={1} />
+                        <stop offset="100%" stopColor="#F59E0B" stopOpacity={1} />
+                      </linearGradient>
+                      <linearGradient id="flameGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#EF4444" stopOpacity={1} />
+                        <stop offset="100%" stopColor="#DC2626" stopOpacity={1} />
+                      </linearGradient>
+                      <filter id="glow">
+                        <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                        <feMerge>
+                          <feMergeNode in="coloredBlur"/>
+                          <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
+                    </defs>
+                    <circle cx="50" cy="50" r="46" fill="url(#logoGrad)" filter="url(#glow)" opacity="0.15" />
+                    <circle cx="50" cy="50" r="44" fill="url(#logoGrad)" />
+
+                    {/* Spicy flames background */}
+                    <path d="M25 55 Q20 45 28 35 Q35 40 32 55 Z" fill="#F97316" opacity="0.3" />
+                    <path d="M75 55 Q80 45 72 35 Q65 40 68 55 Z" fill="#F97316" opacity="0.3" />
+
+                    {/* Spicy droplets */}
+                    <circle cx="22" cy="62" r="4" fill="#DC2626" opacity="0.4" />
+                    <circle cx="78" cy="62" r="4" fill="#DC2626" opacity="0.4" />
+
+                    {/* Sambal chili peppers */}
+                    <ellipse cx="15" cy="70" rx="6" ry="12" fill="#DC2626" transform="rotate(-30 15 70)" />
+                    <ellipse cx="85" cy="70" rx="6" ry="12" fill="#DC2626" transform="rotate(30 85 70)" />
+                    <ellipse cx="20" cy="75" rx="4" ry="10" fill="#EF4444" transform="rotate(-45 20 75)" />
+                    <ellipse cx="80" cy="75" rx="4" ry="10" fill="#EF4444" transform="rotate(45 80 75)" />
+
+                    {/* Chicken body - main */}
+                    <ellipse cx="50" cy="52" rx="20" ry="18" fill="url(#chickenGrad)" stroke="#B45309" strokeWidth="1.5" />
+
+                    {/* Crispy effect */}
+                    <ellipse cx="50" cy="52" rx="18" ry="16" fill="none" stroke="#FCD34D" strokeWidth="2" strokeDasharray="3 3" opacity="0.3" />
+
+                    {/* Head */}
+                    <circle cx="50" cy="42" r="11" fill="url(#chickenGrad)" stroke="#B45309" strokeWidth="1.5" />
+
+                    {/* Comb */}
+                    <path d="M50 31 Q45 25 48 28 Q50 26 52 28 Q55 25 50 31 Z" fill="#DC2626" />
+                    <path d="M45 28 L40 26 L47 29 Z" fill="#F97316" opacity="0.8" />
+                    <path d="M55 28 L60 26 L53 29 Z" fill="#F97316" opacity="0.8" />
+
+                    {/* Eyes */}
+                    <ellipse cx="46" cy="40" rx="3" ry="3.5" fill="#FFF" />
+                    <ellipse cx="54" cy="40" rx="3" ry="3.5" fill="#FFF" />
+                    <circle cx="46" cy="40" r="1.5" fill="#1F2937" />
+                    <circle cx="54" cy="40" r="1.5" fill="#1F2937" />
+
+                    {/* Beak */}
+                    <path d="M50 44 L47 48 L53 48 Z" fill="#F97316" stroke="#B45309" strokeWidth="0.5" />
+                    <path d="M48 48 L50 46 L52 48 Z" fill="#FBBF24" opacity="0.5" />
+
+                    {/* Wattle */}
+                    <ellipse cx="50" cy="51" rx="3" ry="4" fill="#EF4444" opacity="0.8" />
+
+                    {/* Wings */}
+                    <path d="M30 48 Q25 42 28 50 Q32 48 30 48 Z" fill="url(#chickenGrad)" stroke="#B45309" strokeWidth="1" />
+                    <path d="M70 48 Q75 42 72 50 Q68 48 70 48 Z" fill="url(#chickenGrad)" stroke="#B45309" strokeWidth="1" />
+
+                    {/* Feet */}
+                    <path d="M42 68 L40 75 L44 75 L42 68 Z" fill="#F97316" />
+                    <path d="M58 68 L56 75 L60 75 L58 68 Z" fill="#F97316" />
+
+                    {/* Spicy accent glow */}
+                    <circle cx="50" cy="52" r="25" fill="url(#flameGrad)" opacity="0.08" />
+
+                    {/* Small spice particles */}
+                    <circle cx="35" cy="35" r="2" fill="#FCD34D" opacity="0.6" />
+                    <circle cx="65" cy="35" r="2" fill="#FCD34D" opacity="0.6" />
+                    <circle cx="42" cy="30" r="1.5" fill="#F97316" opacity="0.5" />
+                    <circle cx="58" cy="30" r="1.5" fill="#F97316" opacity="0.5" />
+                  </svg>
+                  {/* Press indicator */}
+                  {isPressing && (
+                    <div className="absolute inset-0 bg-white/20 rounded-xl animate-pulse" />
+                  )}
+                </div>
+                <div>
+                  <h1 className="text-[13px] sm:text-sm lg:text-base font-black text-white tracking-wider leading-tight whitespace-nowrap drop-shadow-lg">
+                    AYAM GEPREK SAMBAL IJO
+                  </h1>
+                  <button
+                    onClick={() => setIsAddressModalOpen(true)}
+                    className="flex items-center gap-1.5 text-white/95 text-[10px] sm:text-xs hover:text-white transition-all cursor-pointer truncate group"
+                  >
+                    <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                    <span className="truncate max-w-[120px] sm:max-w-[160px] lg:max-w-[200px] font-medium">
+                      Jl. Medan - Banda Aceh, Simpang Camat, Gampong Tijue, 24151
+                    </span>
+                  </button>
+                  {/* Mobile Admin Tap Indicator - Changed to 2 for double-tap */}
+                  {adminTapCount > 0 && (
+                    <div className="md:hidden flex items-center gap-1.5 mt-1.5">
+                      <div className="flex gap-1">
+                        {[1, 2].map((i) => (
+                          <div
+                            key={i}
+                            className={`w-5 h-1 rounded-full transition-all duration-200 ${
+                              i <= adminTapCount ? 'bg-white' : 'bg-white/30'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-[9px] text-white/90 font-medium">
+                        {2 - adminTapCount} lagi...
+                      </span>
+                    </div>
+                  )}
+                  {/* Long-press hint */}
+                  {isPressing && (
+                    <div className="md:hidden flex items-center gap-2 mt-1.5">
+                      <div className="w-20 h-1.5 bg-white/60 rounded-full overflow-hidden">
+                        <div className="h-full bg-white animate-[width_2s_ease-in-out_forwards]" style={{ width: '100%' }} />
+                      </div>
+                      <span className="text-[9px] text-white/90 font-medium">Tahan...</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Side Buttons */}
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:bg-white/20 hover:scale-110 active:scale-95 relative h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12 rounded-xl transition-all"
+                  onClick={() => setIsCartOpen(true)}
+                >
+                  <ShoppingCart className="h-5 w-5 sm:h-5.5 sm:w-5.5 lg:h-6 lg:w-6" />
+                  {cartCount > 0 && (
+                    <Badge className="absolute -top-1 -right-1 h-5 w-5 sm:h-5.5 sm:w-5.5 lg:h-6 lg:w-6 flex items-center justify-center bg-yellow-400 text-red-900 text-[10px] sm:text-[11px] font-black rounded-xl shadow-lg shadow-yellow-400/40">
+                      {cartCount}
+                    </Badge>
+                  )}
+                </Button>
+                {/* Chat Button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:bg-white/20 hover:scale-110 active:scale-95 relative h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12 rounded-xl transition-all"
+                  onClick={() => {
+                    if (user) {
+                      setIsChatOpen(true)
+                    } else {
+                      toast.info('Silakan login untuk menggunakan fitur chat')
+                      setIsAuthModalOpen(true)
+                    }
+                  }}
+                >
+                  <MessageCircle className="h-5 w-5 sm:h-5.5 sm:w-5.5 lg:h-6 lg:w-6" />
+                  {unreadChatCount > 0 && (
+                    <Badge className="absolute -top-1 -right-1 h-5 w-5 sm:h-5.5 sm:w-5.5 lg:h-6 lg:w-6 flex items-center justify-center bg-red-500 text-white text-[10px] sm:text-[11px] font-black rounded-xl shadow-lg shadow-red-500/40 animate-pulse">
+                      {unreadChatCount > 9 ? '9+' : unreadChatCount}
+                    </Badge>
+                  )}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:bg-white/20 hover:scale-110 active:scale-95 h-10 w-10 sm:h-11 sm:w-11 lg:h-12 lg:w-12 rounded-xl transition-all"
+                  onClick={() => (user ? handleLogout() : setIsAuthModalOpen(true))}
+                >
+                  <User className="h-5 w-5 sm:h-5.5 sm:w-5.5 lg:h-6 lg:w-6" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
