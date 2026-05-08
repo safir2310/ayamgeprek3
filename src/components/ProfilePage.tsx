@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { toast } from 'sonner'
 import Barcode from 'react-barcode'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden'
 
 interface ProfilePageProps {
   user: any
@@ -416,6 +417,9 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
 
       {/* Barcode Modal */}
       <Dialog open={showBarcodeModal} onOpenChange={setShowBarcodeModal}>
+        <VisuallyHidden.Root>
+          <DialogTitle>Barcode Member</DialogTitle>
+        </VisuallyHidden.Root>
         <DialogContent className="sm:max-w-md w-[95vw] max-w-[400px] mx-auto p-0 overflow-hidden">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
