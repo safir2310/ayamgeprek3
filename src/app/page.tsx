@@ -1501,8 +1501,8 @@ export default function HomePage() {
                   )}
                 </div>
                 <div>
-                  <div className="inline-block bg-gradient-to-r from-orange-500 to-orange-600 px-2.5 py-0.5 rounded-lg shadow-sm shadow-orange-500/20">
-                    <h1 className="text-[11px] sm:text-xs lg:text-sm font-black text-white tracking-tight leading-none whitespace-nowrap">
+                  <div className="inline-block bg-gradient-to-r from-orange-500 to-orange-600 px-2 py-0.5 rounded-lg shadow-sm shadow-orange-500/20">
+                    <h1 className="text-[10px] sm:text-[11px] lg:text-xs font-black text-white tracking-tight leading-none whitespace-nowrap">
                       AYAM GEPREK SAMBAL IJO
                     </h1>
                   </div>
