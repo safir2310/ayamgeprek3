@@ -1657,9 +1657,9 @@ export default function HomePage() {
                       {/* Card Footer */}
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-[9px] text-gray-400 mb-1">MEMBER SINCE</p>
+                          <p className="text-[9px] text-gray-400 mb-1">NAMA MEMBER</p>
                           <p className="text-white text-xs font-semibold">
-                            {user?.createdAt ? new Date(user.createdAt).getFullYear() : '2025'}
+                            {user?.name || 'Guest'}
                           </p>
                         </div>
                         <motion.div
