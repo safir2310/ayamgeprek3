@@ -1741,6 +1741,9 @@ export default function HomePage() {
 
             {/* Member Barcode Modal */}
             <Dialog open={showMemberBarcode} onOpenChange={setShowMemberBarcode}>
+              <DialogHeader className="sr-only">
+                <DialogTitle>Barcode Member</DialogTitle>
+              </DialogHeader>
               <DialogContent className="sm:max-w-md w-[95vw] max-w-[400px] mx-auto p-0 overflow-hidden">
                 <motion.div
                   initial={{ scale: 0.9, opacity: 0 }}
