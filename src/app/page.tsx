@@ -148,58 +148,6 @@ export default function HomePage() {
   const [vouchers, setVouchers] = useState<any[]>([])
   const [pointVouchers, setPointVouchers] = useState<any[]>([])
 
-  // Member Card Helper Functions
-  const getMembershipLevel = () => {
-    const points = user?.points || 0
-    if (points >= 5000) return { level: 'VIP', color: 'from-purple-600 to-purple-800', textColor: 'text-purple-600' }
-    if (points >= 2500) return { level: 'Platinum', color: 'from-slate-500 to-slate-700', textColor: 'text-slate-600' }
-    if (points >= 1000) return { level: 'Gold', color: 'from-amber-500 to-amber-600', textColor: 'text-amber-600' }
-    if (points >= 500) return { level: 'Silver', color: 'from-gray-400 to-gray-500', textColor: 'text-gray-600' }
-    return { level: 'Bronze', color: 'from-orange-600 to-orange-700', textColor: 'text-orange-600' }
-  }
-
-  const calculateProgress = () => {
-    const currentPoints = user?.points || 0
-    let progress = 0
-    if (currentPoints >= 5000) progress = 100
-    else if (currentPoints >= 2500) progress = ((currentPoints - 2500) / 2500) * 100
-    else if (currentPoints >= 1000) progress = ((currentPoints - 1000) / 1500) * 100
-    else if (currentPoints >= 500) progress = ((currentPoints - 500) / 500) * 100
-    else progress = (currentPoints / 500) * 100
-    return Math.min(Math.max(progress, 5), 100)
-  }
-
-  const getNextLevelPoints = () => {
-    const currentPoints = user?.points || 0
-    const nextLevelPoints = [500, 1000, 2500, 5000].find(p => p > currentPoints)
-    return nextLevelPoints || 5000
-  }
-
-  const getCurrentLevelStart = () => {
-    const currentPoints = user?.points || 0
-    const levels = [0, 500, 1000, 2500, 5000]
-    let rangeStart = 0
-    for (let i = levels.length - 1; i >= 0; i--) {
-      if (currentPoints >= levels[i]) {
-        rangeStart = levels[i]
-        break
-      }
-    }
-    return rangeStart
-  }
-
-  const getPointsNeeded = () => {
-    const currentPoints = user?.points || 0
-    const nextLevelPoints = [500, 1000, 2500, 5000].find(p => p > currentPoints)
-    return nextLevelPoints ? `${nextLevelPoints - currentPoints} poin lagi` : 'Level Max'
-  }
-
-  const membership = getMembershipLevel()
-  const progress = calculateProgress()
-  const pointsNeeded = getPointsNeeded()
-  const currentLevelStart = getCurrentLevelStart()
-  const nextLevelPoints = getNextLevelPoints()
-
   // Glassmorphism card style
   const glassCardStyle = "bg-white/70 backdrop-blur-xl border border-white/50 shadow-2xl shadow-black/5"
 
@@ -234,6 +182,58 @@ export default function HomePage() {
     setCurrentTab,
     _hasHydrated,
   } = useStore()
+
+  // Member Card Helper Functions (after user is defined)
+  const getMembershipLevel = (user: any) => {
+    const points = user?.points || 0
+    if (points >= 5000) return { level: 'VIP', color: 'from-purple-600 to-purple-800', textColor: 'text-purple-600' }
+    if (points >= 2500) return { level: 'Platinum', color: 'from-slate-500 to-slate-700', textColor: 'text-slate-600' }
+    if (points >= 1000) return { level: 'Gold', color: 'from-amber-500 to-amber-600', textColor: 'text-amber-600' }
+    if (points >= 500) return { level: 'Silver', color: 'from-gray-400 to-gray-500', textColor: 'text-gray-600' }
+    return { level: 'Bronze', color: 'from-orange-600 to-orange-700', textColor: 'text-orange-600' }
+  }
+
+  const calculateProgress = (user: any) => {
+    const currentPoints = user?.points || 0
+    let progress = 0
+    if (currentPoints >= 5000) progress = 100
+    else if (currentPoints >= 2500) progress = ((currentPoints - 2500) / 2500) * 100
+    else if (currentPoints >= 1000) progress = ((currentPoints - 1000) / 1500) * 100
+    else if (currentPoints >= 500) progress = ((currentPoints - 500) / 500) * 100
+    else progress = (currentPoints / 500) * 100
+    return Math.min(Math.max(progress, 5), 100)
+  }
+
+  const getNextLevelPoints = (user: any) => {
+    const currentPoints = user?.points || 0
+    const nextLevelPoints = [500, 1000, 2500, 5000].find(p => p > currentPoints)
+    return nextLevelPoints || 5000
+  }
+
+  const getCurrentLevelStart = (user: any) => {
+    const currentPoints = user?.points || 0
+    const levels = [0, 500, 1000, 2500, 5000]
+    let rangeStart = 0
+    for (let i = levels.length - 1; i >= 0; i--) {
+      if (currentPoints >= levels[i]) {
+        rangeStart = levels[i]
+        break
+      }
+    }
+    return rangeStart
+  }
+
+  const getPointsNeeded = (user: any) => {
+    const currentPoints = user?.points || 0
+    const nextLevelPoints = [500, 1000, 2500, 5000].find(p => p > currentPoints)
+    return nextLevelPoints ? `${nextLevelPoints - currentPoints} poin lagi` : 'Level Max'
+  }
+
+  const membership = getMembershipLevel(user)
+  const progress = calculateProgress(user)
+  const pointsNeeded = getPointsNeeded(user)
+  const currentLevelStart = getCurrentLevelStart(user)
+  const nextLevelPoints = getNextLevelPoints(user)
 
   const checkAuth = async () => {
     try {
