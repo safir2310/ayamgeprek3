@@ -1,3 +1,4 @@
+// API Routes for User Settings
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 
@@ -13,14 +14,6 @@ export async function GET(request: NextRequest) {
 
     const user = await db.user.findUnique({
       where: { id: userId },
-      select: {
-        id: true,
-        theme: true,
-        notificationSound: true,
-        profilePrivate: true,
-        emailNotifications: true,
-        smsNotifications: true,
-      }
     })
 
     if (!user) {
@@ -46,7 +39,7 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, theme, notificationSound } = body
+    const { userId, theme, notificationSound, profilePrivate, emailNotifications, smsNotifications } = body
 
     if (!userId) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
@@ -62,7 +55,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update user settings
-    const updatedSettings = await db.user.update({
+    const updatedUser = await db.user.update({
       where: { id: userId },
       data: {
         ...(theme !== undefined && { theme }),
@@ -71,18 +64,16 @@ export async function PUT(request: NextRequest) {
         ...(emailNotifications !== undefined && { emailNotifications }),
         ...(smsNotifications !== undefined && { smsNotifications }),
       },
-      select: {
-        id: true,
-        theme: true,
-        notificationSound: true,
-        profilePrivate: true,
-        emailNotifications: true,
-        smsNotifications: true,
-      }
     })
 
     return NextResponse.json({
-      settings: updatedSettings,
+      settings: {
+        theme: updatedUser.theme,
+        notificationSound: updatedUser.notificationSound,
+        profilePrivate: updatedUser.profilePrivate,
+        emailNotifications: updatedUser.emailNotifications,
+        smsNotifications: updatedUser.smsNotifications,
+      },
       message: 'Settings updated successfully'
     })
   } catch (error) {
