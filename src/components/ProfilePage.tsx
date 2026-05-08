@@ -118,7 +118,7 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
                 ) : (
                   <User className="w-12 h-12 text-purple-400" />
                 )}
-              </motion.div>
+              </div>
               {/* Sparkle effects */}
               <motion.div
                 animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
