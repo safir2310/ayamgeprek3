@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
         profilePrivate: user.profilePrivate,
         emailNotifications: user.emailNotifications,
         smsNotifications: user.smsNotifications,
+        language: user.language,
       }
     })
   } catch (error) {
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, theme, notificationSound, profilePrivate, emailNotifications, smsNotifications } = body
+    const { userId, theme, notificationSound, profilePrivate, emailNotifications, smsNotifications, language } = body
 
     if (!userId) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
@@ -63,6 +64,7 @@ export async function PUT(request: NextRequest) {
         ...(profilePrivate !== undefined && { profilePrivate }),
         ...(emailNotifications !== undefined && { emailNotifications }),
         ...(smsNotifications !== undefined && { smsNotifications }),
+        ...(language !== undefined && { language }),
       },
     })
 
@@ -73,6 +75,7 @@ export async function PUT(request: NextRequest) {
         profilePrivate: updatedUser.profilePrivate,
         emailNotifications: updatedUser.emailNotifications,
         smsNotifications: updatedUser.smsNotifications,
+        language: updatedUser.language,
       },
       message: 'Settings updated successfully'
     })

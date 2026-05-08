@@ -45,6 +45,7 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
   const [showNotificationToneModal, setShowNotificationToneModal] = useState(false)
   const [showTermsModal, setShowTermsModal] = useState(false)
   const [showHelpCenterModal, setShowHelpCenterModal] = useState(false)
+  const [showLanguageModal, setShowLanguageModal] = useState(false)
 
   // Edit profile form state
   const [editProfile, setEditProfile] = useState({
@@ -70,6 +71,9 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
   const [emailNotifications, setEmailNotifications] = useState(true)
   const [smsNotifications, setSmsNotifications] = useState(false)
 
+  // Language state
+  const [selectedLanguage, setSelectedLanguage] = useState('id')
+
   // Load user settings from database
   useEffect(() => {
     if (user?.id) {
@@ -90,6 +94,7 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
             setProfilePrivate(data.settings.profilePrivate || false)
             setEmailNotifications(data.settings.emailNotifications ?? true)
             setSmsNotifications(data.settings.smsNotifications ?? false)
+            setSelectedLanguage(data.settings.language || 'id')
           }
         })
         .catch((error) => {
@@ -121,6 +126,16 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
         })
     }
   }, [user?.id])
+
+  // Language names mapping
+  const languageNames = {
+    id: 'Bahasa Indonesia',
+    en: 'English',
+    ar: 'العربية',
+    zh: '中文',
+    ja: '日本語',
+    ko: '한국어'
+  }
 
   // Get membership level based on points
   const getMembershipLevel = () => {
@@ -421,6 +436,38 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
     } catch (error) {
       console.error('Error updating privacy settings:', error)
       toast.error('Gagal memperbarui pengaturan')
+    }
+  }
+
+  // Language select handler
+  const handleLanguageSelect = async (language: string) => {
+    if (!user?.id) {
+      toast.error('User ID tidak ditemukan')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/user/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          language
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Gagal mengubah bahasa')
+      }
+
+      setSelectedLanguage(language)
+      const languageName = languageNames[language] || language
+      toast.success(`Bahasa diubah ke ${languageName}`)
+    } catch (error) {
+      console.error('Error updating language:', error)
+      toast.error('Gagal mengubah bahasa')
     }
   }
 
@@ -1078,7 +1125,10 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
               </div>
 
               {/* Language */}
-              <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl">
+              <div
+                onClick={() => setShowLanguageModal(true)}
+                className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl cursor-pointer hover:shadow-md transition-all"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
                     <Globe className="w-5 h-5 text-blue-500" />
@@ -1088,7 +1138,10 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
                     <p className="text-xs text-gray-500">Pilih bahasa aplikasi</p>
                   </div>
                 </div>
-                <span className="text-sm font-semibold text-gray-600">Bahasa Indonesia</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-gray-600">{languageNames[selectedLanguage] || 'Bahasa Indonesia'}</span>
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                </div>
               </div>
 
               {/* Terms & Conditions */}
@@ -1352,6 +1405,56 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
                     </div>
                   )}
                 </div>
+              </div>
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Language Modal */}
+      <Dialog open={showLanguageModal} onOpenChange={setShowLanguageModal}>
+        <DialogContent className="sm:max-w-md w-[95vw] max-w-[400px] mx-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Globe className="w-5 h-5 text-blue-600" />
+              Bahasa
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-4 mt-4">
+              <p className="text-sm text-gray-600">Pilih bahasa untuk tampilan aplikasi</p>
+
+              <div className="space-y-3">
+                {[
+                  { id: 'id', name: 'Bahasa Indonesia', flag: '🇮🇩' },
+                  { id: 'en', name: 'English', flag: '🇬🇧' },
+                  { id: 'ar', name: 'العربية', flag: '🇸🇦' },
+                  { id: 'zh', name: '中文', flag: '🇨🇳' },
+                  { id: 'ja', name: '日本語', flag: '🇯🇵' },
+                  { id: 'ko', name: '한국어', flag: '🇰🇷' }
+                ].map((lang) => (
+                  <div
+                    key={lang.id}
+                    onClick={() => handleLanguageSelect(lang.id)}
+                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                      selectedLanguage === lang.id
+                        ? 'bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-500'
+                        : 'bg-white border-gray-200 hover:border-blue-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="text-3xl">{lang.flag}</div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-gray-800">{lang.name}</h4>
+                      </div>
+                      {selectedLanguage === lang.id && (
+                        <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                          <div className="w-3 h-3 bg-white rounded-full" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </ScrollArea>

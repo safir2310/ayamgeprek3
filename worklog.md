@@ -39,3 +39,38 @@ Stage Summary:
 - Privacy Settings: Now saves profilePrivate, emailNotifications, smsNotifications to database
 - All features now fully integrated with database backend
 - Error handling improved to handle session expiration gracefully
+
+---
+Task ID: 3
+Agent: Z.ai Code
+Task: Activate all settings features and connect to database
+
+Work Log:
+- Added language field to Prisma schema in User model
+- Ran bun run db:push to synchronize database schema
+- Updated /api/user/settings route to handle language field in GET and PUT methods
+- Added showLanguageModal state to ProfilePage component
+- Added selectedLanguage state with default value 'id'
+- Created languageNames mapping object for UI display
+- Added setSelectedLanguage to settings loading useEffect
+- Created handleLanguageSelect function to save language to database
+- Made Language item in settings modal clickable with onClick handler
+- Updated Language item to show selected language name dynamically
+- Created complete Language modal with 6 language options:
+  - Bahasa Indonesia (🇮🇩)
+  - English (🇬🇧)
+  - العربية (🇸🇦)
+  - 中文 (🇨🇳)
+  - 日本語 (🇯🇵)
+  - 한국어 (🇰🇷)
+- Updated test user with language field set to 'id'
+- All settings features now fully connected to database
+
+Stage Summary:
+- Edit Profile: ✓ Active - saves name, email, phone, address
+- Security & Privacy: ✓ Active - password change + privacy toggles
+- Theme: ✓ Active - light/dark mode selection
+- Notification Tones: ✓ Active - 6 tone options
+- Language: ✓ NEWLY ACTIVATED - 6 language options with database save
+- Terms & Conditions: ✓ Active - acceptance tracking
+- Help Center: ✓ Active - FAQ and contact features

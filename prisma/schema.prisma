@@ -29,6 +29,7 @@ model User {
   profilePrivate       Boolean   @default(false)
   emailNotifications   Boolean   @default(true)
   smsNotifications    Boolean   @default(false)
+  language           String    @default("id") // id, en, ar, zh, ja, ko
   termsAcceptedAt     DateTime?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
