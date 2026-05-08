@@ -2554,6 +2554,7 @@ export default function HomePage() {
               </motion.div>
             )}
           </motion.div>
+        )}
 
         {currentTab === 'redeem' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
