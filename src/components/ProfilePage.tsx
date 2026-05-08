@@ -104,16 +104,16 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
 
   // Handle menu click - open corresponding modal and track access
   const handleMenuClick = async (menuId: string) => {
-    if (!user) {
+    if (!user || !user.id) {
       toast.error('Peringatan: Silakan login terlebih dahulu')
       return
     }
 
     const menuLabel = menuItems.find(m => m.id === menuId)?.label || menuId
 
-    // Track menu access in database
-    try {
-      const response = await fetch('/api/user/menu-access', {
+    // Track menu access in database (non-blocking - modal opens even if tracking fails)
+    if (user.id && user.id.length > 0) {
+      fetch('/api/user/menu-access', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -124,21 +124,23 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
           menuName: menuLabel
         })
       })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        console.error('Failed to track menu access:', result.error)
-        toast.error(`Gagal menyimpan akses ${menuLabel}`)
-      } else {
-        console.log('Menu access tracked successfully:', menuLabel)
-      }
-    } catch (error) {
-      console.error('Error tracking menu access:', error)
-      toast.error('Terjadi kesalahan saat menyimpan akses')
+        .then(async (response) => {
+          if (response.ok) {
+            const result = await response.json()
+            console.log('Menu access tracked successfully:', menuLabel, result)
+          } else {
+            const error = await response.json().catch(() => ({}))
+            console.error('Failed to track menu access:', error.error || 'Unknown error')
+            // Silently fail - don't show toast to user, just log
+          }
+        })
+        .catch((error) => {
+          console.error('Error tracking menu access:', error)
+          // Silently fail - don't block the modal from opening
+        })
     }
 
-    // Open corresponding modal based on menu ID (always open modal even if tracking fails)
+    // Open corresponding modal based on menu ID (always open modal)
     switch (menuId) {
       case 'account':
         setShowAccountModal(true)
