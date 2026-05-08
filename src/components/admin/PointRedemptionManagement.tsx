@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Plus, Edit, Trash2, Gift, Save, Table, Grid as GridIcon, ToggleLeft, ToggleRight, CheckCircle } from 'lucide-react'
+import { Search, Plus, Edit, Trash2, Gift, Save, Table, Grid as GridIcon, ToggleLeft, ToggleRight, CheckCircle, AlertCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { toast } from 'sonner'
 import { DatabaseTableView } from './DatabaseTableView'
+import { useStore } from '@/store/useStore'
 
 interface Product {
   id: string
@@ -32,6 +33,7 @@ interface PointRedemption {
 }
 
 export function PointRedemptionManagement() {
+  const { token, _hasHydrated, user } = useStore()
   const [redemptions, setRedemptions] = useState<PointRedemption[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('table')
@@ -40,14 +42,6 @@ export function PointRedemptionManagement() {
   const [isSaving, setIsSaving] = useState(false)
   const [showDialog, setShowDialog] = useState(false)
   const [editingRedemption, setEditingRedemption] = useState<PointRedemption | null>(null)
-
-  // Get token from localStorage directly
-  const getToken = () => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('token')
-    }
-    return null
-  }
 
   // Form state
   const [formData, setFormData] = useState({
@@ -62,23 +56,37 @@ export function PointRedemptionManagement() {
 
   // Load data
   useEffect(() => {
-    loadRedemptions()
-    loadProducts()
-  }, [])
+    if (_hasHydrated) {
+      loadRedemptions()
+      loadProducts()
+    }
+  }, [_hasHydrated])
 
   const loadRedemptions = async () => {
+    // Only load if hydrated and have user
+    if (!_hasHydrated) {
+      return
+    }
+
+    // Check if user is admin
+    if (!user || user.role !== 'admin') {
+      setIsLoading(false)
+      return
+    }
+
     setIsLoading(true)
     try {
-      const token = getToken()
       const res = await fetch('/api/admin/point-redemption', {
-        headers: {
+        headers: token ? {
           Authorization: `Bearer ${token}`,
-        },
+        } : {},
       })
 
       if (res.ok) {
         const data = await res.json()
         setRedemptions(data.redemptions || [])
+      } else if (res.status === 401) {
+        toast.error('Anda belum login. Silakan login dengan PIN admin terlebih dahulu.')
       } else {
         const errorData = await res.json()
         toast.error(errorData.error || 'Gagal mengambil data penukaran poin')
@@ -140,7 +148,11 @@ export function PointRedemptionManagement() {
       return
     }
 
-    const token = getToken()
+    // Check token
+    if (!token) {
+      toast.error('Sesi telah berakhir. Silakan login kembali.')
+      return
+    }
 
     try {
       const res = await fetch(`/api/admin/point-redemption?id=${id}`, {
@@ -153,6 +165,8 @@ export function PointRedemptionManagement() {
       if (res.ok) {
         toast.success('✅ Opsi penukaran berhasil dihapus!')
         loadRedemptions()
+      } else if (res.status === 401) {
+        toast.error('Sesi telah berakhir. Silakan login kembali.')
       } else {
         const errorData = await res.json()
         toast.error(errorData.error || 'Gagal menghapus opsi penukaran')
@@ -164,7 +178,11 @@ export function PointRedemptionManagement() {
   }
 
   const handleToggleActive = async (redemption: PointRedemption) => {
-    const token = getToken()
+    // Check token
+    if (!token) {
+      toast.error('Sesi telah berakhir. Silakan login kembali.')
+      return
+    }
 
     try {
       const res = await fetch('/api/admin/point-redemption', {
@@ -182,6 +200,8 @@ export function PointRedemptionManagement() {
       if (res.ok) {
         toast.success(redemption.active ? 'Opsi penukaran dinonaktifkan' : 'Opsi penukaran diaktifkan')
         loadRedemptions()
+      } else if (res.status === 401) {
+        toast.error('Sesi telah berakhir. Silakan login kembali.')
       } else {
         const errorData = await res.json()
         toast.error(errorData.error || 'Gagal mengubah status opsi penukaran')
@@ -195,9 +215,7 @@ export function PointRedemptionManagement() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Get token
-    const token = getToken()
-
+    // Check token
     if (!token) {
       toast.error('Sesi telah berakhir. Silakan login kembali.')
       return
@@ -244,6 +262,8 @@ export function PointRedemptionManagement() {
         toast.success(editingRedemption ? '✅ Opsi penukaran berhasil diupdate' : '✅ Opsi penukaran berhasil dibuat')
         setShowDialog(false)
         loadRedemptions()
+      } else if (res.status === 401) {
+        toast.error('Sesi telah berakhir. Silakan login kembali.')
       } else {
         const errorData = await res.json()
         toast.error(errorData.error || 'Gagal menyimpan opsi penukaran')
@@ -257,6 +277,27 @@ export function PointRedemptionManagement() {
   }
 
   const selectedProduct = products.find(p => p.id === formData.productId)
+
+  // Check if user is authenticated as admin
+  if (_hasHydrated && (!user || user.role !== 'admin')) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="max-w-md w-full p-8 text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="h-8 w-8 text-red-600" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">Akses Ditolak</h3>
+          <p className="text-gray-600 mb-6">Anda belum login sebagai admin. Silakan login dengan PIN admin untuk mengakses halaman ini.</p>
+          <Button
+            onClick={() => window.location.reload()}
+            className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
+          >
+            Refresh Halaman
+          </Button>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

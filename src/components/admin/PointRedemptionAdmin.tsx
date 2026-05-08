@@ -52,7 +52,7 @@ interface PointVoucher {
 }
 
 export function PointRedemptionAdmin() {
-  const { token, _hasHydrated } = useStore()
+  const { token, _hasHydrated, user } = useStore()
   const [history, setHistory] = useState<PointVoucher[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [products, setProducts] = useState<Product[]>([])
@@ -78,6 +78,17 @@ export function PointRedemptionAdmin() {
   }, [_hasHydrated])
 
   const loadHistory = async () => {
+    // Only load if hydrated and have user
+    if (!_hasHydrated) {
+      return
+    }
+
+    // Check if user is admin
+    if (!user || user.role !== 'admin') {
+      setIsLoading(false)
+      return
+    }
+
     setIsLoading(true)
     try {
       if (!token) {
@@ -95,6 +106,8 @@ export function PointRedemptionAdmin() {
       if (res.ok) {
         const data = await res.json()
         setHistory(data.vouchers || [])
+      } else if (res.status === 401) {
+        toast.error('Anda belum login. Silakan login dengan PIN admin terlebih dahulu.')
       } else {
         const errorData = await res.json()
         toast.error(errorData.error || 'Gagal mengambil riwayat penukaran')
@@ -188,6 +201,12 @@ export function PointRedemptionAdmin() {
       return
     }
 
+    // Check token
+    if (!token) {
+      toast.error('Sesi telah berakhir. Silakan login kembali.')
+      return
+    }
+
     setIsRedeeming(true)
     try {
       const res = await fetch('/api/admin/manual-redeem', {
@@ -205,6 +224,8 @@ export function PointRedemptionAdmin() {
         setShowManualRedeemDialog(false)
         setManualRedeemForm({ userId: '', redemptionId: '' })
         loadHistory()
+      } else if (res.status === 401) {
+        toast.error('Sesi telah berakhir. Silakan login kembali.')
       } else {
         const errorData = await res.json()
         toast.error(errorData.error || 'Gagal menukar poin')
@@ -225,6 +246,27 @@ export function PointRedemptionAdmin() {
   const totalUsed = history.filter(v => v.isUsed).length
   const totalUnused = history.filter(v => !v.isUsed).length
   const totalPointsUsed = history.reduce((sum, v) => sum + v.pointsRequired, 0)
+
+  // Check if user is authenticated as admin
+  if (_hasHydrated && (!user || user.role !== 'admin')) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="max-w-md w-full p-8 text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="h-8 w-8 text-red-600" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">Akses Ditolak</h3>
+          <p className="text-gray-600 mb-6">Anda belum login sebagai admin. Silakan login dengan PIN admin untuk mengakses halaman ini.</p>
+          <Button
+            onClick={() => window.location.reload()}
+            className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
+          >
+            Refresh Halaman
+          </Button>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
