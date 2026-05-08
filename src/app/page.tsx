@@ -133,7 +133,6 @@ export default function HomePage() {
   const [resetToken, setResetToken] = useState('')
   const [isVerifying, setIsVerifying] = useState(false)
   const [isResetting, setIsResetting] = useState(false)
-  const [showNotificationBanner, setShowNotificationBanner] = useState(true)
   const [hasInitialRender, setHasInitialRender] = useState(false)
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false)
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
@@ -319,9 +318,6 @@ export default function HomePage() {
 
   // Total notification count for orders tab
   const orderNotifications = pendingOrders
-
-  // Determine if notification banner should show
-  const hasNotifications = cartNotification > 0 || pendingOrders > 0 || (user && user.points > 0)
 
   // Fetch products from database
   const fetchProducts = async () => {
@@ -2470,61 +2466,6 @@ export default function HomePage() {
           </ScrollArea>
         </DialogContent>
       </Dialog>
-
-      {/* Notification Banner */}
-      <AnimatePresence>
-        {showNotificationBanner && hasNotifications && (
-          <motion.div
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-[84px] left-2 right-2 md:left-1/2 md:-translate-x-1/2 md:right-auto md:w-[400px] z-50"
-          >
-            <Card className="bg-gradient-to-r from-red-600 to-orange-500 text-white shadow-2xl border-0">
-              <CardContent className="p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <Bell className="h-4 w-4 animate-pulse" />
-                      <p className="font-semibold text-sm">Notifikasi</p>
-                    </div>
-                    <div className="flex flex-wrap gap-2 mt-2 text-xs">
-                      {pendingOrders > 0 && (
-                        <div
-                          className="flex items-center gap-1 bg-white/20 px-2 py-1 rounded-full cursor-pointer hover:bg-white/30 transition-colors"
-                          onClick={() => {
-                            setCurrentTab('orders')
-                          }}
-                        >
-                          <FileText className="h-3 w-3" />
-                          <span>{pendingOrders} pesanan pending</span>
-                        </div>
-                      )}
-                      {user && user.points > 0 && (
-                        <div
-                          className="flex items-center gap-1 bg-white/20 px-2 py-1 rounded-full cursor-pointer hover:bg-white/30 transition-colors"
-                          onClick={() => {
-                            setCurrentTab('account')
-                          }}
-                        >
-                          <Gift className="h-3 w-3" />
-                          <span>{user.points} poin tersedia</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setShowNotificationBanner(false)}
-                    className="flex-shrink-0 p-1 hover:bg-white/20 rounded-full transition-colors"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-slate-200 dark:border-slate-700 dark:bg-slate-900/95 shadow-lg z-40">
