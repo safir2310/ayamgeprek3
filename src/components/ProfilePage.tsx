@@ -2,13 +2,14 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { User, Crown, Gift, Activity, Bell, Settings, QrCode, Award, Sparkles, ChevronRight, LogOut } from 'lucide-react'
+import { User, Crown, Gift, Activity, Bell, Settings, QrCode, Award, Sparkles, ChevronRight, LogOut, Mail, Phone, MapPin, Lock, Volume2, Globe, History, Ticket } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toast } from 'sonner'
 import Barcode from 'react-barcode'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface ProfilePageProps {
   user: any
@@ -31,6 +32,12 @@ const BatikPattern = () => (
 
 export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePageProps) {
   const [showBarcodeModal, setShowBarcodeModal] = useState(false)
+  const [showAccountModal, setShowAccountModal] = useState(false)
+  const [showMembershipModal, setShowMembershipModal] = useState(false)
+  const [showRewardsModal, setShowRewardsModal] = useState(false)
+  const [showActivityModal, setShowActivityModal] = useState(false)
+  const [showNotificationModal, setShowNotificationModal] = useState(false)
+  const [showSettingsModal, setShowSettingsModal] = useState(false)
 
   // Get membership level based on points
   const getMembershipLevel = () => {
@@ -94,7 +101,7 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
   // Glassmorphism card style
   const glassCardStyle = "bg-white/70 backdrop-blur-xl border border-white/50 shadow-2xl shadow-black/5"
 
-  // Handle menu click - save data to database
+  // Handle menu click - open corresponding modal and track access
   const handleMenuClick = async (menuId: string) => {
     if (!user) {
       toast.error('Peringatan: Silakan login terlebih dahulu')
@@ -122,8 +129,29 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
       console.error('Error tracking menu access:', error)
     }
 
-    // Show toast notification
-    toast.success(`Anda mengakses menu ${menuItems.find(m => m.id === menuId)?.label || menuId}`)
+    // Open corresponding modal based on menu ID
+    switch (menuId) {
+      case 'account':
+        setShowAccountModal(true)
+        break
+      case 'membership':
+        setShowMembershipModal(true)
+        break
+      case 'rewards':
+        setShowRewardsModal(true)
+        break
+      case 'activity':
+        setShowActivityModal(true)
+        break
+      case 'notification':
+        setShowNotificationModal(true)
+        break
+      case 'settings':
+        setShowSettingsModal(true)
+        break
+      default:
+        toast.success(`Anda mengakses menu ${menuItems.find(m => m.id === menuId)?.label || menuId}`)
+    }
   }
 
   const progress = calculateProgress()
@@ -349,7 +377,7 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
                         )}
                       </div>
                       <div className="flex items-center text-gray-400 group-hover:text-purple-500 transition-colors">
-                        <span className="text-xs font-medium">Akses</span>
+                        <span className="text-xs font-medium">Buka</span>
                         <ChevronRight className="w-4 h-4 ml-1" />
                       </div>
                     </div>
@@ -428,6 +456,300 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
               </div>
             </div>
           </motion.div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Account Modal */}
+      <Dialog open={showAccountModal} onOpenChange={setShowAccountModal}>
+        <DialogContent className="sm:max-w-md w-[95vw] max-w-[400px] mx-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <User className="w-5 h-5 text-red-600" />
+              Akun Saya
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-4 mt-4">
+              <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl">
+                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                  <User className="w-5 h-5 text-red-500" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-800">{user?.name || 'Guest'}</p>
+                  <p className="text-xs text-gray-500">Nama Lengkap</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl">
+                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                  <Mail className="w-5 h-5 text-blue-500" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-800">{user?.email || 'email@example.com'}</p>
+                  <p className="text-xs text-gray-500">Email</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl">
+                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                  <Phone className="w-5 h-5 text-green-500" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-800">{user?.phone || '08123456789'}</p>
+                  <p className="text-xs text-gray-500">Nomor Telepon</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl">
+                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                  <MapPin className="w-5 h-5 text-purple-500" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-800">{user?.address || 'Alamat belum diisi'}</p>
+                  <p className="text-xs text-gray-500">Alamat</p>
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Membership Modal */}
+      <Dialog open={showMembershipModal} onOpenChange={setShowMembershipModal}>
+        <DialogContent className="sm:max-w-md w-[95vw] max-w-[400px] mx-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Crown className="w-5 h-5 text-purple-600" />
+              Membership
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-4 mt-4">
+              <div className={`p-4 rounded-xl bg-gradient-to-r ${membership.color} text-white`}>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xl font-bold">{membership.level} Member</h3>
+                  <Crown className="w-8 h-8" />
+                </div>
+                <p className="text-sm opacity-90">Level membership Anda saat ini</p>
+              </div>
+              <div className="p-4 rounded-xl bg-white border-2 border-gray-200">
+                <h4 className="font-bold text-gray-800 mb-3">Progress Membership</h4>
+                <div className="relative h-4 bg-gray-200 rounded-full overflow-hidden mb-2">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progress}%` }}
+                    transition={{ duration: 1 }}
+                    className={`absolute left-0 top-0 h-full bg-gradient-to-r ${membership.color} rounded-full`}
+                  />
+                </div>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">{getCurrentLevelStart()} poin</span>
+                  <span className="text-gray-600">{getNextLevelPoints()} poin</span>
+                </div>
+                <p className="text-center text-sm font-semibold text-gray-700 mt-2">
+                  {pointsNeeded} ke level selanjutnya
+                </p>
+              </div>
+              <div className="grid grid-cols-1 gap-2">
+                {['Bronze', 'Silver', 'Gold', 'Platinum', 'VIP'].map((level) => {
+                  const levelColor = {
+                    Bronze: 'from-orange-600 to-orange-700',
+                    Silver: 'from-gray-400 to-gray-500',
+                    Gold: 'from-amber-500 to-amber-600',
+                    Platinum: 'from-slate-500 to-slate-700',
+                    VIP: 'from-purple-600 to-purple-800'
+                  }[level]
+                  const levelPoints = { Bronze: 0, Silver: 500, Gold: 1000, Platinum: 2500, VIP: 5000 }[level]
+                  return (
+                    <div
+                      key={level}
+                      className={`p-3 rounded-lg border-2 ${
+                        membership.level === level
+                          ? 'bg-gradient-to-r border-white ' + levelColor + ' text-white'
+                          : 'bg-white border-gray-200'
+                      }`}
+                    >
+                      <p className="font-bold text-sm">{level}</p>
+                      <p className="text-xs opacity-90">{levelPoints} poin</p>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Rewards Modal */}
+      <Dialog open={showRewardsModal} onOpenChange={setShowRewardsModal}>
+        <DialogContent className="sm:max-w-md w-[95vw] max-w-[400px] mx-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Gift className="w-5 h-5 text-amber-600" />
+              Reward & Loyalty
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-3 mt-4">
+              {vouchers.length > 0 ? (
+                vouchers.map((voucher: any) => (
+                  <div key={voucher.id} className="p-4 rounded-xl bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Ticket className="w-5 h-5 text-amber-600" />
+                        <h4 className="font-bold text-gray-800">{voucher.name || 'Voucher'}</h4>
+                      </div>
+                      <Badge className="bg-amber-600 text-white">{voucher.discount || 'Diskon'}</Badge>
+                    </div>
+                    <p className="text-xs text-gray-600 mb-2">{voucher.description || 'Voucher khusus member'}</p>
+                    <p className="text-xs text-gray-500">Berlaku hingga: {voucher.expiry || '31 Des 2025'}</p>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <Gift className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-sm text-gray-500">Belum ada voucher</p>
+                  <p className="text-xs text-gray-400 mt-1">Kumpulkan poin untuk mendapatkan voucher</p>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Activity Modal */}
+      <Dialog open={showActivityModal} onOpenChange={setShowActivityModal}>
+        <DialogContent className="sm:max-w-md w-[95vw] max-w-[400px] mx-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Activity className="w-5 h-5 text-green-600" />
+              Aktivitas
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-3 mt-4">
+              <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl">
+                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                  <History className="w-5 h-5 text-green-500" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-800">Login Terakhir</p>
+                  <p className="text-xs text-gray-500">{new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl">
+                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                  <Award className="w-5 h-5 text-yellow-500" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-800">Total Poin</p>
+                  <p className="text-xs text-gray-500">{user?.points || 0} poin terkumpul</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl">
+                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                  <Gift className="w-5 h-5 text-pink-500" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-800">Voucher Terpakai</p>
+                  <p className="text-xs text-gray-500">Riwayat penggunaan voucher</p>
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Notification Modal */}
+      <Dialog open={showNotificationModal} onOpenChange={setShowNotificationModal}>
+        <DialogContent className="sm:max-w-md w-[95vw] max-w-[400px] mx-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Bell className="w-5 h-5 text-blue-600" />
+              Notifikasi
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-3 mt-4">
+              <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl">
+                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                  <Gift className="w-5 h-5 text-blue-500" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-800">Bonus Poin</p>
+                  <p className="text-xs text-gray-500">Anda mendapatkan 10 poin dari pembelian</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl">
+                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                  <Crown className="w-5 h-5 text-purple-500" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-800">Upgrade Membership</p>
+                  <p className="text-xs text-gray-500">Selamat! Level membership naik ke {membership.level}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl">
+                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                  <Ticket className="w-5 h-5 text-amber-500" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-800">Voucher Baru</p>
+                  <p className="text-xs text-gray-500">Voucher spesial telah tersedia</p>
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Settings Modal */}
+      <Dialog open={showSettingsModal} onOpenChange={setShowSettingsModal}>
+        <DialogContent className="sm:max-w-md w-[95vw] max-w-[400px] mx-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Settings className="w-5 h-5 text-gray-600" />
+              Pengaturan
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-3 mt-4">
+              <div className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                    <Volume2 className="w-5 h-5 text-gray-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">Notifikasi Suara</p>
+                    <p className="text-xs text-gray-500">Aktifkan suara notifikasi</p>
+                  </div>
+                </div>
+                <div className="w-12 h-6 bg-green-500 rounded-full cursor-pointer" />
+              </div>
+              <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                    <Globe className="w-5 h-5 text-blue-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">Bahasa</p>
+                    <p className="text-xs text-gray-500">Pilih bahasa aplikasi</p>
+                  </div>
+                </div>
+                <span className="text-sm font-semibold text-gray-600">Bahasa Indonesia</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                    <Lock className="w-5 h-5 text-purple-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">Privasi</p>
+                    <p className="text-xs text-gray-500">Pengaturan privasi akun</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              </div>
+            </div>
+          </ScrollArea>
         </DialogContent>
       </Dialog>
     </div>
