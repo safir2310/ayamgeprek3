@@ -35,6 +35,22 @@ model User {
   voucherUsages   VoucherUsage[]
   pointVouchers   PointVoucher[]
   chatConversations ChatConversation[]
+  menuAccesses     MenuAccess[]
+}
+
+// Menu Access Tracking
+model MenuAccess {
+  id            String    @id @default(cuid())
+  userId        String
+  menuId        String
+  menuName      String?
+  accessCount   Int       @default(1)
+  lastAccessedAt DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, menuId])
 }
 
 // Product Categories

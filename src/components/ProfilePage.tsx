@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { toast } from 'sonner'
 import Barcode from 'react-barcode'
 
 interface ProfilePageProps {
@@ -92,6 +93,38 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
 
   // Glassmorphism card style
   const glassCardStyle = "bg-white/70 backdrop-blur-xl border border-white/50 shadow-2xl shadow-black/5"
+
+  // Handle menu click - save data to database
+  const handleMenuClick = async (menuId: string) => {
+    if (!user) {
+      toast.error('Peringatan: Silakan login terlebih dahulu')
+      return
+    }
+
+    // Track menu access in database
+    try {
+      const response = await fetch('/api/user/menu-access', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          menuId,
+          menuName: menuItems.find(m => m.id === menuId)?.label || menuId
+        })
+      })
+
+      if (!response.ok) {
+        console.error('Failed to track menu access')
+      }
+    } catch (error) {
+      console.error('Error tracking menu access:', error)
+    }
+
+    // Show toast notification
+    toast.success(`Anda mengakses menu ${menuItems.find(m => m.id === menuId)?.label || menuId}`)
+  }
 
   const progress = calculateProgress()
   const pointsNeeded = getPointsNeeded()
@@ -279,7 +312,7 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
           </div>
         </motion.div>
 
-        {/* Menu Grid */}
+        {/* Menu List */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -293,21 +326,24 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.7 + index * 0.1 }}
-                whileHover={{ scale: 1.02, y: -3 }}
+                whileHover={{ scale: 1.02, x: 5 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <Card className={`${glassCardStyle} p-4 cursor-pointer hover:shadow-2xl transition-all duration-300 group`}>
+                <Card 
+                  className={`${glassCardStyle} p-4 cursor-pointer hover:shadow-2xl transition-all duration-300 group`}
+                  onClick={() => handleMenuClick(item.id)}
+                >
                   <div className="flex items-center gap-4">
                     <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow flex-shrink-0`}>
                       <item.icon className="w-6 h-6 text-white" />
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <h3 className="font-bold text-gray-800 group-hover:text-purple-600 transition-colors">
+                        <h3 className="font-bold text-gray-800 group-hover:text-purple-600 transition-colors truncate">
                           {item.label}
                         </h3>
                         {item.badge && (
-                          <Badge variant="secondary" className="text-[9px] font-semibold">
+                          <Badge variant="secondary" className="text-[9px] font-semibold ml-2 flex-shrink-0">
                             {item.badge}
                           </Badge>
                         )}
@@ -344,7 +380,7 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
 
       {/* Barcode Modal */}
       <Dialog open={showBarcodeModal} onOpenChange={setShowBarcodeModal}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md mx-4">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -359,20 +395,20 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
               <p className="text-sm text-gray-500 mt-1">Scan barcode ini di kasir</p>
             </div>
 
-            <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-2xl border-2 border-orange-200/50 p-6 mb-4">
+            <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-2xl border-2 border-orange-200/50 p-4 sm:p-6 mb-4">
               <Barcode
                 value={user?.phone || '0000000000'}
-                width={2.5}
-                height={60}
+                width={1.8}
+                height={50}
                 format="CODE128"
                 displayValue={false}
                 background="#fffbf0"
                 lineColor="#ea580c"
                 margin={0}
               />
-              <div className="text-center mt-4">
-                <p className="text-[10px] text-orange-400/70 font-semibold tracking-wider mb-1">PHONE NUMBER</p>
-                <p className="text-lg font-mono font-bold text-orange-600 tracking-wider">
+              <div className="text-center mt-3 sm:mt-4">
+                <p className="text-[9px] sm:text-[10px] text-orange-400/70 font-semibold tracking-wider mb-1">PHONE NUMBER</p>
+                <p className="text-base sm:text-lg font-mono font-bold text-orange-600 tracking-wider">
                   {user?.phone ? user.phone.replace(/(\d{4})(\d{4})(\d{4})/, '$1-$2-$3') : '0000-0000-0000'}
                 </p>
               </div>
@@ -380,11 +416,11 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
 
             <div className="space-y-2">
               <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-orange-100 to-yellow-100 rounded-xl">
-                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
                   <User className="w-5 h-5 text-orange-500" />
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-800">{user?.name || 'Guest'}</p>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-gray-800 truncate">{user?.name || 'Guest'}</p>
                   <p className="text-xs text-gray-500">{membership.level} Member</p>
                 </div>
               </div>
