@@ -1,390 +1,413 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { User, Camera, Phone, Mail, MapPin, CreditCard, BarChart3, QrCode, TrendingUp, History, ShoppingBag, Heart, Star, Bell, Gift, Settings, Moon, Sun, Globe, Shield, LogOut, ChevronRight, Edit, Crown, Zap, Calendar, Award, Copy, Eye, EyeOff } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { User, Crown, Gift, Activity, Bell, Settings, QrCode, X, Award, Sparkles, ChevronRight, CreditCard, Shield } from 'lucide-react'
+import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { toast } from 'sonner'
-import { MemberCard } from './MemberCard'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
+import Barcode from 'react-barcode'
+import { useStore } from '@/store/useStore'
 
 interface ProfilePageProps {
-  user?: any
-  points?: number
+  user: any
+  vouchers?: any[]
+  onLogout?: () => void
 }
 
-interface MenuItem {
-  id: string
-  icon: any
-  title: string
-  description?: string
-  color: string
-  badge?: string
-  onClick: () => void
-}
+export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePageProps) {
+  const [showBarcodeModal, setShowBarcodeModal] = useState(false)
+  const [selectedMenu, setSelectedMenu] = useState<string | null>(null)
 
-export function ProfilePage({ user, points }: ProfilePageProps) {
-  const [showBarcodePopup, setShowBarcodePopup] = useState(false)
-  const [showQRPopup, setShowQRPopup] = useState(false)
-  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
-  const [showPasswordFields, setShowPasswordFields] = useState(false)
-  const [isDarkMode, setIsDarkMode] = useState(false)
-  const [profileData, setProfileData] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    address: '',
-  })
-  const [newPassword, setNewPassword] = useState('')
-
-  // Get membership status based on points
-  const getMembershipStatus = () => {
-    if (points && points >= 10000) return { level: 'VIP Exclusive', color: 'bg-purple-600', textColor: 'text-white' }
-    if (points && points >= 5000) return { level: 'Platinum', color: 'bg-slate-600', textColor: 'text-white' }
-    if (points && points >= 1000) return { level: 'Gold', color: 'bg-yellow-500', textColor: 'text-white' }
-    return { level: 'Silver', color: 'bg-gray-500', textColor: 'text-white' }
+  // Get membership level based on points
+  const getMembershipLevel = () => {
+    const points = user?.points || 0
+    if (points >= 5000) return { level: 'VIP', color: 'from-purple-600 to-purple-800', textColor: 'text-purple-600' }
+    if (points >= 2500) return { level: 'Platinum', color: 'from-slate-500 to-slate-700', textColor: 'text-slate-600' }
+    if (points >= 1000) return { level: 'Gold', color: 'from-amber-500 to-amber-600', textColor: 'text-amber-600' }
+    if (points >= 500) return { level: 'Silver', color: 'from-gray-400 to-gray-500', textColor: 'text-gray-600' }
+    return { level: 'Bronze', color: 'from-orange-600 to-orange-700', textColor: 'text-orange-600' }
   }
 
-  const membership = getMembershipStatus()
+  const membership = getMembershipLevel()
 
-  useEffect(() => {
-    if (user) {
-      setProfileData({
-        name: user.name || '',
-        phone: user.phone || '',
-        email: user.email || '',
-        address: user.address || '',
-      })
-    }
-  }, [user])
-
-  const menuItems: MenuItem[] = [
-    {
-      id: 'account',
-      icon: User,
-      title: 'Akun Saya',
-      description: 'Kelola informasi akun',
-      color: 'bg-blue-500',
-      onClick: () => setIsEditProfileOpen(true),
-    },
-    {
-      id: 'membership',
-      icon: CreditCard,
-      title: 'Membership',
-      description: 'Kartu member digital',
-      color: 'bg-yellow-500',
-      onClick: () => {},
-    },
-    {
-      id: 'rewards',
-      icon: Gift,
-      title: 'Reward & Loyalty',
-      description: `${points || 0} poin reward`,
-      color: 'bg-purple-500',
-      badge: points && points > 0 ? `${points} Poin` : undefined,
-      onClick: () => {},
-    },
-    {
-      id: 'activity',
-      icon: History,
-      title: 'Aktivitas',
-      description: 'Riwayat & pesanan',
-      color: 'bg-green-500',
-      onClick: () => {},
-    },
-    {
-      id: 'notifications',
-      icon: Bell,
-      title: 'Notifikasi',
-      description: 'Promo & event',
-      color: 'bg-orange-500',
-      badge: '2',
-      onClick: () => {},
-    },
-    {
-      id: 'settings',
-      icon: Settings,
-      title: 'Pengaturan',
-      description: 'Preferensi akun',
-      color: 'bg-gray-600',
-      onClick: () => {},
-    },
+  // Menu items
+  const menuItems = [
+    { id: 'account', icon: User, label: 'Akun Saya', color: 'from-red-500 to-orange-500', badge: null },
+    { id: 'membership', icon: Crown, label: 'Membership', color: 'from-purple-500 to-purple-600', badge: membership.level },
+    { id: 'rewards', icon: Gift, label: 'Reward & Loyalty', color: 'from-amber-500 to-yellow-500', badge: `${vouchers.length} Voucher` },
+    { id: 'activity', icon: Activity, label: 'Aktivitas', color: 'from-green-500 to-emerald-500', badge: null },
+    { id: 'notification', icon: Bell, label: 'Notifikasi', color: 'from-blue-500 to-cyan-500', badge: null },
+    { id: 'settings', icon: Settings, label: 'Pengaturan', color: 'from-gray-500 to-gray-600', badge: null },
   ]
 
-  const subMenuItems = {
-    account: [
-      { icon: Edit, title: 'Edit Profile', description: 'Ubah nama & foto' },
-      { icon: Camera, title: 'Ubah Foto', description: 'Ganti foto profil' },
-      { icon: Phone, title: 'Nomor HP', description: profileData.phone || '-' },
-      { icon: Mail, title: 'Email', description: profileData.email || '-' },
-      { icon: MapPin, title: 'Alamat', description: profileData.address || '-' },
-    ],
-    membership: [
-      { icon: BarChart3, title: 'Kartu Member', description: 'Lihat kartu digital' },
-      { icon: QrCode, title: 'QR Code Member', description: 'Scan untuk poin' },
-      { icon: TrendingUp, title: 'Upgrade Membership', description: 'Ke VIP Exclusive' },
-      { icon: Calendar, title: 'Riwayat Poin', description: 'Histori poin' },
-    ],
-    rewards: [
-      { icon: Gift, title: 'Tukar Poin', description: 'Penukaran poin' },
-      { icon: Award, title: 'Voucher Hadiah', description: `${points ? Math.floor(points / 500) : 0} voucher` },
-      { icon: Star, title: 'Promo Spesial', description: 'Diskon eksklusif' },
-      { icon: Zap, title: 'Cashback', description: 'Cashback & rebate' },
-    ],
-    activity: [
-      { icon: History, title: 'Riwayat Transaksi', description: 'Semua transaksi' },
-      { icon: ShoppingBag, title: 'Pesanan Aktif', description: 'Pesanan berjalan' },
-      { icon: Heart, title: 'Favorite Menu', description: 'Menu favorit' },
-      { icon: Star, title: 'Review Pembelian', description: 'Ulasan produk' },
-    ],
-    notifications: [
-      { icon: Bell, title: 'Promo Terbaru', description: 'Promo terhangat' },
-      { icon: Gift, title: 'Event Member', description: 'Event eksklusif' },
-      { icon: Calendar, title: 'Reminder Reward', description: 'Poin kadaluarsa' },
-    ],
-    settings: [
-      { icon: isDarkMode ? Moon : Sun, title: 'Dark Mode', description: isDarkMode ? 'Aktif' : 'Nonaktif' },
-      { icon: Globe, title: 'Bahasa', description: 'Bahasa Indonesia' },
-      { icon: Shield, title: 'Keamanan Akun', description: 'Ubah password' },
-      { icon: LogOut, title: 'Logout', description: 'Keluar akun', color: 'text-red-600' },
-    ],
-  }
+  // Batik pattern SVG
+  const BatikPattern = () => (
+    <svg className="absolute inset-0 opacity-10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <defs>
+        <pattern id="batik" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M0 10 L10 0 L20 10 L10 20 Z" fill="currentColor" className="text-white"/>
+          <circle cx="10" cy="10" r="3" fill="currentColor" className="text-white" opacity="0.5"/>
+        </pattern>
+      </defs>
+      <rect width="100" height="100" fill="url(#batik)"/>
+    </svg>
+  )
 
-  const handleCopyMemberNumber = () => {
-    const memberNumber = `AYM${String(user?.id || '').padStart(6, '0')}`
-    navigator.clipboard.writeText(memberNumber)
-    toast.success('Nomor member berhasil disalin!')
-  }
+  // Batik ornament
+  const BatikOrnament = () => (
+    <svg className="absolute opacity-20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+      <defs>
+        <radialGradient id="ornamentGrad" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="currentColor" stopOpacity="0.3"/>
+          <stop offset="100%" stopColor="currentColor" stopOpacity="0"/>
+        </radialGradient>
+      </defs>
+      <circle cx="100" cy="100" r="80" fill="url(#ornamentGrad)"/>
+      <path d="M100 40 Q120 60 120 100 Q120 140 100 160 Q80 140 80 100 Q80 60 100 40" fill="none" stroke="currentColor" strokeWidth="2"/>
+      <path d="M100 50 Q115 65 115 100 Q115 135 100 150 Q85 135 85 100 Q85 65 100 50" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.7"/>
+      <circle cx="100" cy="100" r="10" fill="currentColor" opacity="0.3"/>
+    </svg>
+  )
+
+  // Glassmorphism card style
+  const glassCardStyle = "bg-white/70 backdrop-blur-xl border border-white/50 shadow-2xl shadow-black/5"
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
-      {/* Premium Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="relative overflow-hidden"
-      >
-        {/* Background Gradient Premium */}
-        <div className="absolute inset-0 bg-gradient-to-br from-red-600 via-orange-500 to-yellow-500 opacity-90"></div>
-
-        {/* Batik Pattern Overlay */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10 w-40 h-40 border-4 border-white/20 rounded-full"></div>
-          <div className="absolute bottom-20 right-20 w-32 h-32 border-4 border-white/15 rounded-full"></div>
-          <div className="absolute top-1/2 left-1/4 w-48 h-48 border-4 border-white/10 rounded-full"></div>
-        </div>
-
-        {/* Glassmorphism Effect */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
+      {/* Header with Batik pattern */}
+      <div className={`relative bg-gradient-to-br ${membership.color} pt-12 pb-24 px-6 overflow-hidden`}>
+        <BatikPattern />
+        <div className="relative z-10">
           {/* Profile Header */}
-          <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl">
-            <div className="flex flex-col md:flex-row items-center gap-6">
-              {/* Profile Photo */}
+          <div className="flex flex-col items-center mb-6">
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ duration: 0.8, type: 'spring' }}
+              className="relative mb-4"
+            >
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-xl border-4 border-white/80 shadow-2xl flex items-center justify-center">
+                {user?.name ? (
+                  <span className="text-4xl font-bold bg-gradient-to-br from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    {user.name.charAt(0).toUpperCase()}
+                  </span>
+                ) : (
+                  <User className="w-12 h-12 text-purple-400" />
+                )}
+              </div>
+              {/* Sparkle effects */}
               <motion.div
-                whileHover={{ scale: 1.05 }}
-                className="relative"
+                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center shadow-lg"
               >
-                <div className="w-28 h-28 bg-gradient-to-br from-white to-gray-100 rounded-full border-4 border-white shadow-2xl flex items-center justify-center">
-                  {user?.profilePhoto ? (
-                    <img
-                      src={user.profilePhoto}
-                      alt={user.name}
-                      className="w-full h-full object-cover rounded-full"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-red-400 to-orange-400 rounded-full flex items-center justify-center">
-                      <User className="w-14 h-14 text-white" />
-                    </div>
-                  )}
-                </div>
-                {/* Glow Effect */}
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-red-500/20 to-orange-500/20 blur-xl"></div>
+                <Sparkles className="w-5 h-5 text-white" />
               </motion.div>
+            </motion.div>
 
-              {/* User Info */}
-              <div className="flex-1 space-y-3">
-                {/* Name & Membership Status */}
-                <div className="flex items-center gap-4">
-                  <h1 className="text-3xl font-bold text-white">
-                    {user?.name || 'Member'}
-                  </h1>
-                  <Badge className={`px-4 py-1.5 ${membership.color} ${membership.textColor} text-sm font-semibold border-2 border-white/30 shadow-lg`}>
-                    <Crown className="w-4 h-4 mr-1" />
-                    {membership.level}
-                  </Badge>
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-2xl font-bold text-white mb-1 drop-shadow-lg"
+            >
+              {user?.name || 'Guest'}
+            </motion.h1>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="flex items-center gap-2"
+            >
+              <Badge className={`bg-gradient-to-r ${membership.color} text-white border-2 border-white/50 px-3 py-1 text-sm font-semibold shadow-lg`}>
+                <Crown className="w-4 h-4 mr-1" />
+                {membership.level} Member
+              </Badge>
+            </motion.div>
+          </motion.div>
+
+          {/* Stats */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            className="grid grid-cols-3 gap-4 max-w-sm mx-auto"
+          >
+            {[
+              { label: 'Poin', value: user?.points || 0, icon: Award, bg: 'from-yellow-400 to-orange-400' },
+              { label: 'Voucher', value: vouchers.length || 0, icon: Gift, bg: 'from-pink-400 to-purple-400' },
+              { label: 'Member ID', value: user?.id?.slice(-6) || '------', icon: User, bg: 'from-blue-400 to-cyan-400' },
+            ].map((stat, i) => (
+              <motion.div
+                key={i}
+                whileHover={{ scale: 1.05, y: -5 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-white/90 backdrop-blur-md rounded-2xl p-3 text-center shadow-lg border border-white/60"
+              >
+                <div className={`w-10 h-10 mx-auto mb-2 rounded-xl bg-gradient-to-br ${stat.bg} flex items-center justify-center shadow-md`}>
+                  <stat.icon className="w-5 h-5 text-white" />
                 </div>
+                <p className="text-lg font-bold text-gray-800">{stat.value}</p>
+                <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">{stat.label}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </div>
 
-                {/* Member Number */}
-                <div className="flex items-center gap-3">
-                  <div className="bg-white/20 backdrop-blur-md px-4 py-2.5 rounded-xl border border-white/30">
-                    <span className="font-mono text-xl tracking-widest text-white font-bold">
-                      AYM{String(user?.id || '').padStart(6, '0')}
-                    </span>
+      {/* Content */}
+      <div className="px-4 -mt-16 relative z-20 pb-24">
+        {/* Digital Member Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 30, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ delay: 0.5, duration: 0.8, type: 'spring' }}
+          className="mb-6"
+        >
+          <div className="w-full max-w-sm mx-auto">
+            <Card className={`overflow-hidden ${glassCardStyle}`}>
+              {/* Card Header */}
+              <div className="relative bg-gradient-to-br from-slate-800 to-slate-900 p-6">
+                <BatikPattern />
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-xl flex items-center justify-center shadow-lg border-2 border-yellow-300">
+                        <span className="text-2xl">🎴</span>
+                      </div>
+                      <div>
+                        <h3 className="text-white font-bold text-lg">Member Card</h3>
+                        <p className={`text-xs ${membership.textColor} font-semibold`}>
+                          {membership.level} Member
+                        </p>
+                      </div>
+                    </div>
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+                    >
+                      <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
+                        <Award className="w-5 h-5 text-yellow-400" />
+                      </div>
+                    </motion.div>
                   </div>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleCopyMemberNumber}
-                    className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/30 hover:bg-white/30 transition-all"
-                  >
-                    <Copy className="w-5 h-5 text-white" />
-                  </motion.button>
-                </div>
 
-                {/* Total Points */}
-                <div className="bg-gradient-to-r from-purple-500/30 to-pink-500/30 backdrop-blur-md px-4 py-2.5 rounded-xl border border-white/30 inline-block">
-                  <div className="flex items-center gap-2">
-                    <Award className="w-5 h-5 text-yellow-300" />
-                    <span className="text-white font-semibold">
-                      Total Reward Points: <span className="text-2xl font-bold ml-1">{points || 0}</span>
-                    </span>
+                  {/* Card Number */}
+                  <div className="mb-4">
+                    <p className="text-[10px] text-gray-400 mb-1 font-medium">MEMBER NUMBER</p>
+                    <p className="text-white font-mono text-lg tracking-widest">
+                      {user?.phone ? user.phone.replace(/(\d{4})(\d{4})(\d{4})/, '$1 $2 $3') : '**** **** ****'}
+                    </p>
+                  </div>
+
+                  {/* Card Footer */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[9px] text-gray-400 mb-1">MEMBER SINCE</p>
+                      <p className="text-white text-xs font-semibold">
+                        {user?.createdAt ? new Date(user.createdAt).getFullYear() : '2025'}
+                      </p>
+                    </div>
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => setShowBarcodeModal(true)}
+                      className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20 cursor-pointer hover:bg-white/20 transition-all"
+                    >
+                      <QrCode className="w-4 h-4 text-white" />
+                      <span className="text-white text-xs font-semibold">Barcode</span>
+                    </motion.div>
                   </div>
                 </div>
               </div>
-            </div>
+
+              {/* Card Progress */}
+              <div className="p-4 bg-white/80 backdrop-blur-md">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Crown className="w-4 h-4 text-orange-500" />
+                    <span className="text-xs font-semibold text-gray-700">
+                      Progress ke {membership.level === 'VIP' ? 'MAX' : 'level selanjutnya'}
+                    </span>
+                  </div>
+                  <span className={`text-xs font-bold ${membership.textColor}`}>
+                    {(() => {
+                      const currentPoints = user?.points || 0
+                      const nextLevelPoints = [500, 1000, 2500, 5000].find(p => p > currentPoints)
+                      return nextLevelPoints ? `${nextLevelPoints - currentPoints} poin lagi` : 'Level Max'
+                    })()}
+                  </span>
+                </div>
+                <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{
+                      width: (() => {
+                        const currentPoints = user?.points || 0
+                        let progress = 0
+                        if (currentPoints >= 5000) progress = 100
+                        else if (currentPoints >= 2500) progress = ((currentPoints - 2500) / 2500) * 100
+                        else if (currentPoints >= 1000) progress = ((currentPoints - 1000) / 1500) * 100
+                        else if (currentPoints >= 500) progress = ((currentPoints - 500) / 500) * 100
+                        else progress = (currentPoints / 500) * 100
+                        return Math.min(Math.max(progress, 5), 100)
+                      })() + '%'
+                    }}
+                    transition={{ duration: 1.5, ease: 'easeOut' }}
+                    className={`absolute left-0 top-0 h-full bg-gradient-to-r ${membership.color} rounded-full`}
+                  />
+                </div>
+                <div className="flex justify-between mt-1">
+                  <span className="text-[9px] text-gray-400 font-medium">
+                    {(() => {
+                      const currentPoints = user?.points || 0
+                      const levels = [0, 500, 1000, 2500, 5000]
+                      let rangeStart = 0
+                      for (let i = levels.length - 1; i >= 0; i--) {
+                        if (currentPoints >= levels[i]) {
+                          rangeStart = levels[i]
+                          break
+                        }
+                      }
+                      return rangeStart
+                    })()}
+                  </span>
+                  <span className="text-[9px] text-gray-400 font-medium">
+                    {(() => {
+                      const currentPoints = user?.points || 0
+                      const nextLevelPoints = [500, 1000, 2500, 5000].find(p => p > currentPoints)
+                      return nextLevelPoints || 5000
+                    })()}
+                  </span>
+                </div>
+              </div>
+            </Card>
           </div>
+        </motion.div>
 
-          {/* Modern Menu Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 mt-6">
-            <AnimatePresence>
-              {menuItems.map((item, index) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.08 }}
-                  whileHover={{ y: -4, scale: 1.02 }}
-                  onClick={item.onClick}
-                  className="relative group"
-                >
-                  <Card className="h-full bg-white rounded-2xl border-2 border-transparent hover:border-gray-200 hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden">
-                    <CardContent className="p-6">
-                      {/* Shimmer Effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none"></div>
-
-                      {/* Icon */}
-                      <div className={`w-14 h-14 ${item.color} rounded-2xl flex items-center justify-center shadow-lg mb-4 group-hover:scale-110 transition-transform`}>
-                        <item.icon className="w-7 h-7 text-white" />
+        {/* Menu Grid */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="max-w-sm mx-auto"
+        >
+          <div className="grid grid-cols-2 gap-4">
+            {menuItems.map((item, index) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.7 + index * 0.1 }}
+                whileHover={{ scale: 1.02, y: -3 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Card className={`${glassCardStyle} p-4 cursor-pointer hover:shadow-2xl transition-all duration-300 group`}>
+                  <div className="flex flex-col h-full">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow`}>
+                        <item.icon className="w-6 h-6 text-white" />
                       </div>
-
-                      {/* Title & Description */}
-                      <div className="space-y-1">
-                        <h3 className="text-lg font-bold text-gray-800 group-hover:text-red-600 transition-colors">
-                          {item.title}
-                        </h3>
-                        {item.description && (
-                          <p className="text-sm text-gray-600">
-                            {item.description}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Badge */}
                       {item.badge && (
-                        <Badge className="absolute top-4 right-4 bg-red-500 text-white text-xs font-semibold">
+                        <Badge variant="secondary" className="text-[9px] font-semibold">
                           {item.badge}
                         </Badge>
                       )}
-
-                      {/* Arrow */}
-                      <ChevronRight className="absolute top-1/2 right-4 -translate-y-1/2 w-5 h-5 text-gray-400 group-hover:text-red-600 transition-colors" />
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </AnimatePresence>
+                    </div>
+                    <h3 className="font-bold text-gray-800 mb-1 group-hover:text-purple-600 transition-colors">
+                      {item.label}
+                    </h3>
+                    <div className="mt-auto flex items-center text-gray-400 group-hover:text-purple-500 transition-colors">
+                      <span className="text-xs font-medium">Akses</span>
+                      <ChevronRight className="w-4 h-4 ml-1" />
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
 
-      {/* Edit Profile Dialog */}
-      <Dialog open={isEditProfileOpen} onOpenChange={setIsEditProfileOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Profile</DialogTitle>
-          </DialogHeader>
+        {/* Logout Button */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+          className="max-w-sm mx-auto mt-6"
+        >
+          <Button
+            variant="outline"
+            onClick={onLogout}
+            className="w-full h-12 border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition-all font-semibold"
+          >
+            <LogOut className="w-5 h-5 mr-2" />
+            Keluar
+          </Button>
+        </motion.div>
+      </div>
 
-          <div className="space-y-4 py-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Nama Lengkap</label>
-              <Input
-                value={profileData.name}
-                onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                placeholder="Masukkan nama lengkap"
-              />
+      {/* Barcode Modal */}
+      <Dialog open={showBarcodeModal} onOpenChange={setShowBarcodeModal}>
+        <DialogContent className="sm:max-w-md">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="relative"
+          >
+            <div className="text-center mb-4">
+              <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br ${membership.color} mb-4`}>
+                <QrCode className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-800">Barcode Member</h3>
+              <p className="text-sm text-gray-500 mt-1">Scan barcode ini di kasir</p>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">Email</label>
-              <Input
-                type="email"
-                value={profileData.email}
-                onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                placeholder="email@contoh.com"
+            <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-2xl border-2 border-orange-200/50 p-6 mb-4">
+              <Barcode
+                value={user?.phone || '0000000000'}
+                width={2.5}
+                height={60}
+                format="CODE128"
+                displayValue={false}
+                background="#fffbf0"
+                lineColor="#ea580c"
+                margin={0}
               />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Nomor HP</label>
-              <Input
-                type="tel"
-                value={profileData.phone}
-                onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-                placeholder="08xxxxxxxxxx"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Alamat Lengkap</label>
-              <Textarea
-                value={profileData.address}
-                onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
-                placeholder="Masukkan alamat lengkap"
-                rows={3}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Password Baru (Opsional)</label>
-              <div className="relative">
-                <Input
-                  type={showPasswordFields ? 'text' : 'password'}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Biarkan kosong jika tidak ingin mengubah"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPasswordFields(!showPasswordFields)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  {showPasswordFields ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
+              <div className="text-center mt-4">
+                <p className="text-[10px] text-orange-400/70 font-semibold tracking-wider mb-1">PHONE NUMBER</p>
+                <p className="text-lg font-mono font-bold text-orange-600 tracking-wider">
+                  {user?.phone ? user.phone.replace(/(\d{4})(\d{4})(\d{4})/, '$1-$2-$3') : '0000-0000-0000'}
+                </p>
               </div>
             </div>
-          </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditProfileOpen(false)}>
-              Batal
-            </Button>
-            <Button
-              onClick={() => {
-                toast.success('Profil berhasil diperbarui!')
-                setIsEditProfileOpen(false)
-              }}
-              className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
-            >
-              Simpan Perubahan
-            </Button>
-          </DialogFooter>
+            <div className="space-y-2">
+              <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-orange-100 to-yellow-100 rounded-xl">
+                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                  <User className="w-5 h-5 text-orange-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-800">{user?.name || 'Guest'}</p>
+                  <p className="text-xs text-gray-500">{membership.level} Member</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </DialogContent>
       </Dialog>
     </div>
+  )
+}
+
+function LogOut(props: any) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" x2="9" y1="12" y2="12" />
+    </svg>
   )
 }
