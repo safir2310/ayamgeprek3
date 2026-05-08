@@ -2,18 +2,17 @@ import { useStore } from '@/store/useStore'
 
 /**
  * Auto-login as admin without PIN
- * This function logs in the user as admin using the admin credentials from database
+ * This function logs in user as admin using hardcoded admin PIN
  */
 export async function autoLoginAsAdmin(): Promise<{ success: boolean; error?: string }> {
   try {
-    const res = await fetch('/api/auth/admin-login', {
+    const res = await fetch('/api/auth/admin-pin', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email: 'admin@ayamgeprek.com',
-        password: 'admin123',
+        pin: '1234', // Default admin PIN
       }),
     })
 

@@ -242,6 +242,12 @@ export function PointRedemptionManagement() {
       return
     }
 
+    // Check if logged in as admin
+    if (!token || !user || user.role !== 'admin') {
+      toast.error('Anda belum login sebagai admin. Mohon tunggu sebentar...')
+      return
+    }
+
     setIsSaving(true)
     try {
       const method = editingRedemption ? 'PUT' : 'POST'
@@ -252,6 +258,8 @@ export function PointRedemptionManagement() {
         ...(editingRedemption ? { id: editingRedemption.id } : {})
       }
 
+      console.log('Saving redemption:', { method, body })
+
       const res = await fetch('/api/admin/point-redemption', {
         method,
         headers: {
@@ -261,14 +269,47 @@ export function PointRedemptionManagement() {
         body: JSON.stringify(body),
       })
 
+      console.log('Response status:', res.status)
+
       if (res.ok) {
+        const data = await res.json()
+        console.log('Success response:', data)
         toast.success(editingRedemption ? '✅ Opsi penukaran berhasil diupdate' : '✅ Opsi penukaran berhasil dibuat')
         setShowDialog(false)
         loadRedemptions()
       } else if (res.status === 401) {
-        // Silently handle 401, don't show notification
+        // Try to auto-login and retry
+        const loginResult = await autoLoginAsAdmin()
+        if (loginResult.success) {
+          toast.success('Login berhasil. Menyimpan ulang data...')
+          // Retry the save operation after successful login
+          const { token: newToken } = useStore.getState()
+          const retryRes = await fetch('/api/admin/point-redemption', {
+            method,
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${newToken}`,
+            },
+            body: JSON.stringify(body),
+          })
+
+          if (retryRes.ok) {
+            const retryData = await retryRes.json()
+            console.log('Retry success response:', retryData)
+            toast.success(editingRedemption ? '✅ Opsi penukaran berhasil diupdate' : '✅ Opsi penukaran berhasil dibuat')
+            setShowDialog(false)
+            loadRedemptions()
+          } else {
+            const errorData = await retryRes.json()
+            console.error('Retry error:', errorData)
+            toast.error(errorData.error || 'Gagal menyimpan setelah login')
+          }
+        } else {
+          toast.error('Gagal login sebagai admin')
+        }
       } else {
         const errorData = await res.json()
+        console.error('Error response:', errorData)
         toast.error(errorData.error || 'Gagal menyimpan opsi penukaran')
       }
     } catch (error) {
