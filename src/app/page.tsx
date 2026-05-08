@@ -1501,15 +1501,14 @@ export default function HomePage() {
                   )}
                 </div>
                 <div>
-                  <h1 className="text-sm sm:text-base lg:text-lg font-black bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 bg-clip-text text-transparent tracking-tight leading-none whitespace-nowrap">
-                    AYAM GEPREK
-                    <br className="sm:hidden" />
-                    <span className="hidden sm:inline"> </span>
-                    SAMBAL IJO
-                  </h1>
+                  <div className="inline-block bg-gradient-to-r from-orange-500 to-orange-600 px-3 py-1 rounded-lg shadow-sm shadow-orange-500/20">
+                    <h1 className="text-sm sm:text-base lg:text-lg font-black text-white tracking-tight leading-none whitespace-nowrap">
+                      AYAM GEPREK SAMBAL IJO
+                    </h1>
+                  </div>
                   <button
                     onClick={() => setIsAddressModalOpen(true)}
-                    className="flex items-center gap-1.5 text-gray-600 text-[10px] sm:text-xs hover:text-red-600 transition-colors cursor-pointer truncate group mt-0.5"
+                    className="flex items-center gap-1.5 text-gray-600 text-[10px] sm:text-xs hover:text-red-600 transition-colors cursor-pointer truncate group mt-1"
                   >
                     <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0 text-gray-400 group-hover:text-red-500 transition-colors" />
                     <span className="truncate max-w-[130px] sm:max-w-[170px] lg:max-w-[220px] font-medium">
