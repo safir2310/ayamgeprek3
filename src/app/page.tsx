@@ -2950,73 +2950,73 @@ export default function HomePage() {
 
       {/* Voucher Redeem Modal */}
       <Dialog open={isRedeemModalOpen} onOpenChange={setIsRedeemModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-center">🎉 Penukaran Berhasil!</DialogTitle>
+        <DialogContent className="sm:max-w-sm p-4">
+          <DialogHeader className="pb-3">
+            <DialogTitle className="text-lg font-bold text-center">🎉 Penukaran Berhasil!</DialogTitle>
           </DialogHeader>
-          <div className="text-center space-y-4">
+          <div className="text-center space-y-3">
             {/* Product Info */}
             {redeemedRedemption && (
-              <div className="bg-gradient-to-br from-red-50 to-orange-50 p-6 rounded-lg">
-                <div className="flex items-center justify-center gap-4 mb-4">
-                  <div className="w-20 h-20 bg-gradient-to-br from-red-100 to-orange-100 rounded-lg flex items-center justify-center text-4xl">
+              <div className="bg-gradient-to-br from-red-50 to-orange-50 p-3 rounded-lg">
+                <div className="flex items-center justify-center gap-3 mb-2">
+                  <div className="w-12 h-12 bg-gradient-to-br from-red-100 to-orange-100 rounded-lg flex items-center justify-center text-2xl">
                     {redeemedRedemption.productImage || '🎁'}
                   </div>
                   <div className="text-left">
-                    <p className="text-xs text-gray-500 mb-1">Produk yang didapat:</p>
-                    <p className="font-semibold text-gray-800 text-lg">{redeemedRedemption.productName}</p>
+                    <p className="text-[10px] text-gray-500 mb-0.5">Produk yang didapat:</p>
+                    <p className="font-semibold text-gray-800 text-sm">{redeemedRedemption.productName}</p>
                   </div>
                 </div>
-                <div className="flex justify-center gap-4 text-sm text-gray-600">
+                <div className="flex justify-center gap-3 text-xs text-gray-600">
                   <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 text-amber-500" />
+                    <Star className="h-3 w-3 text-amber-500" />
                     <span>{redeemedRedemption.pointsUsed} Poin digunakan</span>
                   </div>
                 </div>
               </div>
             )}
             {/* Voucher Code */}
-            <div className="bg-white border-2 border-dashed border-red-300 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-2">Kode Voucher Anda:</p>
-              <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-lg p-4">
-                <p className="text-2xl font-bold text-red-600 tracking-wider break-all">
+            <div className="bg-white border-2 border-dashed border-red-300 rounded-lg p-2">
+              <p className="text-xs text-gray-600 mb-1">Kode Voucher Anda:</p>
+              <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-lg p-2">
+                <p className="text-lg font-bold text-red-600 tracking-wider break-all">
                   {redeemedVoucherCode}
                 </p>
               </div>
             </div>
             {/* Info */}
-            <div className="text-sm text-gray-600 space-y-2 bg-gray-50 p-4 rounded-lg">
-              <div className="flex items-start gap-2">
-                <CheckCircle className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+            <div className="text-xs text-gray-600 space-y-1.5 bg-gray-50 p-3 rounded-lg">
+              <div className="flex items-start gap-1.5">
+                <CheckCircle className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0 mt-0.5" />
                 <div className="text-left">
-                  <p className="font-semibold text-gray-800">Voucher sekali pakai</p>
-                  <p className="text-xs text-gray-500">Voucher hanya dapat digunakan satu kali saja</p>
+                  <p className="font-semibold text-gray-800 text-[11px]">Voucher sekali pakai</p>
+                  <p className="text-[10px] text-gray-500">Voucher hanya dapat digunakan satu kali saja</p>
                 </div>
               </div>
-              <div className="flex items-start gap-2">
-                <ShoppingCart className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+              <div className="flex items-start gap-1.5">
+                <ShoppingCart className="h-3.5 w-3.5 text-blue-500 flex-shrink-0 mt-0.5" />
                 <div className="text-left">
-                  <p className="font-semibold text-gray-800">Gunakan saat checkout</p>
-                  <p className="text-xs text-gray-500">Masukkan kode voucher di halaman keranjang saat checkout</p>
+                  <p className="font-semibold text-gray-800 text-[11px]">Gunakan saat checkout</p>
+                  <p className="text-[10px] text-gray-500">Masukkan kode voucher di halaman keranjang saat checkout</p>
                 </div>
               </div>
-              <div className="flex items-start gap-2">
-                <Gift className="h-5 w-5 text-pink-500 flex-shrink-0 mt-0.5" />
+              <div className="flex items-start gap-1.5">
+                <Gift className="h-3.5 w-3.5 text-pink-500 flex-shrink-0 mt-0.5" />
                 <div className="text-left">
-                  <p className="font-semibold text-gray-800">Produk gratis otomatis</p>
-                  <p className="text-xs text-gray-500">Produk akan ditambahkan otomatis ke pesanan Anda</p>
+                  <p className="font-semibold text-gray-800 text-[11px]">Produk gratis otomatis</p>
+                  <p className="text-[10px] text-gray-500">Produk akan ditambahkan otomatis ke pesanan Anda</p>
                 </div>
               </div>
             </div>
             <Button
-              className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600"
+              className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-sm py-2"
               onClick={() => {
                 setIsRedeemModalOpen(false)
                 navigator.clipboard?.writeText(redeemedVoucherCode)
                 toast.success('Kode voucher disalin!')
               }}
             >
-              <CheckCircle className="h-4 w-4 mr-2" />
+              <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
               Salin Kode Voucher
             </Button>
           </div>
