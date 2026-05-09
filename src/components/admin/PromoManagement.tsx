@@ -266,10 +266,17 @@ export function PromoManagement() {
 
     try {
       const product = products.find(p => p.name === formData.productName)
+
+      // Validate product exists
+      if (!product) {
+        toast.error('Produk tidak ditemukan. Mohon pilih produk yang valid.')
+        return
+      }
+
       const discountPercent = calculateDiscountPercent(originalPrice, promoPrice)
 
       const promoData = {
-        productId: product?.id || '',
+        productId: product.id,
         originalPrice,
         promoPrice,
         startDate: new Date(formData.startDate),
@@ -480,8 +487,8 @@ export function PromoManagement() {
                   <div className="w-20 h-20 bg-gradient-to-br from-red-50 to-orange-50 rounded-lg overflow-hidden flex items-center justify-center text-4xl">
                     {promo.productImage}
                   </div>
+                  <CardTitle className="text-lg line-clamp-2">{promo.productName}</CardTitle>
                 </CardHeader>
-                <CardTitle className="text-lg line-clamp-2">{promo.productName}</CardTitle>
                 <CardContent className="space-y-3">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
@@ -505,8 +512,7 @@ export function PromoManagement() {
                     <Calendar className="h-3 w-3 inline mr-1" />
                     s/d {new Date(promo.endDate).toLocaleDateString('id-ID')}
                   </div>
-                </div>
-                <div className="flex gap-2 pt-3 border-t">
+                  <div className="flex gap-2 pt-3 border-t">
                   <Button
                     variant="outline"
                     size="sm"
