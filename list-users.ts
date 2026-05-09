@@ -22,37 +22,43 @@ const prisma = new PrismaClient({
   }
 })
 
-async function testConnection() {
+async function listUsers() {
   try {
-    console.log('🔍 Testing database connection...')
+    console.log('👥 Listing all users...')
+    console.log('')
 
-    // Test database connection
-    const userCount = await prisma.user.count()
-    const adminUser = await prisma.user.findFirst({
-      where: { role: 'admin' },
+    const users = await prisma.user.findMany({
       select: {
         id: true,
         email: true,
         name: true,
         role: true,
+        memberLevel: true,
+        points: true,
       }
     })
 
-    console.log('✅ Database connection successful!')
-    console.log('👥 Total users:', userCount)
-    console.log('🔑 Admin user:', adminUser?.email || 'Not found')
-    console.log('👤 Admin name:', adminUser?.name || 'N/A')
+    console.log(`Total users: ${users.length}`)
+    console.log('')
+
+    users.forEach((user, index) => {
+      console.log(`${index + 1}. ${user.email}`)
+      console.log(`   Name: ${user.name || 'N/A'}`)
+      console.log(`   Role: ${user.role}`)
+      console.log(`   Member Level: ${user.memberLevel}`)
+      console.log(`   Points: ${user.points}`)
+      console.log('')
+    })
 
     await prisma.$disconnect()
     process.exit(0)
   } catch (error: any) {
-    console.error('❌ Database connection failed!')
+    console.error('❌ Error listing users!')
     console.error('Error:', error.message)
-    console.error('Stack:', error.stack)
 
     await prisma.$disconnect()
     process.exit(1)
   }
 }
 
-testConnection()
+listUsers()
