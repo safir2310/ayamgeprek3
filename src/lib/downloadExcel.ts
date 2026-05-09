@@ -17,7 +17,19 @@ export async function downloadExcel(
   const { filename, onError } = options
 
   try {
-    const response = await fetch(url)
+    // Get token from localStorage (client-side only)
+    const headers: HeadersInit = {}
+
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('admin_token') || localStorage.getItem('token')
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+    }
+
+    const response = await fetch(url, {
+      headers,
+    })
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
@@ -76,4 +88,11 @@ export async function downloadUsersExcel(): Promise<void> {
  */
 export async function downloadVouchersExcel(): Promise<void> {
   return downloadExcel('/api/export/vouchers')
+}
+
+/**
+ * Download sales reports Excel
+ */
+export async function downloadSalesReportsExcel(period: string = 'week'): Promise<void> {
+  return downloadExcel(`/api/export/sales-reports?period=${period}`)
 }

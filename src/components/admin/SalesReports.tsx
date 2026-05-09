@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from '@/hooks/use-toast'
+import { downloadSalesReportsExcel } from '@/lib/downloadExcel'
 
 interface DailySale {
   date: string
@@ -32,6 +33,7 @@ export function SalesReports() {
   const [topProducts, setTopProducts] = useState<ProductSale[]>([])
   const [categorySales, setCategorySales] = useState<CategorySale[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
 
   const loadData = async () => {
     setIsLoading(true)
@@ -66,6 +68,24 @@ export function SalesReports() {
     }
   }
 
+  const handleExportToExcel = async () => {
+    setIsExporting(true)
+    try {
+      await downloadSalesReportsExcel(selectedPeriod)
+      toast({
+        title: '✅ Laporan penjualan berhasil diekspor ke Excel!',
+      })
+    } catch (error) {
+      console.error('Error exporting sales reports:', error)
+      toast({
+        title: 'Gagal mengekspor laporan penjualan',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   useEffect(() => {
     loadData()
   }, [selectedPeriod])
@@ -92,9 +112,18 @@ export function SalesReports() {
           <h2 className="text-2xl font-bold text-gray-800">Laporan Penjualan</h2>
           <p className="text-gray-600">Analisis dan ringkasan performa penjualan</p>
         </div>
-        <Button variant="outline" size="sm">
-          <Download className="h-4 w-4 mr-2" />
-          Export
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExportToExcel}
+          disabled={isExporting || dailySales.length === 0}
+        >
+          {isExporting ? (
+            <Download className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <Download className="h-4 w-4 mr-2" />
+          )}
+          {isExporting ? 'Mengekspor...' : 'Export'}
         </Button>
       </div>
 
