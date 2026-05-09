@@ -7,7 +7,7 @@ async function seedPointRedemptions() {
 
     // Get products
     const products = await prisma.product.findMany({
-      select: { id: true, name: true },
+      select: { id: true, name: true, image: true, price: true },
     })
 
     console.log(`Found ${products.length} products`)
@@ -17,6 +17,12 @@ async function seedPointRedemptions() {
       return
     }
 
+    // Helper function to get product by name or fallback
+    const getProduct = (nameKeyword, fallbackIndex) => {
+      const product = products.find((p) => p.name.includes(nameKeyword))
+      return product || products[Math.min(fallbackIndex, products.length - 1)]
+    }
+
     // Define point redemption options
     const redemptions = [
       {
@@ -24,7 +30,7 @@ async function seedPointRedemptions() {
         name: 'Es Teh Manis Gratis',
         description: 'Tukar 100 poin untuk Es Teh Manis gratis',
         pointsRequired: 100,
-        productId: products.find((p) => p.name.includes('Es Teh Manis'))?.id || products[0].id,
+        productId: getProduct('Es Teh', 0).id,
         productImage: '🧊',
         order: 1,
       },
@@ -33,7 +39,7 @@ async function seedPointRedemptions() {
         name: 'Keripik Singkong Gratis',
         description: 'Tukar 200 poin untuk Keripik Singkong gratis',
         pointsRequired: 200,
-        productId: products.find((p) => p.name.includes('Keripik Singkong'))?.id || products[1].id,
+        productId: getProduct('Keripik', Math.min(1, products.length - 1)).id,
         productImage: '🍠',
         order: 2,
       },
@@ -42,7 +48,7 @@ async function seedPointRedemptions() {
         name: 'Sambal Ijo Botol Gratis',
         description: 'Tukar 500 poin untuk Sambal Ijo Botol gratis',
         pointsRequired: 500,
-        productId: products.find((p) => p.name.includes('Sambal Ijo'))?.id || products[2].id,
+        productId: getProduct('Sambal', Math.min(1, products.length - 1)).id,
         productImage: '🌶️',
         order: 3,
       },
@@ -51,7 +57,7 @@ async function seedPointRedemptions() {
         name: 'Ayam Geprek Original Gratis',
         description: 'Tukar 1000 poin untuk Ayam Geprek Original gratis',
         pointsRequired: 1000,
-        productId: products.find((p) => p.name.includes('Ayam Geprek Original'))?.id || products[3].id,
+        productId: getProduct('Ayam', Math.min(0, products.length - 1)).id,
         productImage: '🍗',
         order: 4,
       },
