@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useStore } from '@/store/useStore'
+import { useCart } from '@/store/useCart'
 import Barcode from 'react-barcode'
 import {
   Search,
@@ -172,15 +173,20 @@ export default function HomePage() {
     setUser,
     setToken,
     logout,
+    currentTab,
+    setCurrentTab,
+    _hasHydrated,
+  } = useStore()
+
+  const {
     cart,
     addToCart,
     updateCartQuantity,
     removeFromCart,
     clearCart,
-    currentTab,
-    setCurrentTab,
-    _hasHydrated,
-  } = useStore()
+    loadCartFromDatabase,
+    isLoading: isCartLoading,
+  } = useCart()
 
   // Member Card Helper Functions (after user is defined)
   const getMembershipLevel = (user: any) => {
@@ -309,6 +315,13 @@ export default function HomePage() {
     }
   }, [])
 
+  // Load cart from database when user logs in
+  useEffect(() => {
+    if (user && token) {
+      loadCartFromDatabase(token)
+    }
+  }, [user, token, loadCartFromDatabase])
+
   // Calculate notifications
   const cartNotification = cart.length
   const pendingOrders = orders.filter((order: any) =>
@@ -392,11 +405,12 @@ export default function HomePage() {
   const confirmLogout = async () => {
     try {
       await fetch('/api/auth/me', { method: 'DELETE' })
+      await clearCart()
       logout()
-      toast.success('Logout berhasil')
       setOrders([])
       setIsLogoutConfirmOpen(false)
     } catch (error) {
+      await clearCart()
       logout()
       setOrders([])
       setIsLogoutConfirmOpen(false)
@@ -1103,7 +1117,7 @@ export default function HomePage() {
       const data = await response.json()
 
       if (response.ok) {
-        clearCart()
+        await clearCart(token)
         setIsCheckoutOpen(false)
         setPointVoucher(null)
         const orderData = data.order
@@ -1777,8 +1791,8 @@ export default function HomePage() {
                         </div>
                         <Button
                           className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600"
-                          onClick={() => {
-                            addToCart({
+                          onClick={async () => {
+                            await addToCart({
                               productId: product.id,
                               name: product.name,
                               price: product.price,
@@ -1786,7 +1800,7 @@ export default function HomePage() {
                               quantity: 1,
                               image: product.image,
                               category: product.category,
-                            })
+                            }, token)
                             toast.success(`${product.name} ditambahkan ke keranjang`)
                           }}
                         >
@@ -1883,8 +1897,8 @@ export default function HomePage() {
                       </div>
                       <Button
                         className="w-full bg-gradient-to-r from-red-500 to-orange-500 text-xs sm:text-sm h-9 sm:h-10"
-                        onClick={() => {
-                          addToCart({
+                        onClick={async () => {
+                          await addToCart({
                             productId: product.id,
                             name: product.name,
                             price: product.price,
@@ -1892,7 +1906,7 @@ export default function HomePage() {
                             quantity: 1,
                             image: product.image,
                             category: product.category,
-                          })
+                          }, token)
                           toast.success(`${product.name} ditambahkan ke keranjang`)
                         }}
                       >
@@ -2495,7 +2509,9 @@ export default function HomePage() {
                           size="icon"
                           variant="outline"
                           className="h-8 w-8 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-950"
-                          onClick={() => updateCartQuantity(item.productId, item.quantity - 1)}
+                          onClick={async () => {
+                            await updateCartQuantity(item.productId, item.quantity - 1, token)
+                          }}
                         >
                           <Minus className="h-4 w-4 text-slate-600 dark:text-slate-300" />
                         </Button>
@@ -2504,7 +2520,9 @@ export default function HomePage() {
                           size="icon"
                           variant="outline"
                           className="h-8 w-8 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-950"
-                          onClick={() => updateCartQuantity(item.productId, item.quantity + 1)}
+                          onClick={async () => {
+                            await updateCartQuantity(item.productId, item.quantity + 1, token)
+                          }}
                         >
                           <Plus className="h-4 w-4 text-slate-600 dark:text-slate-300" />
                         </Button>
@@ -2512,7 +2530,9 @@ export default function HomePage() {
                           size="icon"
                           variant="ghost"
                           className="h-8 w-8 ml-auto rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-                          onClick={() => removeFromCart(item.productId)}
+                          onClick={async () => {
+                            await removeFromCart(item.productId, token)
+                          }}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -2550,8 +2570,8 @@ export default function HomePage() {
                 <Button
                   variant="outline"
                   className="flex-1 h-12 rounded-xl border-2 hover:bg-red-50 dark:hover:bg-red-950"
-                  onClick={() => {
-                    clearCart()
+                  onClick={async () => {
+                    await clearCart(token)
                     toast.success('Keranjang dikosongkan')
                   }}
                 >
