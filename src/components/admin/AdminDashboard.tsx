@@ -100,6 +100,8 @@ const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
+  const [syncHistory, setSyncHistory] = useState<any[]>([]);
+  const [syncStats, setSyncStats] = useState<any>(null);
   const [isMobileAdminMode, setIsMobileAdminMode] = useState(false);
   const [tapCount, setTapCount] = useState(0);
   const [tapTimeout, setTapTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -235,6 +237,7 @@ const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         if (data.success) {
           setSyncStatus('success');
           await loadDashboardData();
+          await loadSyncHistory();
           setTimeout(() => setSyncStatus('idle'), 3000);
           toast.success('✅ Database berhasil disinkronisasi!');
         } else {
@@ -252,6 +255,23 @@ const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       setIsSyncing(false);
     }
   }, [loadDashboardData]);
+
+  const loadSyncHistory = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/sync-history');
+
+      if (res.ok) {
+        const data = await res.json();
+
+        if (data.success) {
+          setSyncHistory(data.data.syncHistory || []);
+          setSyncStats(data.data.stats);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading sync history:', error);
+    }
+  }, []);
 
   // Auto-enable mobile mode when accessed from main page
   useEffect(() => {
@@ -285,6 +305,13 @@ const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   useEffect(() => {
     loadDashboardData();
   }, [loadDashboardData]);
+
+  // Load sync history when database page is active
+  useEffect(() => {
+    if (activePage === 'database') {
+      loadSyncHistory();
+    }
+  }, [activePage, loadSyncHistory]);
 
   // Early return for POS page
   if (activePage === 'pos') {
@@ -934,43 +961,87 @@ const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
                 <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 border border-slate-100 dark:border-slate-700">
                   <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-6">Sync History</h3>
+                  
+                  {syncStats && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                      <div className="bg-emerald-50 dark:bg-emerald-950/30 p-4 rounded-xl border border-emerald-100 dark:border-emerald-900">
+                        <p className="text-sm text-emerald-800 dark:text-emerald-300 font-medium">Total Sync</p>
+                        <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">{syncStats.totalCount}</p>
+                      </div>
+                      <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-xl border border-blue-100 dark:border-blue-900">
+                        <p className="text-sm text-blue-800 dark:text-blue-300 font-medium">Success Rate</p>
+                        <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{syncStats.successRate}%</p>
+                      </div>
+                      <div className="bg-violet-50 dark:bg-violet-950/30 p-4 rounded-xl border border-violet-100 dark:border-violet-900">
+                        <p className="text-sm text-violet-800 dark:text-violet-300 font-medium">Avg. Duration</p>
+                        <p className="text-2xl font-bold text-violet-900 dark:text-violet-100">{Math.round(syncStats.averageDuration / 1000)}s</p>
+                      </div>
+                      <div className="bg-amber-50 dark:bg-amber-950/30 p-4 rounded-xl border border-amber-100 dark:border-amber-900">
+                        <p className="text-sm text-amber-800 dark:text-amber-300 font-medium">Last Sync</p>
+                        <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">
+                          {syncHistory.length > 0 ? new Date(syncHistory[0].syncedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-                      <div className="flex items-center space-x-4">
-                        <div className="p-2 bg-emerald-100 dark:bg-emerald-950 rounded-lg">
-                          <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    {syncHistory.length > 0 ? (
+                      syncHistory.slice(0, 10).map((sync: any) => (
+                        <div key={sync.id} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-100 dark:border-slate-700">
+                          <div className="flex items-center space-x-4 flex-1">
+                            <div className={`p-2 rounded-lg ${
+                              sync.status === 'success' 
+                                ? 'bg-emerald-100 dark:bg-emerald-950' 
+                                : sync.status === 'failed'
+                                ? 'bg-red-100 dark:bg-red-950'
+                                : 'bg-amber-100 dark:bg-amber-950'
+                            }`}>
+                              {sync.status === 'success' && <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />}
+                              {sync.status === 'failed' && <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />}
+                              {sync.status === 'partial' && <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between mb-1">
+                                <p className="font-medium text-slate-800 dark:text-white">
+                                  {sync.status === 'success' && 'Successful Sync'}
+                                  {sync.status === 'failed' && 'Failed Sync'}
+                                  {sync.status === 'partial' && 'Partial Sync'}
+                                </p>
+                                <p className="text-xs text-slate-400">
+                                  {new Date(sync.syncedAt).toLocaleString('id-ID', { 
+                                    dateStyle: 'short',
+                                    timeStyle: 'short'
+                                  })}
+                                </p>
+                              </div>
+                              <div className="grid grid-cols-3 gap-4 text-xs text-slate-500">
+                                <span>{sync.totalUsers} Users</span>
+                                <span>{sync.totalProducts} Products</span>
+                                <span>{sync.totalOrders} Orders</span>
+                              </div>
+                              {sync.errorDetails && (
+                                <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                                  {sync.errorDetails}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs text-slate-400 mb-1">Duration</p>
+                            <p className="font-semibold text-slate-800 dark:text-white">
+                              {sync.duration ? `${(sync.duration / 1000).toFixed(1)}s` : '-'}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-slate-800 dark:text-white">Successful Sync</p>
-                          <p className="text-sm text-slate-500 dark:text-slate-400">All data synchronized</p>
-                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8">
+                        <Database className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                        <p className="text-sm text-slate-500">Belum ada riwayat sync</p>
+                        <p className="text-xs text-slate-400 mt-1">Klik tombol sync untuk memulai sinkronisasi</p>
                       </div>
-                      <span className="text-sm text-slate-400">2 minutes ago</span>
-                    </div>
-                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-                      <div className="flex items-center space-x-4">
-                        <div className="p-2 bg-emerald-100 dark:bg-emerald-950 rounded-lg">
-                          <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-slate-800 dark:text-white">Successful Sync</p>
-                          <p className="text-sm text-slate-500 dark:text-slate-400">All data synchronized</p>
-                        </div>
-                      </div>
-                      <span className="text-sm text-slate-400">1 hour ago</span>
-                    </div>
-                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-                      <div className="flex items-center space-x-4">
-                        <div className="p-2 bg-red-100 dark:bg-red-950 rounded-lg">
-                          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-slate-800 dark:text-white">Failed Sync</p>
-                          <p className="text-sm text-slate-500 dark:text-slate-400">Connection timeout</p>
-                        </div>
-                      </div>
-                      <span className="text-sm text-slate-400">3 hours ago</span>
-                    </div>
+                    )}
                   </div>
                 </div>
               </motion.div>

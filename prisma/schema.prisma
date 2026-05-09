@@ -312,3 +312,21 @@ model AdminSettings {
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 }
+
+// Database Sync History
+model DatabaseSyncHistory {
+  id              String   @id @default(cuid())
+  syncedAt       DateTime @default(now())
+  syncedBy       String   // Email of admin who triggered sync
+  status         String   // success, failed, partial
+  totalUsers     Int
+  totalProducts  Int
+  totalOrders    Int
+  totalVouchers  Int
+  todayOrders    Int
+  todayRevenue   Int
+  pendingOrders  Int
+  errorDetails   String?  // Error message if failed
+  duration       Int?     // Sync duration in milliseconds
+  createdAt      DateTime @default(now())
+}
