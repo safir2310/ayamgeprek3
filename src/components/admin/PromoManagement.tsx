@@ -100,7 +100,14 @@ export function PromoManagement() {
       if (res.ok) {
         const data = await res.json()
         if (data.success) {
-          setPromoProducts(data.promos || [])
+          // Convert string dates to Date objects
+          const promosWithDates = (data.promos || []).map((promo: any) => ({
+            ...promo,
+            startDate: typeof promo.startDate === 'string' ? new Date(promo.startDate) : promo.startDate,
+            endDate: typeof promo.endDate === 'string' ? new Date(promo.endDate) : promo.endDate,
+            createdAt: typeof promo.createdAt === 'string' ? new Date(promo.createdAt) : promo.createdAt
+          }))
+          setPromoProducts(promosWithDates)
         } else {
           toast.error(data.error || 'Gagal memuat promo')
         }
@@ -117,7 +124,14 @@ export function PromoManagement() {
           if (retryRes.ok) {
             const retryData = await retryRes.json()
             if (retryData.success) {
-              setPromoProducts(retryData.promos || [])
+              // Convert string dates to Date objects
+              const promosWithDates = (retryData.promos || []).map((promo: any) => ({
+                ...promo,
+                startDate: typeof promo.startDate === 'string' ? new Date(promo.startDate) : promo.startDate,
+                endDate: typeof promo.endDate === 'string' ? new Date(promo.endDate) : promo.endDate,
+                createdAt: typeof promo.createdAt === 'string' ? new Date(promo.createdAt) : promo.createdAt
+              }))
+              setPromoProducts(promosWithDates)
             } else {
               toast.error(retryData.error || 'Gagal memuat promo')
             }
@@ -170,8 +184,12 @@ export function PromoManagement() {
       productName: promo.productName,
       originalPrice: promo.originalPrice.toString(),
       promoPrice: promo.promoPrice.toString(),
-      startDate: promo.startDate.toISOString().split('T')[0],
-      endDate: promo.endDate.toISOString().split('T')[0],
+      startDate: typeof promo.startDate === 'string'
+        ? promo.startDate.split('T')[0]
+        : promo.startDate.toISOString().split('T')[0],
+      endDate: typeof promo.endDate === 'string'
+        ? promo.endDate.split('T')[0]
+        : promo.endDate.toISOString().split('T')[0],
       isActive: promo.isActive
     })
     setIsModalOpen(true)
