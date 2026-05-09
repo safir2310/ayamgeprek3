@@ -114,6 +114,7 @@ export default function HomePage() {
   const [showMemberBarcode, setShowMemberBarcode] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [orders, setOrders] = useState<any[]>([])
+  const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all')
   const [qrisData, setQrisData] = useState<any>(null)
   const [uploadedPaymentProof, setUploadedPaymentProof] = useState<File | null>(null)
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
@@ -1272,6 +1273,17 @@ export default function HomePage() {
     }
   }, [user, currentTab, showAdminDashboard])
 
+  // Auto-refresh orders every 15 seconds
+  useEffect(() => {
+    if (currentTab !== 'orders' || !user || showAdminDashboard) return
+
+    const interval = setInterval(() => {
+      fetchOrdersFromApi()
+    }, 15000)
+
+    return () => clearInterval(interval)
+  }, [currentTab, user, showAdminDashboard])
+
   // Fetch point redemptions when tab changes to redeem
   useEffect(() => {
     if (currentTab === 'redeem' && !showAdminDashboard) {
@@ -1958,7 +1970,7 @@ export default function HomePage() {
         )}
 
         {currentTab === 'orders' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <motion.div initial={{ opacity:0 }} animate={{ opacity: 1 }}>
             <h2 className="text-2xl font-bold mb-4 text-gray-800">Riwayat Pesanan</h2>
             {!user ? (
               <Card className="p-8 text-center">
@@ -1971,83 +1983,132 @@ export default function HomePage() {
                   Login Sekarang
                 </Button>
               </Card>
-            ) : orders.length === 0 ? (
-              <Card className="p-8 text-center">
-                <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                <p className="text-gray-500">Belum ada pesanan</p>
-              </Card>
             ) : (
               <div className="space-y-4">
-                {orders.map((order) => (
-                  <Card key={order.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-                    <CardContent className="p-3 sm:p-4">
-                      <div className="flex items-center justify-between mb-2 sm:mb-3">
-                        <div className="flex items-center gap-1.5 sm:gap-2">
-                          <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
-                          <span className="font-semibold text-sm sm:text-base">{order.orderNumber}</span>
-                        </div>
-                        <Badge
-                          className={
-                            order.orderStatus === 'completed'
-                              ? 'bg-green-600'
-                              : order.orderStatus === 'shipped'
-                              ? 'bg-blue-600'
-                              : order.paymentStatus === 'paid'
-                              ? 'bg-green-600'
-                              : 'bg-yellow-600'
-                          }
-                        >
-                          {order.orderStatus === 'completed'
-                            ? 'Selesai'
-                            : order.orderStatus === 'shipped'
-                            ? 'Dikirim'
-                            : order.paymentStatus === 'paid'
-                            ? 'Sudah Bayar'
-                            : 'Diproses'}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
-                          {new Date(order.createdAt).toLocaleDateString('id-ID', {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric',
-                          })}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <CreditCard className="h-4 w-4" />
-                          {order.paymentMethod}
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-600">{order.items.length} item</span>
-                        <span className="font-bold text-red-600">Rp {order.finalAmount.toLocaleString()}</span>
-                      </div>
-                      <div className="flex gap-2 mt-3">
-                        <Button
-                          variant="outline"
-                          className="flex-1"
-                          onClick={() => {
-                            setSelectedOrder(order)
-                            setIsOrderDetailOpen(true)
-                          }}
-                        >
-                          Lihat Detail
-                        </Button>
-                        {order.paymentMethod === 'QRIS' && order.paymentStatus === 'pending' && (
+                {/* Status Filter Tabs */}
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex gap-2 overflow-x-auto pb-2">
+                      {[
+                        { id: 'all', label: 'Semua' },
+                        { id: 'pending', label: 'Pending' },
+                        { id: 'processing', label: 'Diproses' },
+                        { id: 'shipped', label: 'Dikirim' },
+                        { id: 'completed', label: 'Selesai' },
+                        { id: 'cancelled', label: 'Dibatalkan' },
+                      ].map((status) => {
+                        const count = status.id === 'all'
+                          ? orders.length
+                          : orders.filter((o) => o.orderStatus === status.id).length
+                        return (
                           <Button
-                            className="flex-1 bg-blue-600 hover:bg-blue-700"
-                            onClick={() => generateQRIS(order.finalAmount, order.orderNumber)}
+                            key={status.id}
+                            variant={orderStatusFilter === status.id ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setOrderStatusFilter(status.id)}
+                            className={
+                              orderStatusFilter === status.id
+                                ? 'bg-gradient-to-r from-red-500 to-orange-500'
+                                : ''
+                            }
                           >
-                            <QrCode className="h-4 w-4 mr-1" />
-                            Bayar QRIS
+                            {status.label}
+                            <Badge variant="secondary" className="ml-2">
+                              {count}
+                            </Badge>
                           </Button>
-                        )}
-                      </div>
-                    </CardContent>
+                        )
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Orders List */}
+                {orders.filter(order =>
+                  orderStatusFilter === 'all' || order.orderStatus === orderStatusFilter
+                ).length === 0 ? (
+                  <Card className="p-8 text-center">
+                    <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                    <p className="text-gray-500">Belum ada pesanan</p>
                   </Card>
-                ))}
+                ) : (
+                  <div className="space-y-4">
+                    {orders
+                      .filter(order =>
+                        orderStatusFilter === 'all' || order.orderStatus === orderStatusFilter
+                      )
+                      .map((order) => (
+                      <Card key={order.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                        <CardContent className="p-3 sm:p-4">
+                          <div className="flex items-center justify-between mb-2 sm:mb-3">
+                            <div className="flex items-center gap-1.5 sm:gap-2">
+                              <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
+                              <span className="font-semibold text-sm sm:text-base">{order.orderNumber}</span>
+                            </div>
+                            <Badge
+                              className={
+                                order.orderStatus === 'completed'
+                                  ? 'bg-green-600'
+                                  : order.orderStatus === 'shipped'
+                                  ? 'bg-blue-600'
+                                  : order.paymentStatus === 'paid'
+                                  ? 'bg-green-600'
+                                  : 'bg-yellow-600'
+                              }
+                            >
+                              {order.orderStatus === 'completed'
+                                ? 'Selesai'
+                                : order.orderStatus === 'shipped'
+                                ? 'Dikirim'
+                                : order.paymentStatus === 'paid'
+                                ? 'Sudah Bayar'
+                                : 'Diproses'}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-4 w-4" />
+                              {new Date(order.createdAt).toLocaleDateString('id-ID', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric',
+                              })}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <CreditCard className="h-4 w-4" />
+                              {order.paymentMethod}
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-600">{order.items.length} item</span>
+                            <span className="font-bold text-red-600">Rp {order.finalAmount.toLocaleString()}</span>
+                          </div>
+                          <div className="flex gap-2 mt-3">
+                            <Button
+                              variant="outline"
+                              className="flex-1"
+                              onClick={() => {
+                                setSelectedOrder(order)
+                                setIsOrderDetailOpen(true)
+                              }}
+                            >
+                              Lihat Detail
+                            </Button>
+                            {order.paymentMethod === 'QRIS' && order.paymentStatus === 'pending' && (
+                              <Button
+                                className="flex-1 bg-blue-600 hover:bg-blue-700"
+                                onClick={() => generateQRIS(order.finalAmount, order.orderNumber)}
+                              >
+                                <QrCode className="h-4 w-4 mr-1" />
+                                Bayar QRIS
+                              </Button>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </motion.div>

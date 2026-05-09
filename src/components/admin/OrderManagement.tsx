@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, ShoppingBag, Eye, CheckCircle2, XCircle, Clock, Truck, Filter, Calendar, RefreshCw, FileSpreadsheet, Download, Table, List, Grid as GridIcon } from 'lucide-react'
+import { Search, ShoppingBag, Eye, CheckCircle2, XCircle, Clock, Truck, Filter, Calendar, RefreshCw, FileSpreadsheet, Download, Table, List as GridIcon, Bell, AlertCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -47,11 +47,24 @@ export function OrderManagement() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
+  const [newOrderCount, setNewOrderCount] = useState(0)
+  const [lastOrderCount, setLastOrderCount] = useState(0)
 
   const statusOptions = ['all', 'pending', 'processing', 'shipped', 'completed', 'cancelled', 'confirmed']
 
-  const loadOrders = async () => {
-    setIsLoading(true)
+  // Auto-refresh orders every 10 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!isLoading) {
+        loadOrders(false) // Don't show loading indicator on auto-refresh
+      }
+    }, 10000)
+
+    return () => clearInterval(interval)
+  }, [statusFilter, searchQuery])
+
+  const loadOrders = async (showLoading = true) => {
+    if (showLoading) setIsLoading(true)
     try {
       const params = new URLSearchParams()
       if (statusFilter && statusFilter !== 'all') {
@@ -65,7 +78,24 @@ export function OrderManagement() {
       const data = await res.json()
 
       if (data.success) {
-        setOrders(data.orders || [])
+        const currentOrders = data.orders || []
+        setOrders(currentOrders)
+
+        // Check for new orders (pending orders)
+        const pendingOrders = currentOrders.filter((o: Order) => o.orderStatus === 'pending')
+        const currentPendingCount = pendingOrders.length
+
+        if (currentPendingCount > lastOrderCount && lastOrderCount > 0) {
+          const newOrders = currentPendingCount - lastOrderCount
+          setNewOrderCount(newOrders)
+          toast.success(`🔔 ${newOrders} pesanan baru masuk!`, {
+            duration: 3000,
+          })
+          // Play notification sound
+          playNotificationSound()
+        }
+
+        setLastOrderCount(currentPendingCount)
       } else {
         toast.error(data.error || 'Gagal memuat pesanan')
       }
@@ -73,18 +103,45 @@ export function OrderManagement() {
       console.error('Error loading orders:', error)
       toast.error('Gagal memuat pesanan')
     } finally {
-      setIsLoading(false)
+      if (showLoading) setIsLoading(false)
+    }
+  }
+
+  // Play notification sound
+  const playNotificationSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+      const oscillator = audioContext.createOscillator()
+      const gainNode = audioContext.createGain()
+
+      oscillator.connect(gainNode)
+      gainNode.connect(audioContext.destination)
+
+      const frequencies = [523.25, 659.25, 783.99] // C5, E5, G5
+      frequencies.forEach((freq, i) => {
+        const osc = audioContext.createOscillator()
+        const gain = audioContext.createGain()
+        osc.connect(gain)
+        gain.connect(audioContext.destination)
+        osc.frequency.setValueAtTime(freq, audioContext.currentTime + i * 0.15)
+        gain.gain.setValueAtTime(0.2, audioContext.currentTime + i * 0.15)
+        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.15 + 0.3)
+        osc.start(audioContext.currentTime + i * 0.15)
+        osc.stop(audioContext.currentTime + i * 0.15 + 0.3)
+      })
+    } catch (error) {
+      console.error('Error playing notification sound:', error)
     }
   }
 
   useEffect(() => {
-    loadOrders()
+    loadOrders(true)
   }, [statusFilter])
 
   // Debounce search
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      loadOrders()
+      loadOrders(true)
     }, 500)
     return () => clearTimeout(timeoutId)
   }, [searchQuery])
@@ -216,22 +273,36 @@ export function OrderManagement() {
     }
   }
 
+  // Count orders by status for tabs
+  const getStatusCount = (status: string) => {
+    if (status === 'all') return orders.length
+    return orders.filter(o => o.orderStatus === status).length
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800">Daftar Pesanan</h2>
-          <p className="text-gray-600">Kelola dan pantau semua pesanan</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800">Daftar Pesanan</h2>
+            <p className="text-gray-600">Kelola dan pantau semua pesanan</p>
+          </div>
+          {newOrderCount > 0 && (
+            <Badge className="bg-gradient-to-r from-red-500 to-orange-500 text-white animate-pulse">
+              <Bell className="h-3 w-3 mr-1" />
+              {newOrderCount} Pesanan Baru
+            </Badge>
+          )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button
             variant={viewMode === 'list' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setViewMode('list')}
             className={viewMode === 'list' ? 'bg-gradient-to-r from-red-600 to-orange-500' : ''}
           >
-            <List className="h-4 w-4" />
+            <GridIcon className="h-4 w-4" />
           </Button>
           <Button
             variant={viewMode === 'table' ? 'default' : 'outline'}
@@ -251,12 +322,12 @@ export function OrderManagement() {
             ) : (
               <FileSpreadsheet className="h-4 w-4 mr-2" />
             )}
-            Export ke Excel
+            Export
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={loadOrders}
+            onClick={() => loadOrders(true)}
             disabled={isLoading}
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
@@ -265,42 +336,56 @@ export function OrderManagement() {
         </div>
       </div>
 
-      {/* Search & Filters - Only show in List View */}
-      {viewMode === 'list' && (
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Input
-                  placeholder="Cari nomor pesanan atau nama pelanggan..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <Filter className="h-4 w-4 text-gray-500" />
-                {statusOptions.map(status => (
-                  <Button
-                    key={status}
-                    variant={statusFilter === status ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setStatusFilter(status)}
-                    className={
-                      statusFilter === status
-                        ? 'bg-gradient-to-r from-red-600 to-orange-500'
-                        : ''
-                    }
-                  >
-                    {status === 'all' ? 'Semua' : getStatusLabel(status)}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Status Tabs */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Filter className="h-4 w-4 text-gray-500" />
+            <span className="text-sm font-medium text-gray-700">Filter Status</span>
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {statusOptions.map(status => {
+              const count = getStatusCount(status)
+              return (
+                <Button
+                  key={status}
+                  variant={statusFilter === status ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => {
+                    setStatusFilter(status)
+                    setNewOrderCount(0) // Clear new order notification
+                  }}
+                  className={statusFilter === status ? 'bg-gradient-to-r from-red-600 to-orange-500' : ''}
+                >
+                  {status === 'all' ? 'Semua' : getStatusLabel(status)}
+                  <Badge variant="secondary" className="ml-2">
+                    {count}
+                  </Badge>
+                </Button>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Search */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Search className="h-4 w-4 text-gray-500" />
+            <span className="text-sm font-medium text-gray-700">Cari Pesanan</span>
+          </div>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Input
+              placeholder="Cari nomor pesanan atau nama pelanggan..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Table View - Excel Style */}
       {viewMode === 'table' && (
@@ -421,7 +506,13 @@ export function OrderManagement() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ delay: index * 0.05 }}
-                    className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    className={`p-4 rounded-lg hover:shadow-md transition-all ${
+                      order.orderStatus === 'pending' ? 'bg-yellow-50 border-2 border-yellow-200' :
+                      order.orderStatus === 'processing' ? 'bg-blue-50 border-2 border-blue-200' :
+                      order.orderStatus === 'shipped' ? 'bg-purple-50 border-2 border-purple-200' :
+                      order.orderStatus === 'completed' ? 'bg-green-50 border-2 border-green-200' :
+                      'bg-gray-50'
+                    }`}
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                       <div className="flex-1">
@@ -433,6 +524,12 @@ export function OrderManagement() {
                               {getStatusLabel(order.orderStatus)}
                             </span>
                           </Badge>
+                          {order.orderStatus === 'pending' && (
+                            <Badge className="bg-red-100 text-red-700 animate-pulse">
+                              <AlertCircle className="h-3 w-3 mr-1" />
+                              Baru
+                            </Badge>
+                          )}
                         </div>
                         <p className="font-semibold text-gray-900">{order.customerName}</p>
                         <p className="text-sm text-gray-600">
@@ -458,6 +555,15 @@ export function OrderManagement() {
                             Detail
                           </Button>
                           {order.orderStatus === 'pending' && (
+                            <Button
+                              size="sm"
+                              className="bg-gradient-to-r from-blue-600 to-purple-500"
+                              onClick={() => handleStatusChange(order.id, 'confirmed')}
+                            >
+                              Konfirmasi
+                            </Button>
+                          )}
+                          {order.orderStatus === 'confirmed' && (
                             <Button
                               size="sm"
                               className="bg-gradient-to-r from-blue-600 to-purple-500"
@@ -506,14 +612,6 @@ export function OrderManagement() {
                               <XCircle className="h-4 w-4" />
                             </Button>
                           )}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-red-600 hover:bg-red-50"
-                            onClick={() => handleDeleteOrder(order.id)}
-                          >
-                            <XCircle className="h-4 w-4" />
-                          </Button>
                         </div>
                       </div>
                     </div>
@@ -657,8 +755,32 @@ export function OrderManagement() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3">
                   {selectedOrder.orderStatus === 'pending' && (
+                    <>
+                      <Button
+                        className="flex-1 bg-gradient-to-r from-blue-600 to-purple-500"
+                        onClick={() => {
+                          handleStatusChange(selectedOrder.id, 'confirmed')
+                          setIsDetailModalOpen(false)
+                        }}
+                      >
+                        Konfirmasi Pesanan
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="flex-1 text-red-600 hover:bg-red-50"
+                        onClick={() => {
+                          handleStatusChange(selectedOrder.id, 'cancelled')
+                          setIsDetailModalOpen(false)
+                        }}
+                      >
+                        <XCircle className="h-4 w-4 mr-2" />
+                        Tolak
+                      </Button>
+                    </>
+                  )}
+                  {selectedOrder.orderStatus === 'confirmed' && (
                     <Button
                       className="flex-1 bg-gradient-to-r from-blue-600 to-purple-500"
                       onClick={() => {

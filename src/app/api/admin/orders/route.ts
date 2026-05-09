@@ -92,6 +92,51 @@ export async function PUT(request: NextRequest) {
       )
     }
 
+    // Validate status values
+    const validOrderStatuses = ['pending', 'confirmed', 'processing', 'shipped', 'completed', 'cancelled']
+    const validPaymentStatuses = ['pending', 'paid', 'verified', 'rejected', 'failed']
+
+    if (orderStatus && !validOrderStatuses.includes(orderStatus)) {
+      return NextResponse.json(
+        { success: false, error: 'Status pesanan tidak valid' },
+        { status: 400 }
+      )
+    }
+
+    if (paymentStatus && !validPaymentStatuses.includes(paymentStatus)) {
+      return NextResponse.json(
+        { success: false, error: 'Status pembayaran tidak valid' },
+        { status: 400 }
+      )
+    }
+
+    // Get current order for comparison
+    const currentOrder = await db.order.findUnique({
+      where: { id },
+      include: {
+        items: {
+          include: {
+            product: true
+          }
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true
+          }
+        }
+      }
+    })
+
+    if (!currentOrder) {
+      return NextResponse.json(
+        { success: false, error: 'Pesanan tidak ditemukan' },
+        { status: 404 }
+      )
+    }
+
     // Update order
     const order = await db.order.update({
       where: { id },
@@ -117,8 +162,8 @@ export async function PUT(request: NextRequest) {
       }
     })
 
-    // If order is completed, update product sold count
-    if (orderStatus === 'completed' || orderStatus === 'delivered') {
+    // If order is completed and wasn't before, update product sold count
+    if (orderStatus && (orderStatus === 'completed' || orderStatus === 'shipped') && currentOrder.orderStatus !== orderStatus) {
       for (const item of order.items) {
         if (item.product) {
           await db.product.update({
@@ -143,7 +188,7 @@ export async function PUT(request: NextRequest) {
         customerEmail: order.user?.email,
         items: order.items.map(item => ({
           id: item.id,
-          productName: item.product?.name || item.name,
+          productName: item.product?.name || item.name || 'Unknown Product',
           quantity: item.quantity,
           price: item.price,
           image: item.product?.image
