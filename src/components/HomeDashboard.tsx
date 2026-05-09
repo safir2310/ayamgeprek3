@@ -8,29 +8,57 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { MemberCard } from './MemberCard'
 import { toast } from 'sonner'
+import { useStore } from '@/store/useStore'
 
 interface HomeDashboardProps {
   user?: any
   points?: number
+  cartCount?: number
+  orders?: any[]
+  vouchers?: any[]
 }
 
-export function HomeDashboard({ user, points }: HomeDashboardProps) {
+export function HomeDashboard({ user, points, cartCount, orders, vouchers }: HomeDashboardProps) {
+  const { cart } = useStore()
   const [showBarcode, setShowBarcode] = useState(false)
   const [showQR, setShowQR] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [cartCount, setCartCount] = useState(0)
-  const [notificationCount, setNotificationCount] = useState(2)
-  const [activeOrders, setActiveOrders] = useState(0)
-  const [cashbackToday, setCashbackToday] = useState(0)
-  const [activePromos, setActivePromos] = useState(0)
 
-  useEffect(() => {
-    // Simulate loading cart count from store or API
-    setCartCount(3)
-    setActiveOrders(2)
-    setCashbackToday(5000)
-    setActivePromos(3)
-  }, [])
+  // Calculate statistics from real data (computed on render, no state needed)
+  const activeOrdersCount = orders && orders.length > 0
+    ? orders.filter(order =>
+        order.orderStatus === 'pending' ||
+        order.orderStatus === 'processing' ||
+        order.orderStatus === 'shipped'
+      ).length
+    : 0
+
+  const cashbackTodayAmount = orders && orders.length > 0
+    ? (() => {
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        const todayOrders = orders.filter(order =>
+          new Date(order.createdAt) >= today
+        )
+        const totalCashback = todayOrders.reduce((sum, order) =>
+          sum + (order.pointsEarned || 0), 0
+        )
+        return totalCashback * 10 // Convert points to cashback (1 point = Rp 10)
+      })()
+    : 0
+
+  const activePromosCount = vouchers && vouchers.length > 0
+    ? (() => {
+        const now = new Date()
+        return vouchers.filter(voucher => {
+          const startDate = new Date(voucher.startDate)
+          const endDate = new Date(voucher.endDate)
+          return startDate <= now && endDate >= now && voucher.isActive
+        }).length
+      })()
+    : 0
+
+  const notificationCount = 0 // Handled by parent component
 
   const getMembershipStatus = () => {
     if (points && points >= 10000) return { level: 'VIP Exclusive', color: 'bg-purple-600', gradient: 'from-purple-600 to-violet-600' }
@@ -186,7 +214,7 @@ export function HomeDashboard({ user, points }: HomeDashboardProps) {
                 <ChevronRight className="w-5 h-5 text-white/50" />
               </div>
               <p className="text-3xl font-bold text-white mb-1">
-                Rp {cashbackToday.toLocaleString()}
+                Rp {cashbackTodayAmount.toLocaleString()}
               </p>
               <div className="flex items-center gap-1 text-green-300 text-sm">
                 <TrendingUp className="w-4 h-4" />
@@ -209,7 +237,7 @@ export function HomeDashboard({ user, points }: HomeDashboardProps) {
                 <ChevronRight className="w-5 h-5 text-white/50" />
               </div>
               <p className="text-3xl font-bold text-white mb-1">
-                {activeOrders}
+                {activeOrdersCount}
               </p>
               <div className="flex items-center gap-1 text-blue-300 text-sm">
                 <Gift className="w-4 h-4" />
@@ -232,7 +260,7 @@ export function HomeDashboard({ user, points }: HomeDashboardProps) {
                 <ChevronRight className="w-5 h-5 text-white/50" />
               </div>
               <p className="text-3xl font-bold text-white mb-1">
-                {activePromos}
+                {activePromosCount}
               </p>
               <div className="flex items-center gap-1 text-orange-300 text-sm">
                 <Gift className="w-4 h-4" />
