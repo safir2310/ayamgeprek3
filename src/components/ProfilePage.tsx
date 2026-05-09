@@ -1047,17 +1047,30 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
                         <Ticket className="w-5 h-5 text-amber-600" />
                         <h4 className="font-bold text-gray-800">{voucher.name || 'Voucher'}</h4>
                       </div>
-                      <Badge className="bg-amber-600 text-white">{voucher.discount || 'Diskon'}</Badge>
+                      <Badge className="bg-amber-600 text-white">
+                        {voucher.discountType === 'percentage'
+                          ? `${voucher.discountValue}%`
+                          : `Rp ${voucher.discountValue?.toLocaleString() || '0'}`
+                        }
+                      </Badge>
                     </div>
                     <p className="text-xs text-gray-600 mb-2">{voucher.description || 'Voucher khusus member'}</p>
-                    <p className="text-xs text-gray-500">Berlaku hingga: {voucher.expiry || '31 Des 2025'}</p>
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>Min. belanja: Rp {voucher.minPurchase?.toLocaleString() || '0'}</span>
+                      <span>Berlaku hingga: {new Date(voucher.endDate).toLocaleDateString('id-ID')}</span>
+                    </div>
+                    {voucher.usageLimit && (
+                      <p className="text-[10px] text-amber-600 mt-1">
+                        Sisa kuota: {voucher.remaining || 0} / {voucher.usageLimit}
+                      </p>
+                    )}
                   </div>
                 ))
               ) : (
                 <div className="text-center py-8">
                   <Gift className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-sm text-gray-500">Belum ada voucher</p>
-                  <p className="text-xs text-gray-400 mt-1">Kumpulkan poin untuk mendapatkan voucher</p>
+                  <p className="text-sm text-gray-500">Belum ada voucher tersedia</p>
+                  <p className="text-xs text-gray-400 mt-1">Tukar poin Anda di menu "Tukar Poin" untuk mendapatkan voucher</p>
                 </div>
               )}
             </div>
