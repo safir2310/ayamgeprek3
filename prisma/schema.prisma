@@ -131,6 +131,7 @@ model Order {
   paymentStatus   String      @default("pending") // pending, paid, verified, rejected, failed
   orderStatus     String      @default("pending") // pending, processing, shipped, completed, cancelled, confirmed
   voucherCode     String?
+  pointVoucherCode String?   // Voucher from point redemption
   pointsEarned    Int         @default(0)
   pointsUsed      Int         @default(0)
   notes           String?

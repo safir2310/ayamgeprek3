@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { cart, customerName, customerPhone, customerAddress, paymentMethod, voucherCode } = body
+    const { cart, customerName, customerPhone, customerAddress, paymentMethod, voucherCode, pointVoucherCode } = body
 
     // Get user info
     const user = await db.user.findUnique({
@@ -34,9 +34,53 @@ export async function POST(request: NextRequest) {
 
     let discountAmount = 0
     let voucher = null
+    let pointVoucher = null
+    let freeProductId = null
 
-    // Apply voucher if provided
-    if (voucherCode) {
+    // Apply point voucher if provided
+    if (pointVoucherCode) {
+      pointVoucher = await db.pointVoucher.findUnique({
+        where: { code: pointVoucherCode },
+      })
+
+      if (!pointVoucher) {
+        return NextResponse.json(
+          { error: 'Kode voucher poin tidak valid' },
+          { status: 404 }
+        )
+      }
+
+      // Check if voucher belongs to the user
+      if (pointVoucher.userId !== payload.userId) {
+        return NextResponse.json(
+          { error: 'Kode voucher poin tidak berlaku untuk akun ini' },
+          { status: 403 }
+        )
+      }
+
+      // Check if voucher is already used
+      if (pointVoucher.isUsed) {
+        return NextResponse.json(
+          { error: 'Kode voucher poin sudah digunakan' },
+          { status: 400 }
+        )
+      }
+
+      // Mark as used
+      await db.pointVoucher.update({
+        where: { id: pointVoucher.id },
+        data: {
+          isUsed: true,
+          usedAt: new Date(),
+        }
+      })
+
+      // Point voucher gives a free product (no discount on total)
+      freeProductId = pointVoucher.productId
+    }
+
+    // Apply regular voucher if provided
+    if (voucherCode && !pointVoucherCode) {
       voucher = await db.voucher.findUnique({
         where: { code: voucherCode },
       })
@@ -81,6 +125,7 @@ export async function POST(request: NextRequest) {
         paymentStatus: paymentMethod === 'QRIS' ? 'pending' : 'pending',
         orderStatus: 'pending',
         voucherCode: voucher?.code,
+        pointVoucherCode: pointVoucher?.code || null,
         pointsEarned,
         qrCode,
       },
