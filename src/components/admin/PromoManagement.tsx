@@ -127,10 +127,23 @@ export function PromoManagement() {
     if (!confirm('Apakah Anda yakin ingin menghapus promo ini?')) return
 
     try {
-      // Mock delete - will be replaced with API call
-      setPromoProducts(prev => prev.filter(p => p.id !== id))
-      toast.success('✅ Promo berhasil dihapus!')
+      const res = await fetch(`/api/admin/promos?id=${id}`, {
+        method: 'DELETE'
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        if (data.success) {
+          toast.success('✅ Promo berhasil dihapus!')
+          loadPromoProducts()
+        } else {
+          toast.error(data.error || 'Gagal menghapus promo')
+        }
+      } else {
+        toast.error('Gagal menghapus promo')
+      }
     } catch (error) {
+      console.error('Error deleting promo:', error)
       toast.error('Gagal menghapus promo')
     }
   }
@@ -156,16 +169,13 @@ export function PromoManagement() {
     }
 
     try {
-      const product = availableProducts.find(p => p.name === formData.productName)
+      const product = products.find(p => p.name === formData.productName)
       const discountPercent = calculateDiscountPercent(originalPrice, promoPrice)
 
       const promoData = {
         productId: product?.id || '',
-        productName: formData.productName,
-        productImage: product?.image || '📦',
         originalPrice,
         promoPrice,
-        discountPercent,
         startDate: new Date(formData.startDate),
         endDate: new Date(formData.endDate),
         isActive: formData.isActive
@@ -173,27 +183,47 @@ export function PromoManagement() {
 
       if (editingPromo) {
         // Update existing promo
-        setPromoProducts(prev =>
-          prev.map(p =>
-            p.id === editingPromo.id
-              ? { ...p, ...promoData }
-              : p
-          )
-        )
-        toast.success('✅ Promo berhasil diperbarui!')
+        const res = await fetch('/api/admin/promos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(promoData)
+        })
+
+        if (res.ok) {
+          const data = await res.json()
+          if (data.success) {
+            toast.success('✅ Promo berhasil diperbarui!')
+            loadPromoProducts()
+          } else {
+            toast.error(data.error || 'Gagal memperbarui promo')
+          }
+        } else {
+          toast.error('Gagal memperbarui promo')
+        }
       } else {
         // Add new promo
-        const newPromo: PromoProduct = {
-          id: Date.now().toString(),
-          ...promoData,
-          createdAt: new Date()
+        const res = await fetch('/api/admin/promos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(promoData)
+        })
+
+        if (res.ok) {
+          const data = await res.json()
+          if (data.success) {
+            toast.success('✅ Promo berhasil ditambahkan!')
+            loadPromoProducts()
+          } else {
+            toast.error(data.error || 'Gagal menambahkan promo')
+          }
+        } else {
+          toast.error('Gagal menambahkan promo')
         }
-        setPromoProducts(prev => [...prev, newPromo])
-        toast.success('✅ Promo berhasil ditambahkan!')
       }
 
       setIsModalOpen(false)
     } catch (error) {
+      console.error('Error saving promo:', error)
       toast.error('Gagal menyimpan promo')
     }
   }
@@ -368,7 +398,7 @@ export function PromoManagement() {
                 required
               >
                 <option value="">Pilih Produk</option>
-                {availableProducts.map(product => (
+                {products.map(product => (
                   <option key={product.id} value={product.name}>
                     {product.name} - Rp {product.price.toLocaleString()}
                   </option>
