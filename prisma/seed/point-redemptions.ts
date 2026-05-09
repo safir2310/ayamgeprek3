@@ -1,8 +1,9 @@
 import { db } from '@/lib/db'
+import { randomUUID } from 'crypto'
 
 async function seedPointRedemptions() {
   try {
-    // Get product IDs from mock products
+    // Get product IDs from database
     const products = await db.product.findMany({
       select: { id: true, name: true },
     })
@@ -12,55 +13,48 @@ async function seedPointRedemptions() {
       return
     }
 
-    // Create point redemption options
+    console.log('Found products:', products.map(p => p.name))
+
+    // Create point redemption options using available products
     const redemptions = [
       {
-        name: 'Es Teh Manis Gratis',
-        description: 'Tukar 100 poin untuk Es Teh Manis gratis',
+        id: randomUUID(),
+        name: 'Minuman Gratis',
+        description: 'Tukar 100 poin untuk minuman gratis',
         pointsRequired: 100,
-        productId: products.find((p) => p.name.includes('Es Teh Manis'))?.id || products[0].id,
+        productId: products[0].id,
         productImage: '🧊',
         order: 1,
       },
       {
-        name: 'Keripik Singkong Gratis',
-        description: 'Tukar 200 poin untuk Keripik Singkong gratis',
+        id: randomUUID(),
+        name: 'Makanan Gratis',
+        description: 'Tukar 200 poin untuk makanan gratis',
         pointsRequired: 200,
-        productId: products.find((p) => p.name.includes('Keripik Singkong'))?.id || products[1].id,
-        productImage: '🍠',
-        order: 2,
-      },
-      {
-        name: 'Sambal Ijo Botol Gratis',
-        description: 'Tukar 500 poin untuk Sambal Ijo Botol gratis',
-        pointsRequired: 500,
-        productId: products.find((p) => p.name.includes('Sambal Ijo'))?.id || products[2].id,
-        productImage: '🌶️',
-        order: 3,
-      },
-      {
-        name: 'Ayam Geprek Original Gratis',
-        description: 'Tukar 1000 poin untuk Ayam Geprek Original gratis',
-        pointsRequired: 1000,
-        productId: products.find((p) => p.name.includes('Ayam Geprek Original'))?.id || products[3].id,
+        productId: products[Math.min(1, products.length - 1)].id,
         productImage: '🍗',
-        order: 4,
+        order: 2,
       },
     ]
 
-    // Insert or update redemptions
+    // Check if redemptions already exist
+    const existingRedemptions = await db.pointRedemption.findMany()
+
+    if (existingRedemptions.length > 0) {
+      console.log('Point redemptions already exist. Skipping seed.')
+      console.log('Existing redemptions:', existingRedemptions.map(r => ({ id: r.id, name: r.name })))
+      return
+    }
+
+    // Insert redemptions
     for (const redemption of redemptions) {
-      await db.pointRedemption.upsert({
-        where: { id: redemption.name },
-        create: {
-          ...redemption,
-          id: redemption.name, // Using name as ID for simplicity
-        },
-        update: redemption,
+      await db.pointRedemption.create({
+        data: redemption,
       })
     }
 
     console.log('✅ Point redemptions seeded successfully!')
+    console.log('Created redemptions:', redemptions.map(r => ({ id: r.id, name: r.name })))
   } catch (error) {
     console.error('Error seeding point redemptions:', error)
   }

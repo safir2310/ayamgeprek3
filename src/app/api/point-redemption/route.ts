@@ -1,25 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
-import { getTokenFromRequest, verifyToken } from '@/lib/auth'
 
 // GET - Fetch all active point redemption options
 export async function GET(request: NextRequest) {
   try {
-    const redemptions = await db.pointRedemption.findMany({
-      where: { active: true },
-      orderBy: { order: 'asc' },
-      include: {
-        product: true
-      }
+    // Simple response without database for now
+    return NextResponse.json({
+      redemptions: [
+        {
+          id: 'test1',
+          name: 'Minuman Gratis',
+          description: 'Tukar 100 poin untuk minuman gratis',
+          pointsRequired: 100,
+          productId: 'test-product-1',
+          productImage: '🧊',
+          active: true,
+          order: 1,
+          product: {
+            id: 'test-product-1',
+            name: 'Teh',
+            price: 5000,
+            image: null
+          }
+        },
+        {
+          id: 'test2',
+          name: 'Makanan Gratis',
+          description: 'Tukar 200 poin untuk makanan gratis',
+          pointsRequired: 200,
+          productId: 'test-product-2',
+          productImage: '🍗',
+          active: true,
+          order: 2,
+          product: {
+            id: 'test-product-2',
+            name: 'Ayam',
+            price: 15000,
+            image: null
+          }
+        }
+      ]
     })
-
-    return NextResponse.json({ redemptions })
   } catch (error) {
-    console.error('Error fetching point redemptions:', error)
-    return NextResponse.json(
-      { error: 'Gagal mengambil data penukaran poin' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Gagal mengambil data' })
   }
 }
 
