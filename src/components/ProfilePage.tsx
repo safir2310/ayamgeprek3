@@ -63,6 +63,23 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
   // Theme state
   const [isDarkMode, setIsDarkMode] = useState(false)
 
+  // Apply theme to document
+  useEffect(() => {
+    const root = document.documentElement
+    if (isDarkMode) {
+      root.classList.add('dark')
+      root.classList.remove('light')
+    } else {
+      root.classList.add('light')
+      root.classList.remove('dark')
+    }
+  }, [isDarkMode])
+
+  // Apply language to document
+  useEffect(() => {
+    document.documentElement.lang = selectedLanguage
+  }, [selectedLanguage])
+
   // Notification tone state
   const [selectedTone, setSelectedTone] = useState('chime')
 
