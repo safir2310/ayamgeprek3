@@ -33,6 +33,7 @@ import {
   CheckSquare,
   MessageCircle,
   ArrowLeft,
+  Settings as SettingsIcon,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -51,6 +52,7 @@ import { PaymentConfirmation } from '@/components/admin/PaymentConfirmation'
 import { ChatManagement } from '@/components/admin/ChatManagement'
 import { PointRedemptionManagement } from '@/components/admin/PointRedemptionManagement'
 import { PointRedemptionAdmin } from '@/components/admin/PointRedemptionAdmin'
+import { AdminSettings } from '@/components/admin/AdminSettings'
 
 interface DashboardStats {
   totalSales: number;
@@ -308,6 +310,7 @@ const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     { id: 'customers', icon: Users, label: 'Customers' },
     { id: 'chat', icon: MessageCircle, label: 'Chat' },
     { id: 'reports', icon: TrendingUp, label: 'Reports' },
+    { id: 'settings', icon: SettingsIcon, label: 'Settings' },
     { id: 'database', icon: Database, label: 'Database' },
   ];
 
@@ -819,6 +822,16 @@ const AdminDashboard: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                 animate={{ opacity: 1, y: 0 }}
               >
                 <SalesReports onBack={() => setActivePage('dashboard')} />
+              </motion.div>
+            )}
+
+            {/* Settings Page */}
+            {activePage === 'settings' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <AdminSettings onBack={() => setActivePage('dashboard')} />
               </motion.div>
             )}
 
