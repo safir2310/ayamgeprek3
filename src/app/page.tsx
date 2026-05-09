@@ -996,6 +996,7 @@ export default function HomePage() {
         toast.error(data.error || 'Terjadi kesalahan saat checkout')
       }
     } catch (error) {
+      console.error('Checkout error:', error)
       toast.error('Terjadi kesalahan koneksi')
     }
   }

@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { cart, customerName, customerPhone, customerAddress, paymentMethod, voucherCode, pointVoucherCode } = body
+    const { cart, customerName, customerPhone, customerAddress, paymentMethod, voucherCode, pointVoucherCode, notes } = body
 
     // Get user info
     const user = await db.user.findUnique({
@@ -24,6 +24,17 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Validate cart
+    if (!cart || !Array.isArray(cart) || cart.length === 0) {
+      return NextResponse.json({ error: 'Keranjang kosong' }, { status: 400 })
+    }
+
+    // Validate payment method
+    const validPaymentMethods = ['COD', 'QRIS', 'Cash']
+    if (!paymentMethod || !validPaymentMethods.includes(paymentMethod)) {
+      return NextResponse.json({ error: 'Metode pembayaran tidak valid' }, { status: 400 })
     }
 
     // Calculate total
@@ -150,6 +161,7 @@ export async function POST(request: NextRequest) {
         pointVoucherCode: pointVoucher?.code || null,
         pointsEarned,
         qrCode,
+        notes,
       },
     })
 
@@ -270,30 +282,50 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Checkout error:', error)
-    
+
     // Provide more detailed error messages
     if (error instanceof Error) {
       // Check for specific Prisma errors
-      if (error.message.includes('Unique constraint')) {
+      const errorMessage = error.message
+
+      if (errorMessage.includes('Unique constraint') || errorMessage.includes('duplicate key')) {
         return NextResponse.json(
-          { error: 'Gagal membuat order. Silakan coba lagi.' },
+          { error: 'Gagal membuat order. Nomor order mungkin duplikat. Silakan coba lagi.' },
           { status: 400 }
         )
       }
-      if (error.message.includes('Foreign key constraint')) {
+
+      if (errorMessage.includes('Foreign key constraint') || errorMessage.includes('Foreign key')) {
         return NextResponse.json(
-          { error: 'Data produk tidak valid. Silakan refresh halaman.' },
+          { error: 'Data produk tidak valid. Produk mungkin telah dihapus. Silakan refresh halaman.' },
           { status: 400 }
         )
       }
+
+      if (errorMessage.includes('null value') || errorMessage.includes('Required')) {
+        return NextResponse.json(
+          { error: 'Data yang diperlukan kurang lengkap. Pastikan semua informasi terisi.' },
+          { status: 400 }
+        )
+      }
+
+      // Log the full error for debugging
+      console.error('Full error details:', {
+        message: errorMessage,
+        stack: error.stack,
+        name: error.name
+      })
+
       return NextResponse.json(
-        { error: error.message || 'Terjadi kesalahan saat checkout' },
+        { error: errorMessage || 'Terjadi kesalahan saat checkout' },
         { status: 500 }
       )
     }
-    
+
+    // Handle unknown error types
+    console.error('Unknown error type:', typeof error, error)
     return NextResponse.json(
-      { error: 'Terjadi kesalahan saat checkout' },
+      { error: 'Terjadi kesalahan tak terduga saat checkout. Silakan coba lagi.' },
       { status: 500 }
     )
   }
