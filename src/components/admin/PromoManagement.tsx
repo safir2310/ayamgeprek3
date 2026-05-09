@@ -39,78 +39,45 @@ export function PromoManagement() {
     isActive: true
   })
 
-  // Mock products that can be put on promo
-  const availableProducts = [
-    { id: '1', name: 'Ayam Geprek Original', price: 15000, image: '🍗' },
-    { id: '2', name: 'Ayam Geprek Keju', price: 18000, image: '🧀' },
-    { id: '3', name: 'Ayam Geprek Spesial', price: 20000, image: '🌶️' },
-    { id: '4', name: 'Es Teh Manis', price: 5000, image: '🧃' },
-    { id: '5', name: 'Es Jeruk Peras', price: 8000, image: '🍊' },
-    { id: '6', name: 'Nasi Pecel', price: 15000, image: '🥗' },
-    { id: '7', name: 'Keripik Singkong', price: 10000, image: '🥔' },
-    { id: '8', name: 'Sambal Ijo', price: 5000, image: '🌶️' },
-  ]
+  const [products, setProducts] = useState<any[]>([])
+  const loadProducts = async () => {
+    try {
+      const res = await fetch('/api/products')
+      if (res.ok) {
+        const data = await res.json()
+        setProducts(data.products || [])
+      }
+    } catch (error) {
+      console.error('Error loading products:', error)
+    }
+  }
 
-  const loadPromoProducts = () => {
-    // Mock promo products - will be replaced with API call
-    setPromoProducts([
-      {
-        id: '1',
-        productId: '1',
-        productName: 'Ayam Geprek Original',
-        productImage: '🍗',
-        originalPrice: 15000,
-        promoPrice: 12000,
-        discountPercent: 20,
-        startDate: new Date('2024-01-01'),
-        endDate: new Date('2024-06-30'),
-        isActive: true,
-        createdAt: new Date('2024-01-01')
-      },
-      {
-        id: '2',
-        productId: '2',
-        productName: 'Ayam Geprek Keju',
-        productImage: '🧀',
-        originalPrice: 18000,
-        promoPrice: 15000,
-        discountPercent: 17,
-        startDate: new Date('2024-01-01'),
-        endDate: new Date('2024-12-31'),
-        isActive: true,
-        createdAt: new Date('2024-01-15')
-      },
-      {
-        id: '3',
-        productId: '4',
-        productName: 'Es Teh Manis',
-        productImage: '🧃',
-        originalPrice: 5000,
-        promoPrice: 4000,
-        discountPercent: 20,
-        startDate: new Date('2024-01-01'),
-        endDate: new Date('2024-03-31'),
-        isActive: true,
-        createdAt: new Date('2024-02-01')
-      },
-      {
-        id: '4',
-        productId: '6',
-        productName: 'Nasi Pecel',
-        productImage: '🥗',
-        originalPrice: 15000,
-        promoPrice: 10000,
-        discountPercent: 33,
-        startDate: new Date('2024-01-01'),
-        endDate: new Date('2024-02-28'),
-        isActive: false,
-        createdAt: new Date('2024-01-20')
-      },
-    ])
+  const [isLoading, setIsLoading] = useState(true)
+  const loadPromoProducts = async () => {
+    setIsLoading(true)
+    try {
+      const res = await fetch('/api/admin/promos')
+      if (res.ok) {
+        const data = await res.json()
+        if (data.success) {
+          setPromoProducts(data.promos || [])
+        } else {
+          toast.error(data.error || 'Gagal memuat promo')
+        }
+      } else {
+        toast.error('Gagal memuat promo')
+      }
+    } catch (error) {
+      console.error('Error loading promos:', error)
+      toast.error('Gagal memuat promo')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   useEffect(() => {
     loadPromoProducts()
+    loadProducts()
   }, [])
 
   const filteredPromoProducts = promoProducts.filter(promo => {

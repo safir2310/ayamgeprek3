@@ -24,6 +24,7 @@ export function CategoryManagement() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -32,46 +33,29 @@ export function CategoryManagement() {
 
   const icons = ['📦', '🍗', '🍟', '🧃', '🍕', '🍰', '🍦', '☕', '🥤', '🍿', '🧸', '📱', '👕', '🧴', '🧊']
 
-  const loadCategories = () => {
-    // Mock categories - will be replaced with API call
-    setCategories([
-      {
-        id: '1',
-        name: 'Makanan',
-        description: 'Segala jenis makanan',
-        icon: '🍗',
-        productCount: 25,
-        createdAt: new Date()
-      },
-      {
-        id: '2',
-        name: 'Minuman',
-        description: 'Segala jenis minuman',
-        icon: '🧃',
-        productCount: 18,
-        createdAt: new Date()
-      },
-      {
-        id: '3',
-        name: 'Snack',
-        description: 'Makanan ringan dan cemilan',
-        icon: '🍟',
-        productCount: 12,
-        createdAt: new Date()
-      },
-      {
-        id: '4',
-        name: 'Lainnya',
-        description: 'Kategori lainnya',
-        icon: '📦',
-        productCount: 8,
-        createdAt: new Date()
-      },
-    ])
+  const loadCategories = async () => {
+    setIsLoading(true)
+    try {
+      const res = await fetch('/api/admin/categories')
+      if (res.ok) {
+        const data = await res.json()
+        if (data.success) {
+          setCategories(data.categories || [])
+        } else {
+          toast.error(data.error || 'Gagal memuat kategori')
+        }
+      } else {
+        toast.error('Gagal memuat kategori')
+      }
+    } catch (error) {
+      console.error('Error loading categories:', error)
+      toast.error('Gagal memuat kategori')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadCategories()
   }, [])
 
@@ -103,10 +87,23 @@ export function CategoryManagement() {
     if (!confirm('Apakah Anda yakin ingin menghapus kategori ini?')) return
 
     try {
-      // Mock delete - will be replaced with API call
-      setCategories(prev => prev.filter(c => c.id !== id))
-      toast.success('✅ Kategori berhasil dihapus!')
+      const res = await fetch(`/api/admin/categories?id=${id}`, {
+        method: 'DELETE',
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        if (data.success) {
+          setCategories(prev => prev.filter(c => c.id !== id))
+          toast.success('✅ Kategori berhasil dihapus!')
+        } else {
+          toast.error(data.error || 'Gagal menghapus kategori')
+        }
+      } else {
+        toast.error('Gagal menghapus kategori')
+      }
     } catch (error) {
+      console.error('Error deleting category:', error)
       toast.error('Gagal menghapus kategori')
     }
   }
@@ -120,36 +117,33 @@ export function CategoryManagement() {
     }
 
     try {
-      const categoryData = {
-        name: formData.name.trim(),
-        description: formData.description.trim(),
-        icon: formData.icon
-      }
+      const res = await fetch('/api/admin/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
 
-      if (editingCategory) {
-        // Update existing category
-        setCategories(prev =>
-          prev.map(c =>
-            c.id === editingCategory.id
-              ? { ...c, ...categoryData }
-              : c
-          )
-        )
-        toast.success('✅ Kategori berhasil diperbarui!')
-      } else {
-        // Add new category
-        const newCategory: Category = {
-          id: Date.now().toString(),
-          ...categoryData,
-          productCount: 0,
-          createdAt: new Date()
+      if (res.ok) {
+        const data = await res.json()
+        if (data.success) {
+          if (editingCategory) {
+            setCategories(prev =>
+              prev.map(c =>
+                c.id === editingCategory.id ? data.category : c
+              ))
+          } else {
+            setCategories(prev => [...prev, data.category])
+          }
+          toast.success(data.message || '✅ Kategori berhasil disimpan!')
+        } else {
+          toast.error(data.error || 'Gagal menyimpan kategori')
         }
-        setCategories(prev => [...prev, newCategory])
-        toast.success('✅ Kategori berhasil ditambahkan!')
+      } else {
+        toast.error('Gagal menyimpan kategori')
       }
-
       setIsModalOpen(false)
     } catch (error) {
+      console.error('Error saving category:', error)
       toast.error('Gagal menyimpan kategori')
     }
   }
@@ -189,7 +183,17 @@ export function CategoryManagement() {
       {/* Categories Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <AnimatePresence>
-          {filteredCategories.map((category, index) => (
+          {isLoading ? (
+            <div className="text-center py-12 text-gray-500">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+              <p>Memuat kategori...</p>
+            </div>
+          ) : filteredCategories.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              <Layers className="h-16 w-16 mx-auto mb-4 opacity-50" />
+              <p>Tidak ada kategori ditemukan</p>
+            </div>
+          ) : filteredCategories.map((category, index) => (
             <motion.div
               key={category.id}
               initial={{ opacity: 0, y: 20 }}
@@ -207,8 +211,8 @@ export function CategoryManagement() {
                       {category.productCount} Produk
                     </Badge>
                   </div>
-                  <CardTitle className="text-lg">{category.name}</CardTitle>
                 </CardHeader>
+                <CardTitle className="text-lg">{category.name}</CardTitle>
                 <CardContent className="space-y-3">
                   {category.description && (
                     <p className="text-sm text-gray-600">{category.description}</p>
@@ -240,34 +244,27 @@ export function CategoryManagement() {
         </AnimatePresence>
       </div>
 
-      {filteredCategories.length === 0 && (
-        <div className="text-center py-12 text-gray-500">
-          <Layers className="h-16 w-16 mx-auto mb-4 opacity-50" />
-          <p>Tidak ada kategori ditemukan</p>
-        </div>
-      )}
-
       {/* Add/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-xs p-3">
+        <DialogContent className="max-w-sm p-3">
           <DialogHeader className="pb-2">
-            <DialogTitle className="text-base font-semibold">
-              {editingCategory ? 'Edit Kategori' : 'Tambah Kategori'}
+            <DialogTitle className="text-sm font-semibold">
+              {editingCategory ? 'Edit Kategori' : 'Tambah Kategori Baru'}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-2">
+          <form onSubmit={handleSubmit} className="space-y-3">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-0.5">Nama Kategori *</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Nama Kategori *</label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Nama kategori"
                 required
-                className="h-8 text-xs px-2"
+                className="h-7 text-xs px-2"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-0.5">Deskripsi</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Deskripsi</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -293,7 +290,7 @@ export function CategoryManagement() {
                 ))}
               </div>
             </div>
-            <div className="flex gap-2 pt-1">
+            <div className="flex gap-2 pt-2">
               <Button
                 type="button"
                 variant="outline"

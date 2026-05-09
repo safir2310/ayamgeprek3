@@ -30,39 +30,30 @@ export function SalesReports() {
   const [dailySales, setDailySales] = useState<DailySale[]>([])
   const [topProducts, setTopProducts] = useState<ProductSale[]>([])
   const [categorySales, setCategorySales] = useState<CategorySale[]>([])
+  const [isLoading, setIsLoading] = useState(false)
 
-  const loadData = () => {
-    // Mock data - will be replaced with API call
-    const days = selectedPeriod === 'week' ? 7 : selectedPeriod === 'month' ? 30 : 90
-    const mockDailySales: DailySale[] = []
-    const today = new Date()
-
-    for (let i = days - 1; i >= 0; i--) {
-      const date = new Date(today)
-      date.setDate(date.getDate() - i)
-      mockDailySales.push({
-        date: date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }),
-        revenue: Math.floor(Math.random() * 500000) + 200000,
-        orders: Math.floor(Math.random() * 30) + 10,
-      })
+  const loadData = async () => {
+    setIsLoading(true)
+    try {
+      const res = await fetch(`/api/admin/sales-reports?period=${selectedPeriod}`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.success) {
+          setDailySales(data.dailySales || [])
+          setTopProducts(data.topProducts || [])
+          setCategorySales(data.categorySales || [])
+        } else {
+          toast.error(data.error || 'Gagal mengambil data laporan')
+        }
+      } else {
+        toast.error('Gagal mengambil data laporan')
+      }
+    } catch (error) {
+      console.error('Error loading sales reports:', error)
+      toast.error('Gagal mengambil data laporan')
+    } finally {
+      setIsLoading(false)
     }
-
-    setDailySales(mockDailySales)
-
-    setTopProducts([
-      { name: 'Ayam Geprek Sambal Ijo', quantity: 150, revenue: 2700000 },
-      { name: 'Es Teh Manis', quantity: 200, revenue: 1000000 },
-      { name: 'Kentang Goreng', quantity: 80, revenue: 960000 },
-      { name: 'Ayam Geprek Sambal Merah', quantity: 120, revenue: 2160000 },
-      { name: 'Air Mineral', quantity: 180, revenue: 720000 },
-    ])
-
-    const totalRevenue = 7540000
-    setCategorySales([
-      { category: 'Makanan', revenue: 4860000, percentage: 64 },
-      { category: 'Minuman', revenue: 1720000, percentage: 23 },
-      { category: 'Snack', revenue: 960000, percentage: 13 },
-    ])
   }
 
   useEffect(() => {
@@ -71,11 +62,11 @@ export function SalesReports() {
 
   const totalRevenue = dailySales.reduce((sum, day) => sum + day.revenue, 0)
   const totalOrders = dailySales.reduce((sum, day) => sum + day.orders, 0)
-  const avgRevenue = Math.round(totalRevenue / dailySales.length)
-  const avgOrders = Math.round(totalOrders / dailySales.length)
+  const avgRevenue = dailySales.length > 0 ? Math.round(totalRevenue / dailySales.length) : 0
+  const avgOrders = dailySales.length > 0 ? Math.round(totalOrders / dailySales.length) : 0
 
-  const maxRevenue = Math.max(...dailySales.map(d => d.revenue))
-  const maxOrders = Math.max(...dailySales.map(d => d.orders))
+  const maxRevenue = dailySales.length > 0 ? Math.max(...dailySales.map(d => d.revenue)) : 0
+  const maxOrders = dailySales.length > 0 ? Math.max(...dailySales.map(d => d.orders)) : 0
 
   const periodLabel = {
     week: '7 Hari Terakhir',
@@ -91,12 +82,10 @@ export function SalesReports() {
           <h2 className="text-2xl font-bold text-gray-800">Laporan Penjualan</h2>
           <p className="text-gray-600">Analisis dan ringkasan performa penjualan</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-        </div>
+        <Button variant="outline" size="sm">
+          <Download className="h-4 w-4 mr-2" />
+          Export
+        </Button>
       </div>
 
       {/* Period Filter */}
@@ -235,7 +224,7 @@ export function SalesReports() {
           <div className="space-y-4">
             <div className="flex items-end gap-2 h-48">
               {dailySales.map((day, index) => {
-                const height = (day.revenue / maxRevenue) * 100
+                const height = day.revenue > 0 ? (day.revenue / maxRevenue) * 100 : 0
                 return (
                   <motion.div
                     key={index}
@@ -280,7 +269,16 @@ export function SalesReports() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {topProducts.map((product, index) => (
+              {isLoading ? (
+                <div className="text-center py-8 text-gray-500">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
+                  <p>Memuat data...</p>
+                </div>
+              ) : topProducts.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <p>Tidak ada data penjualan</p>
+                </div>
+              ) : topProducts.map((product, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, x: -20 }}
@@ -305,10 +303,11 @@ export function SalesReports() {
                   <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
-                      animate={{ width: `${(product.revenue / topProducts[0].revenue) * 100}%` }}
+                      animate={{ width: `${(product.revenue / (topProducts[0]?.revenue || 1)) * 100}%` }}
                       transition={{ delay: index * 0.1 + 0.2 }}
                       className="bg-gradient-to-r from-red-600 to-orange-500 h-full rounded-full"
                     />
+                  </motion.div>
                   </div>
                 </motion.div>
               ))}
@@ -326,7 +325,16 @@ export function SalesReports() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {categorySales.map((category, index) => (
+              {isLoading ? (
+                <div className="text-center py-8 text-gray-500">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
+                  <p>Memuat data...</p>
+                </div>
+              ) : categorySales.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <p>Tidak ada data penjualan</p>
+                </div>
+              ) : categorySales.map((category, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, x: -20 }}
@@ -356,6 +364,7 @@ export function SalesReports() {
                           : 'bg-gradient-to-r from-green-600 to-teal-500'
                       }`}
                     />
+                  </motion.div>
                   </div>
                 </motion.div>
               ))}
