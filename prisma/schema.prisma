@@ -81,6 +81,8 @@ model Product {
   price       Int
   discountPrice Int?
   discountPercent Int?
+  promoStartDate DateTime? // Tanggal mulai promo
+  promoEndDate   DateTime? // Tanggal berakhir promo
   stock       Int      @default(0)
   barcode     String?  @unique
   image       String?

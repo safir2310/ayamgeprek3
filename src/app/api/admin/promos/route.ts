@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { verifyToken } from '@/lib/auth'
 
+// Fungsi untuk menghitung persen diskon yang lebih akurat
+function calculateDiscountPercent(originalPrice: number, promoPrice: number): number {
+  // Menggunakan presisi desimal tinggi untuk perhitungan yang lebih akurat
+  const discount = originalPrice - promoPrice
+  const percent = (discount / originalPrice) * 100
+
+  // Membulatkan ke 1 desimal untuk akurasi yang lebih baik
+  return Math.round(percent * 10) / 10
+}
+
 // GET - Fetch all promos
 export async function GET(request: NextRequest) {
   try {
@@ -17,13 +27,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
-    // Trust token's role directly instead of querying database
     if (decoded.role !== 'admin') {
       console.log('[API] User is not admin, role from token:', decoded.role)
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Fetch all promos with product info
+    // Fetch all products with promo enabled
     const promos = await db.product.findMany({
       where: {
         isPromo: true,
@@ -35,19 +44,26 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      promos: promos.map(p => ({
-        id: p.id,
-        productId: p.id,
-        productName: p.name,
-        productImage: p.image || '',
-        originalPrice: p.price,
-        promoPrice: p.discountPrice || 0,
-        discountPercent: p.discountPercent || 0,
-        startDate: p.createdAt,
-        endDate: p.updatedAt,
-        isActive: p.isPromo,
-        createdAt: p.createdAt,
-      })),
+      promos: promos.map(p => {
+        // Hitung ulang diskon persen untuk memastikan akurasi
+        const originalPrice = p.price
+        const promoPrice = p.discountPrice || 0
+        const discountPercent = promoPrice > 0 ? calculateDiscountPercent(originalPrice, promoPrice) : 0
+
+        return {
+          id: p.id,
+          productId: p.id,
+          productName: p.name,
+          productImage: p.image || '',
+          originalPrice: originalPrice,
+          promoPrice: promoPrice,
+          discountPercent: discountPercent,
+          startDate: p.promoStartDate || p.createdAt,
+          endDate: p.promoEndDate || p.updatedAt,
+          isActive: p.isPromo,
+          createdAt: p.createdAt,
+        }
+      }),
     })
   } catch (error) {
     console.error('[API] Error fetching promos:', error)
@@ -102,15 +118,37 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const discountPercent = Math.round(((originalPrice - promoPrice) / originalPrice) * 100)
+    // Validasi tanggal
+    const promoStartDate = new Date(startDate)
+    const promoEndDate = new Date(endDate)
 
+    if (isNaN(promoStartDate.getTime()) || isNaN(promoEndDate.getTime())) {
+      return NextResponse.json(
+        { success: false, error: 'Format tanggal tidak valid' },
+        { status: 400 }
+      )
+    }
+
+    if (promoEndDate <= promoStartDate) {
+      return NextResponse.json(
+        { success: false, error: 'Tanggal berakhir harus setelah tanggal mulai' },
+        { status: 400 }
+      )
+    }
+
+    // Hitung persen diskon yang lebih akurat
+    const discountPercent = calculateDiscountPercent(originalPrice, promoPrice)
+
+    // Update product dengan data promo
     const product = await db.product.update({
       where: { id: productId },
       data: {
+        price: originalPrice,
         discountPrice: promoPrice,
         discountPercent: discountPercent,
+        promoStartDate: promoStartDate,
+        promoEndDate: promoEndDate,
         isPromo: isActive,
-        updatedAt: new Date(endDate),
       },
     })
 
@@ -125,8 +163,8 @@ export async function POST(request: NextRequest) {
         originalPrice,
         promoPrice,
         discountPercent,
-        startDate: product.createdAt,
-        endDate: product.updatedAt,
+        startDate: product.promoStartDate,
+        endDate: product.promoEndDate,
         isActive: product.isPromo,
         createdAt: product.createdAt,
       },
@@ -170,12 +208,15 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
+    // Hapus promo dengan menghapus data promo dari produk
     await db.product.update({
       where: { id },
       data: {
         isPromo: false,
         discountPrice: null,
         discountPercent: null,
+        promoStartDate: null,
+        promoEndDate: null,
       },
     })
 

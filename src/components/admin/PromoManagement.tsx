@@ -257,13 +257,18 @@ export function PromoManagement() {
   }
 
   const calculateDiscountPercent = (original: number, promo: number) => {
-    return Math.round(((original - promo) / original) * 100)
+    // Menggunakan presisi desimal tinggi untuk perhitungan yang lebih akurat
+    const discount = original - promo
+    const percent = (discount / original) * 100
+
+    // Membulatkan ke 1 desimal untuk akurasi yang lebih baik
+    return Math.round(percent * 10) / 10
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.productName || !formData.originalPrice || !formData.promoPrice) {
+    if (!formData.productName || !formData.originalPrice || !formData.promoPrice || !formData.startDate || !formData.endDate) {
       toast.error('Mohon lengkapi semua data yang diperlukan!')
       return
     }
@@ -273,6 +278,20 @@ export function PromoManagement() {
 
     if (promoPrice >= originalPrice) {
       toast.error('Harga promo harus lebih rendah dari harga asli!')
+      return
+    }
+
+    // Validasi tanggal
+    const startDate = new Date(formData.startDate)
+    const endDate = new Date(formData.endDate)
+
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      toast.error('Format tanggal tidak valid!')
+      return
+    }
+
+    if (endDate <= startDate) {
+      toast.error('Tanggal berakhir harus setelah tanggal mulai!')
       return
     }
 
@@ -297,8 +316,8 @@ export function PromoManagement() {
         productId: product.id,
         originalPrice,
         promoPrice,
-        startDate: new Date(formData.startDate),
-        endDate: new Date(formData.endDate),
+        startDate: formData.startDate,
+        endDate: formData.endDate,
         isActive: formData.isActive
       }
 
@@ -524,11 +543,13 @@ export function PromoManagement() {
                   </div>
                   <div className="flex items-center justify-center bg-green-100 text-green-700 rounded-md py-1">
                     <Percent className="h-3 w-3 mr-1" />
-                    <span className="font-bold">Diskon {promo.discountPercent}%</span>
+                    <span className="font-bold">
+                      Diskon {promo.discountPercent % 1 === 0 ? promo.discountPercent : promo.discountPercent.toFixed(1)}%
+                    </span>
                   </div>
                   <div className="text-sm text-gray-600">
                     <Calendar className="h-3 w-3 inline mr-1" />
-                    s/d {new Date(promo.endDate).toLocaleDateString('id-ID')}
+                    {new Date(promo.startDate).toLocaleDateString('id-ID')} - {new Date(promo.endDate).toLocaleDateString('id-ID')}
                   </div>
                   <div className="flex gap-2 pt-3 border-t">
                   <Button
@@ -620,7 +641,10 @@ export function PromoManagement() {
             {formData.originalPrice && formData.promoPrice && (
               <div className="bg-green-100 text-green-700 rounded-lg p-3 text-center">
                 <span className="font-bold text-lg">
-                  Diskon: {calculateDiscountPercent(parseInt(formData.originalPrice), parseInt(formData.promoPrice))}%
+                  Diskon: {(() => {
+                    const percent = calculateDiscountPercent(parseInt(formData.originalPrice), parseInt(formData.promoPrice))
+                    return percent % 1 === 0 ? percent : percent.toFixed(1)
+                  })()}%
                 </span>
               </div>
             )}
