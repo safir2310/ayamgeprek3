@@ -32,10 +32,13 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    console.log('[AdminPIN] Found admin user:', adminUser ? 'Yes' : 'No')
+
     // Create admin user if doesn't exist
     if (!adminUser) {
+      console.log('[AdminPIN] Creating new admin user...')
       const hashedPassword = await hash('admin123', 10)
-      
+
       adminUser = await db.user.create({
         data: {
           email: 'admin@ayamgeprek.com',
@@ -50,6 +53,9 @@ export async function POST(request: NextRequest) {
           address: 'Jl. Medan – Banda Aceh, Simpang Camat, Gampong Tijue, 24151',
         }
       })
+      console.log('[AdminPIN] Created admin user, ID:', adminUser.id)
+    } else {
+      console.log('[AdminPIN] Existing admin user, ID:', adminUser.id, 'Role:', adminUser.role)
     }
 
     // Generate admin token with real user ID

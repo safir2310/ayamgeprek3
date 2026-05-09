@@ -74,12 +74,24 @@ export function PointRedemptionManagement() {
 
     setIsAutoLoggingIn(true)
     const result = await autoLoginAsAdmin()
-    setIsAutoLoggingIn(false)
 
     if (result.success) {
-      // The store will be updated by autoLoginAsAdmin, so the useEffect will trigger again
+      console.log('[Component] Auto-login successful, loading data directly...')
+
+      // Wait for store to update
+      await new Promise(resolve => setTimeout(resolve, 300))
+
+      // Get fresh state from store
+      const { user: freshUser, token: freshToken } = useStore.getState()
+      console.log('[Component] Fresh user from store:', freshUser)
+
+      // Load data with fresh user
+      setIsAutoLoggingIn(false)
+      await loadRedemptions()
+      await loadProducts()
     } else {
-      console.error('Auto-login failed:', result.error)
+      console.error('[Component] Auto-login failed:', result.error)
+      setIsAutoLoggingIn(false)
     }
   }
 

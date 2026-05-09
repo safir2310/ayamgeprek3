@@ -7,22 +7,33 @@ export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('[API] No authorization header')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const token = authHeader.substring(7)
+    console.log('[API] Token received:', token.substring(0, 30) + '...')
     const decoded = await verifyToken(token)
 
     if (!decoded || !decoded.userId) {
+      console.log('[API] Token verification failed, decoded:', decoded)
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
+
+    console.log('[API] Decoded user:', { userId: decoded.userId, role: decoded.role })
 
     // Check if user is admin
     const user = await db.user.findUnique({
       where: { id: decoded.userId },
     })
 
-    if (!user || user.role !== 'admin') {
+    if (!user) {
+      console.log('[API] User not found:', decoded.userId)
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    if (user.role !== 'admin') {
+      console.log('[API] User is not admin, role:', user.role)
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -31,9 +42,10 @@ export async function GET(request: NextRequest) {
       orderBy: { order: 'asc' },
     })
 
+    console.log('[API] Found', redemptions.length, 'redemptions')
     return NextResponse.json({ redemptions })
   } catch (error) {
-    console.error('Error fetching point redemptions:', error)
+    console.error('[API] Error fetching point redemptions:', error)
     return NextResponse.json(
       { error: 'Gagal mengambil data penukaran poin' },
       { status: 500 }
