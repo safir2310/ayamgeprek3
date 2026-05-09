@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Fetch all point vouchers (redemption history) with user and product details
+    // Fetch all point vouchers (redemption history) with user details
     const vouchers = await db.pointVoucher.findMany({
       include: {
         user: {
@@ -33,14 +33,6 @@ export async function GET(request: NextRequest) {
             name: true,
             email: true,
             phone: true,
-          },
-        },
-        product: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
-            price: true,
           },
         },
       },

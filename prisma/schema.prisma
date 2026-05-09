@@ -212,6 +212,9 @@ model PointVoucher {
   code           String   @unique
   pointsRequired Int
   productId      String
+  productName    String?
+  productImage   String?
+  productPrice   Int?
   userId         String
   isUsed         Boolean  @default(false)
   usedOrderId    String?

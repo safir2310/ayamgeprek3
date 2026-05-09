@@ -81,11 +81,18 @@ export async function POST(request: NextRequest) {
     const voucherCode = `VOUCHER${Date.now()}${Math.random().toString(36).substring(2, 8).toUpperCase()}`
 
     // Create point voucher with product details
+    const product = await db.product.findUnique({
+      where: { id: redemption.productId }
+    })
+
     const pointVoucher = await db.pointVoucher.create({
       data: {
         code: voucherCode,
         pointsRequired: redemption.pointsRequired,
         productId: redemption.productId,
+        productName: product?.name || redemption.name,
+        productImage: product?.image || redemption.productImage,
+        productPrice: product?.price || 0,
         userId: decoded.userId,
       },
     })

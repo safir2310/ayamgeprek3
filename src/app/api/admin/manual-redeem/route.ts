@@ -73,6 +73,9 @@ export async function POST(request: NextRequest) {
         code: voucherCode,
         pointsRequired: redemption.pointsRequired,
         productId: redemption.productId,
+        productName: redemption.product?.name || redemption.name,
+        productImage: redemption.product?.image || redemption.productImage,
+        productPrice: redemption.product?.price || 0,
         userId: userId,
       },
     })
