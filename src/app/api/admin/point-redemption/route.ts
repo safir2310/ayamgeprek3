@@ -65,10 +65,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { name, description, pointsRequired, productId, productImage, active, order } = await request.json()
+    const body = await request.json()
+    console.log('POST - Body received:', body)
+    const { name, description, pointsRequired, productId, productImage, active, order } = body
 
     // Validate required fields
     if (!name || !description || !pointsRequired || !productId) {
+      console.error('POST - Validation failed: Missing required fields')
       return NextResponse.json(
         { error: 'Semua field wajib diisi' },
         { status: 400 }
@@ -77,6 +80,7 @@ export async function POST(request: NextRequest) {
 
     // Validate pointsRequired
     if (pointsRequired < 0) {
+      console.error('POST - Validation failed: Invalid pointsRequired')
       return NextResponse.json(
         { error: 'Poin harus bernilai positif' },
         { status: 400 }
@@ -89,11 +93,14 @@ export async function POST(request: NextRequest) {
     })
 
     if (!product) {
+      console.error('POST - Validation failed: Product not found', productId)
       return NextResponse.json(
         { error: 'Produk tidak ditemukan' },
         { status: 404 }
       )
     }
+
+    console.log('POST - Creating redemption:', { name, description, pointsRequired, productId })
 
     // Create point redemption option
     const redemption = await db.pointRedemption.create({
@@ -107,6 +114,8 @@ export async function POST(request: NextRequest) {
         order: order || 0,
       },
     })
+
+    console.log('POST - Redemption created:', redemption.id)
 
     return NextResponse.json({
       success: true,

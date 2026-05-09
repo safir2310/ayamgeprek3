@@ -109,8 +109,14 @@ export function PointRedemptionManagement() {
       } else if (res.status === 401) {
         // Silently handle 401, don't show notification
       } else {
-        const errorData = await res.json()
-        toast.error(errorData.error || 'Gagal mengambil data penukaran poin')
+        const errorText = await res.text()
+        console.error('Error loading redemptions:', errorText)
+        try {
+          const errorData = JSON.parse(errorText)
+          toast.error(errorData.error || 'Gagal mengambil data penukaran poin')
+        } catch {
+          toast.error('Gagal mengambil data penukaran poin')
+        }
       }
     } catch (error) {
       console.error('Error loading redemptions:', error)
@@ -183,8 +189,14 @@ export function PointRedemptionManagement() {
       } else if (res.status === 401) {
         // Silently handle 401, don't show notification
       } else {
-        const errorData = await res.json()
-        toast.error(errorData.error || 'Gagal menghapus opsi penukaran')
+        const errorText = await res.text()
+        console.error('Error deleting redemption:', errorText)
+        try {
+          const errorData = JSON.parse(errorText)
+          toast.error(errorData.error || 'Gagal menghapus opsi penukaran')
+        } catch {
+          toast.error('Gagal menghapus opsi penukaran')
+        }
       }
     } catch (error) {
       console.error('Error deleting redemption:', error)
@@ -212,8 +224,14 @@ export function PointRedemptionManagement() {
       } else if (res.status === 401) {
         // Silently handle 401, don't show notification
       } else {
-        const errorData = await res.json()
-        toast.error(errorData.error || 'Gagal mengubah status opsi penukaran')
+        const errorText = await res.text()
+        console.error('Error toggling active:', errorText)
+        try {
+          const errorData = JSON.parse(errorText)
+          toast.error(errorData.error || 'Gagal mengubah status opsi penukaran')
+        } catch {
+          toast.error('Gagal mengubah status opsi penukaran')
+        }
       }
     } catch (error) {
       console.error('Error toggling active:', error)
@@ -300,16 +318,28 @@ export function PointRedemptionManagement() {
             setShowDialog(false)
             loadRedemptions()
           } else {
-            const errorData = await retryRes.json()
-            console.error('Retry error:', errorData)
+            const errorText = await retryRes.text()
+            console.error('Retry error response:', errorText)
+            let errorData: any
+            try {
+              errorData = JSON.parse(errorText)
+            } catch {
+              errorData = { error: errorText || 'Gagal menyimpan setelah login' }
+            }
             toast.error(errorData.error || 'Gagal menyimpan setelah login')
           }
         } else {
           toast.error('Gagal login sebagai admin')
         }
       } else {
-        const errorData = await res.json()
-        console.error('Error response:', errorData)
+        const errorText = await res.text()
+        console.error('Error response text:', errorText)
+        let errorData: any
+        try {
+          errorData = JSON.parse(errorText)
+        } catch {
+          errorData = { error: errorText || 'Gagal menyimpan opsi penukaran' }
+        }
         toast.error(errorData.error || 'Gagal menyimpan opsi penukaran')
       }
     } catch (error) {
