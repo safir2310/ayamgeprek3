@@ -2175,13 +2175,31 @@ export default function HomePage() {
                       >
                         <CardContent className="p-4">
                           <div className="flex gap-4">
-                            <div className="w-20 h-20 bg-gradient-to-br from-red-100 to-orange-100 rounded-lg flex items-center justify-center text-4xl flex-shrink-0">
-                              {redemption.productImage || '🎁'}
+                            <div className="w-20 h-20 bg-gradient-to-br from-red-100 to-orange-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                              {redemption.product?.image || redemption.productImage ? (
+                                <img
+                                  src={redemption.product?.image || redemption.productImage}
+                                  alt={redemption.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <span className="text-4xl">🎁</span>
+                              )}
                             </div>
                             <div className="flex-1">
                               <h4 className="font-semibold text-gray-800 mb-1">
                                 {redemption.name}
                               </h4>
+                              {redemption.product && (
+                                <p className="text-xs text-gray-500 mb-1">
+                                  Produk: {redemption.product.name}
+                                </p>
+                              )}
+                              {redemption.product?.price && (
+                                <p className="text-xs text-gray-500 mb-1">
+                                  Harga: Rp {redemption.product.price.toLocaleString()}
+                                </p>
+                              )}
                               <p className="text-xs text-gray-500 mb-2 line-clamp-2">
                                 {redemption.description}
                               </p>
