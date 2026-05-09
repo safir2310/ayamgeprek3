@@ -43,18 +43,7 @@ export function PromoManagement() {
     endDate: '',
     isActive: true
   })
-
   const [products, setProducts] = useState<any[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isAutoLoggingIn, setIsAutoLoggingIn] = useState(false)
-  const [formData, setFormData] = useState({
-    productName: '',
-    originalPrice: '',
-    promoPrice: '',
-    startDate: '',
-    endDate: '',
-    isActive: true
-  })
 
   // Auto-login on mount
   useEffect(() => {
@@ -300,7 +289,7 @@ export function PromoManagement() {
       if (res.ok) {
         const data = await res.json()
         if (data.success) {
-          toast.success(editingPromo ? '✅ Promo berhasil diperbarui!' : '✅ Promo berhasil ditambahkan!')
+          toast.success('✅ Promo berhasil ditambahkan!')
           loadPromoProducts()
         } else {
           toast.error(data.error || 'Gagal menyimpan promo')
@@ -323,7 +312,7 @@ export function PromoManagement() {
           if (retryRes.ok) {
             const retryData = await retryRes.json()
             if (retryData.success) {
-              toast.success(editingPromo ? '✅ Promo berhasil diperbarui!' : '✅ Promo berhasil ditambahkan!')
+              toast.success('✅ Promo berhasil ditambahkan!')
               loadPromoProducts()
             } else {
               toast.error(retryData.error || 'Gagal menyimpan promo')
@@ -462,7 +451,17 @@ export function PromoManagement() {
       {/* Promo Products Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <AnimatePresence>
-          {filteredPromoProducts.map((promo, index) => (
+          {isLoading ? (
+            <div className="text-center py-12 text-gray-500">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+              <p>Memuat promo...</p>
+            </div>
+          ) : filteredPromoProducts.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              <Gift className="h-16 w-16 mx-auto mb-4 opacity-50" />
+              <p>Tidak ada promo ditemukan</p>
+            </div>
+          ) : filteredPromoProducts.map((promo, index) => (
             <motion.div
               key={promo.id}
               initial={{ opacity: 0, y: 20 }}
@@ -470,19 +469,19 @@ export function PromoManagement() {
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ delay: index * 0.05 }}
             >
-              <Card className="h-full hover:shadow-xl transition-all duration-300 overflow-hidden">
+              <Card className="h-full hover:shadow-xl transition-all duration-300 relative">
                 <div className="absolute top-3 right-3 z-10">
                   {getStatusBadge(promo)}
                 </div>
                 <div className="absolute top-0 left-0 bg-gradient-to-r from-red-600 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-br-lg">
                   PROMO
                 </div>
-                <CardHeader className="pb-3 pt-8">
+                <CardHeader className="pb-3">
                   <div className="w-20 h-20 bg-gradient-to-br from-red-50 to-orange-50 rounded-lg overflow-hidden flex items-center justify-center text-4xl">
                     {promo.productImage}
                   </div>
-                  <CardTitle className="text-lg line-clamp-2">{promo.productName}</CardTitle>
                 </CardHeader>
+                <CardTitle className="text-lg line-clamp-2">{promo.productName}</CardTitle>
                 <CardContent className="space-y-3">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
@@ -497,37 +496,38 @@ export function PromoManagement() {
                         Rp {promo.promoPrice.toLocaleString()}
                       </span>
                     </div>
-                    <div className="flex items-center justify-center bg-green-100 text-green-700 rounded-md py-1">
-                      <Percent className="h-3 w-3 mr-1" />
-                      <span className="font-bold">Diskon {promo.discountPercent}%</span>
-                    </div>
+                  </div>
+                  <div className="flex items-center justify-center bg-green-100 text-green-700 rounded-md py-1">
+                    <Percent className="h-3 w-3 mr-1" />
+                    <span className="font-bold">Diskon {promo.discountPercent}%</span>
                   </div>
                   <div className="text-sm text-gray-600">
                     <Calendar className="h-3 w-3 inline mr-1" />
                     s/d {new Date(promo.endDate).toLocaleDateString('id-ID')}
                   </div>
-                  <div className="flex gap-2 pt-3 border-t">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => handleEdit(promo)}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 text-red-600 hover:bg-red-50"
-                      onClick={() => handleDelete(promo.id)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Hapus
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                </div>
+                <div className="flex gap-2 pt-3 border-t">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => handleEdit(promo)}
+                  >
+                    <Edit className="h-4 w-4 mr-1" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 text-red-600 hover:bg-red-50"
+                    onClick={() => handleDelete(promo.id)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Hapus
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
             </motion.div>
           ))}
         </AnimatePresence>
@@ -543,14 +543,14 @@ export function PromoManagement() {
       {/* Add/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-md p-4">
-          <DialogHeader className="pb-3">
-            <DialogTitle className="text-lg font-semibold">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-sm font-semibold">
               {editingPromo ? 'Edit Promo' : 'Tambah Promo Baru'}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Produk *</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Produk *</label>
               <select
                 value={formData.productName}
                 onChange={(e) => setFormData({ ...formData, productName: e.target.value })}
@@ -568,7 +568,7 @@ export function PromoManagement() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Harga Asli (Rp) *</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Harga Asli (Rp) *</label>
                 <Input
                   type="number"
                   value={formData.originalPrice}
@@ -576,10 +576,11 @@ export function PromoManagement() {
                   placeholder="15000"
                   required
                   min="0"
+                  className="h-7 text-xs px-2"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Harga Promo (Rp) *</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Harga Promo (Rp) *</label>
                 <Input
                   type="number"
                   value={formData.promoPrice}
@@ -587,6 +588,7 @@ export function PromoManagement() {
                   placeholder="12000"
                   required
                   min="0"
+                  className="h-7 text-xs px-2"
                 />
               </div>
             </div>
@@ -601,21 +603,23 @@ export function PromoManagement() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai *</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Tanggal Mulai *</label>
                 <Input
                   type="date"
                   value={formData.startDate}
                   onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                   required
+                  className="h-7 text-xs px-2"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal Berakhir *</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Tanggal Berakhir *</label>
                 <Input
                   type="date"
                   value={formData.endDate}
                   onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                   required
+                  className="h-7 text-xs px-2"
                 />
               </div>
             </div>
@@ -628,7 +632,7 @@ export function PromoManagement() {
                 onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                 className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
               />
-              <label htmlFor="isActive" className="text-sm font-medium text-gray-700">
+              <label htmlFor="isActive" className="text-xs font-medium text-gray-700">
                 Aktifkan Promo
               </label>
             </div>
@@ -637,17 +641,17 @@ export function PromoManagement() {
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1"
+                className="flex-1 h-6 text-xs"
                 onClick={() => setIsModalOpen(false)}
               >
-                <X className="h-4 w-4 mr-2" />
+                <X className="h-2.5 w-2.5 mr-1" />
                 Batal
               </Button>
               <Button
                 type="submit"
-                className="flex-1 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
+                className="flex-1 h-6 text-xs bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
               >
-                <Save className="h-4 w-4 mr-2" />
+                <Save className="h-2.5 w-2.5 mr-1" />
                 Simpan
               </Button>
             </div>
