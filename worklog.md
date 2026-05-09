@@ -105,3 +105,36 @@ Stage Summary:
 - Language: ✓ Active - 6 languages with database save and auto-close modal
 - Notification Tones: ✓ Active - 6 tones with audio playback, database save, auto-close modal
 - Theme: ✓ Active - Light/Dark with database save and auto-close modal
+
+---
+Task ID: 5
+Agent: Z.ai Code
+Task: Connect Voucher Management page to database
+
+Work Log:
+- Created new API endpoint at /api/admin/vouchers/route.ts for voucher CRUD operations
+- Updated VoucherManagement.tsx component to use database API instead of mock data
+- Implemented GET, POST, and DELETE methods for voucher management
+- Added loading state to show "Memuat data voucher..." while fetching
+- Updated loadVouchers() function to fetch from /api/admin/vouchers with authentication
+- Updated handleSubmit() to save vouchers to database via POST request
+- Updated handleDelete() to delete vouchers from database via DELETE request
+- Added error handling with toast notifications for all API operations
+- Verified PointRedemptionAdmin and PointVoucherManagement components already connected to database APIs
+
+Stage Summary:
+- Voucher Management: ✓ Active - fully connected to database with CRUD operations
+- Voucher List: Loads from database via /api/admin/vouchers GET endpoint
+- Create Voucher: Saves to database via /api/admin/vouchers POST endpoint
+- Edit Voucher: Updates existing voucher in database via /api/admin/vouchers POST endpoint
+- Delete Voucher: Removes from database via /api/admin/vouchers DELETE endpoint
+- Point Redemption Admin: ✓ Already active - uses /api/admin/point-redemption-history
+- Point Voucher Management: ✓ Already active - uses /api/admin/point-vouchers
+- All voucher management features now fully connected to database backend
+
+Additional improvements made:
+- Changed VoucherManagement to use Zustand store (token, user, _hasHydrated) instead of localStorage
+- Added auto-login functionality similar to PointRedemptionAdmin
+- Added loading states and user authentication checks
+- Added error handling with toast notifications for better UX
+- Ensures component only loads vouchers when user is authenticated as admin

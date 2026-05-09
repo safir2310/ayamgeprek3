@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Plus, Edit, Trash2, Tag, X, Save, Calendar, Percent, CheckCircle, XCircle, Copy, FileSpreadsheet, Download } from 'lucide-react'
+import { Search, Plus, Edit, Trash2, Tag, X, Save, Calendar, Percent, CheckCircle, XCircle, Copy, FileSpreadsheet, Download, AlertCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toast } from 'sonner'
 import { downloadVouchersExcel } from '@/lib/downloadExcel'
+import { useStore } from '@/store/useStore'
+import { autoLoginAsAdmin } from '@/lib/admin-auto-login'
 
 interface Voucher {
   id: string
@@ -29,12 +31,15 @@ interface Voucher {
 }
 
 export function VoucherManagement() {
+  const { token, _hasHydrated, user } = useStore()
   const [vouchers, setVouchers] = useState<Voucher[]>([])
+  const [loading, setLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingVoucher, setEditingVoucher] = useState<Voucher | null>(null)
   const [isExporting, setIsExporting] = useState(false)
+  const [isAutoLoggingIn, setIsAutoLoggingIn] = useState(false)
   const [formData, setFormData] = useState({
     code: '',
     name: '',
@@ -50,72 +55,65 @@ export function VoucherManagement() {
   })
 
   useEffect(() => {
-    loadVouchers()
-  }, [])
+    if (_hasHydrated) {
+      // Auto-login as admin if not logged in
+      if (!user || user.role !== 'admin') {
+        handleAutoLogin()
+      } else {
+        loadVouchers()
+      }
+    }
+  }, [_hasHydrated, user])
 
-  const loadVouchers = () => {
-    // Mock vouchers - will be replaced with API call
-    setVouchers([
-      {
-        id: '1',
-        code: 'WELCOME10',
-        name: 'Voucher Selamat Datang',
-        description: 'Diskon 10% untuk pesanan pertama',
-        discountType: 'percentage',
-        discountValue: 10,
-        minOrderAmount: 50000,
-        startDate: new Date('2024-01-01'),
-        endDate: new Date('2024-12-31'),
-        usageLimit: 1000,
-        usageCount: 234,
-        isActive: true,
-        createdAt: new Date('2024-01-01')
-      },
-      {
-        id: '2',
-        code: 'FREESHIP',
-        name: 'Gratis Ongkir',
-        description: 'Bebas ongkir untuk pesanan di atas 100rb',
-        discountType: 'fixed',
-        discountValue: 10000,
-        minOrderAmount: 100000,
-        endDate: new Date('2024-06-30'),
-        usageLimit: 500,
-        usageCount: 156,
-        isActive: true,
-        createdAt: new Date('2024-01-15')
-      },
-      {
-        id: '3',
-        code: 'WEEKEND25',
-        name: 'Diskon Weekend',
-        description: 'Diskon 25% khusus weekend',
-        discountType: 'percentage',
-        discountValue: 25,
-        minOrderAmount: 75000,
-        maxDiscountAmount: 50000,
-        startDate: new Date('2024-01-01'),
-        endDate: new Date('2024-12-31'),
-        usageLimit: 200,
-        usageCount: 89,
-        isActive: true,
-        createdAt: new Date('2024-01-01')
-      },
-      {
-        id: '4',
-        code: 'EXPIRED20',
-        name: 'Voucher Kadaluarsa',
-        description: 'Contoh voucher kadaluarsa',
-        discountType: 'percentage',
-        discountValue: 20,
-        minOrderAmount: 50000,
-        endDate: new Date('2023-12-31'),
-        usageLimit: 100,
-        usageCount: 100,
-        isActive: false,
-        createdAt: new Date('2023-11-01')
-      },
-    ])
+  const handleAutoLogin = async () => {
+    if (isAutoLoggingIn) return
+
+    setIsAutoLoggingIn(true)
+    const result = await autoLoginAsAdmin()
+
+    if (result.success) {
+      console.log('[VoucherManagement] Auto-login successful, reloading page...')
+      window.location.reload()
+    } else {
+      console.error('[VoucherManagement] Auto-login failed:', result.error)
+      setIsAutoLoggingIn(false)
+    }
+  }
+
+  const loadVouchers = async () => {
+    // Only load if hydrated and have user
+    if (!_hasHydrated) {
+      return
+    }
+
+    // Check if user is admin
+    if (!user || user.role !== 'admin') {
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
+    try {
+      const response = await fetch('/api/admin/vouchers', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('Gagal mengambil data voucher')
+      }
+
+      const data = await response.json()
+      if (data.success && data.vouchers) {
+        setVouchers(data.vouchers)
+      }
+    } catch (error) {
+      console.error('Error loading vouchers:', error)
+      toast.error('Gagal memuat data voucher')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const filteredVouchers = vouchers.filter(voucher => {
@@ -179,10 +177,26 @@ export function VoucherManagement() {
     if (!confirm('Apakah Anda yakin ingin menghapus voucher ini?')) return
 
     try {
-      // Mock delete - will be replaced with API call
-      setVouchers(prev => prev.filter(v => v.id !== id))
-      toast.success('✅ Voucher berhasil dihapus!')
+      const response = await fetch(`/api/admin/vouchers?id=${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('Gagal menghapus voucher')
+      }
+
+      const data = await response.json()
+      if (data.success) {
+        toast.success('✅ Voucher berhasil dihapus!')
+        loadVouchers()
+      } else {
+        throw new Error(data.error || 'Gagal menghapus voucher')
+      }
     } catch (error) {
+      console.error('Error deleting voucher:', error)
       toast.error('Gagal menghapus voucher')
     }
   }
@@ -202,43 +216,43 @@ export function VoucherManagement() {
 
     try {
       const voucherData = {
+        id: editingVoucher?.id,
         code: formData.code.trim().toUpperCase(),
         name: formData.name.trim(),
         description: formData.description.trim(),
         discountType: formData.discountType,
-        discountValue: parseInt(formData.discountValue),
-        minOrderAmount: formData.minOrderAmount ? parseInt(formData.minOrderAmount) : undefined,
-        maxDiscountAmount: formData.maxDiscountAmount ? parseInt(formData.maxDiscountAmount) : undefined,
-        startDate: new Date(formData.startDate),
-        endDate: new Date(formData.endDate),
-        usageLimit: formData.usageLimit ? parseInt(formData.usageLimit) : undefined,
+        discountValue: formData.discountValue,
+        minOrderAmount: formData.minOrderAmount || undefined,
+        maxDiscountAmount: formData.maxDiscountAmount || undefined,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        usageLimit: formData.usageLimit || undefined,
         isActive: formData.isActive
       }
 
-      if (editingVoucher) {
-        // Update existing voucher
-        setVouchers(prev =>
-          prev.map(v =>
-            v.id === editingVoucher.id
-              ? { ...v, ...voucherData }
-              : v
-          )
-        )
-        toast.success('✅ Voucher berhasil diperbarui!')
-      } else {
-        // Add new voucher
-        const newVoucher: Voucher = {
-          id: Date.now().toString(),
-          ...voucherData,
-          usageCount: 0,
-          createdAt: new Date()
-        }
-        setVouchers(prev => [...prev, newVoucher])
-        toast.success('✅ Voucher berhasil ditambahkan!')
+      const response = await fetch('/api/admin/vouchers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(voucherData)
+      })
+
+      if (!response.ok) {
+        throw new Error('Gagal menyimpan voucher')
       }
 
-      setIsModalOpen(false)
+      const data = await response.json()
+      if (data.success) {
+        toast.success(editingVoucher ? '✅ Voucher berhasil diperbarui!' : '✅ Voucher berhasil ditambahkan!')
+        setIsModalOpen(false)
+        loadVouchers()
+      } else {
+        throw new Error(data.error || 'Gagal menyimpan voucher')
+      }
     } catch (error) {
+      console.error('Error saving voucher:', error)
       toast.error('Gagal menyimpan voucher')
     }
   }
@@ -268,6 +282,49 @@ export function VoucherManagement() {
     } finally {
       setIsExporting(false)
     }
+  }
+
+  // Check if user is authenticated as admin
+  if (!_hasHydrated) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-600">Memuat...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (isAutoLoggingIn) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-600">Login sebagai admin...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user || user.role !== 'admin') {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="max-w-md w-full p-8 text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="h-8 w-8 text-red-600" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">Akses Ditolak</h3>
+          <p className="text-gray-600 mb-6">Anda belum login sebagai admin.</p>
+          <Button
+            onClick={() => window.location.reload()}
+            className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
+          >
+            Refresh Halaman
+          </Button>
+        </Card>
+      </div>
+    )
   }
 
   return (
@@ -355,7 +412,15 @@ export function VoucherManagement() {
       {/* Vouchers List */}
       <div className="space-y-3">
         <AnimatePresence mode="popLayout">
-          {filteredVouchers.length === 0 ? (
+          {loading ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-12 text-gray-500"
+            >
+              <p>Memuat data voucher...</p>
+            </motion.div>
+          ) : filteredVouchers.length === 0 ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
