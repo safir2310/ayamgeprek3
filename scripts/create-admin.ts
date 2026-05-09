@@ -1,7 +1,28 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import dotenv from 'dotenv'
+import fs from 'fs'
+import path from 'path'
 
-const prisma = new PrismaClient()
+// Read .env file directly
+const envPath = path.join(process.cwd(), '.env')
+const envContent = fs.readFileSync(envPath, 'utf-8')
+
+// Parse DATABASE_URL from .env file
+const databaseUrlMatch = envContent.match(/DATABASE_URL="([^"]+)"/)
+const DATABASE_URL = databaseUrlMatch ? databaseUrlMatch[1] : ''
+
+console.log('🔗 DATABASE_URL from .env:', DATABASE_URL ? 'Found' : 'NOT FOUND')
+console.log('')
+
+// Create PrismaClient with explicit database URL
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: DATABASE_URL
+    }
+  }
+})
 
 async function createAdminUser() {
   console.log('🔐 Creating Admin User...')
