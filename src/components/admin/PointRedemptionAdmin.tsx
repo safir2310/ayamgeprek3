@@ -89,12 +89,14 @@ export function PointRedemptionAdmin() {
 
     setIsAutoLoggingIn(true)
     const result = await autoLoginAsAdmin()
-    setIsAutoLoggingIn(false)
 
     if (result.success) {
-      // The store will be updated by autoLoginAsAdmin, so the useEffect will trigger again
+      console.log('[AdminComponent] Auto-login successful, forcing page refresh...')
+      // Immediately refresh page to get fresh admin state
+      window.location.href = window.location.href
     } else {
-      console.error('Auto-login failed:', result.error)
+      console.error('[AdminComponent] Auto-login failed:', result.error)
+      setIsAutoLoggingIn(false)
     }
   }
 
@@ -257,18 +259,29 @@ export function PointRedemptionAdmin() {
   const totalPointsUsed = history.reduce((sum, v) => sum + v.pointsRequired, 0)
 
   // Check if user is authenticated as admin
-  if (_hasHydrated && (!user || user.role !== 'admin')) {
-    if (isAutoLoggingIn) {
-      return (
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent mx-auto mb-4"></div>
-            <p className="text-gray-600">Login sebagai admin...</p>
-          </div>
+  if (!_hasHydrated) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-600">Memuat...</p>
         </div>
-      )
-    }
+      </div>
+    )
+  }
 
+  if (isAutoLoggingIn) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-600">Login sebagai admin...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user || user.role !== 'admin') {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Card className="max-w-md w-full p-8 text-center">

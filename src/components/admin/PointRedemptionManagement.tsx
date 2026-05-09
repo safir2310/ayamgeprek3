@@ -58,11 +58,14 @@ export function PointRedemptionManagement() {
 
   // Load data
   useEffect(() => {
+    console.log('[Component useEffect] _hasHydrated:', _hasHydrated, 'user:', user)
     if (_hasHydrated) {
       // Auto-login as admin if not logged in
       if (!user || user.role !== 'admin') {
+        console.log('[Component] User not admin, calling handleAutoLogin')
         handleAutoLogin()
       } else {
+        console.log('[Component] User is admin, loading data')
         loadRedemptions()
         loadProducts()
       }
@@ -76,19 +79,9 @@ export function PointRedemptionManagement() {
     const result = await autoLoginAsAdmin()
 
     if (result.success) {
-      console.log('[Component] Auto-login successful, loading data directly...')
-
-      // Wait for store to update
-      await new Promise(resolve => setTimeout(resolve, 300))
-
-      // Get fresh state from store
-      const { user: freshUser, token: freshToken } = useStore.getState()
-      console.log('[Component] Fresh user from store:', freshUser)
-
-      // Load data with fresh user
-      setIsAutoLoggingIn(false)
-      await loadRedemptions()
-      await loadProducts()
+      console.log('[Component] Auto-login successful, forcing page refresh...')
+      // Immediately refresh page to get fresh admin state
+      window.location.href = window.location.href
     } else {
       console.error('[Component] Auto-login failed:', result.error)
       setIsAutoLoggingIn(false)
@@ -451,18 +444,29 @@ export function PointRedemptionManagement() {
   const selectedProduct = products.find(p => p.id === formData.productId)
 
   // Check if user is authenticated as admin
-  if (_hasHydrated && (!user || user.role !== 'admin')) {
-    if (isAutoLoggingIn) {
-      return (
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent mx-auto mb-4"></div>
-            <p className="text-gray-600">Login sebagai admin...</p>
-          </div>
+  if (!_hasHydrated) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-600">Memuat...</p>
         </div>
-      )
-    }
+      </div>
+    )
+  }
 
+  if (isAutoLoggingIn) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-600">Login sebagai admin...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user || user.role !== 'admin') {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Card className="max-w-md w-full p-8 text-center">
