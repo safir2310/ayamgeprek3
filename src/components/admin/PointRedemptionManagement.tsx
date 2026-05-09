@@ -79,9 +79,11 @@ export function PointRedemptionManagement() {
     const result = await autoLoginAsAdmin()
 
     if (result.success) {
-      console.log('[Component] Auto-login successful, forcing page refresh...')
-      // Immediately refresh page to get fresh admin state
-      window.location.href = window.location.href
+      console.log('[Component] Auto-login successful, loading data...')
+      // Load data directly after successful login instead of refreshing
+      setIsAutoLoggingIn(false)
+      loadRedemptions()
+      loadProducts()
     } else {
       console.error('[Component] Auto-login failed:', result.error)
       setIsAutoLoggingIn(false)
@@ -89,28 +91,15 @@ export function PointRedemptionManagement() {
   }
 
   const loadRedemptions = async () => {
-    // Only load if hydrated and have user
+    // Only load if hydrated and have token
     if (!_hasHydrated) {
       return
     }
 
-    // Check if user is admin, if not, try to auto-login
-    if (!user || user.role !== 'admin') {
-      console.log('User not admin, attempting auto-login...')
-      const loginResult = await autoLoginAsAdmin()
-      if (!loginResult.success) {
-        console.error('Auto-login failed:', loginResult.error)
-        setIsLoading(false)
-        return
-      }
-      // Wait for state update
-      await new Promise(resolve => setTimeout(resolve, 100))
-    }
-
     setIsLoading(true)
     try {
-      // Get fresh token and user after potential login
-      const { token: currentToken, user: currentUser } = useStore.getState()
+      // Get current token from store
+      const { token: currentToken } = useStore.getState()
 
       const res = await fetch('/api/admin/point-redemption', {
         headers: currentToken ? {

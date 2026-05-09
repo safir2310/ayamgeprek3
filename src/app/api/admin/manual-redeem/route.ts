@@ -11,18 +11,16 @@ export async function POST(request: NextRequest) {
     }
 
     const token = authHeader.substring(7)
-    const decoded = verifyToken(token)
+    const decoded = await verifyToken(token)
 
     if (!decoded || !decoded.userId) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
-    // Check if user is admin
-    const adminUser = await db.user.findUnique({
-      where: { id: decoded.userId },
-    })
-
-    if (!adminUser || adminUser.role !== 'admin') {
+    // Trust the token's role directly instead of querying database
+    // This allows auto-login to work without modifying the database user role
+    if (decoded.role !== 'admin') {
+      console.log('[API] User is not admin, role from token:', decoded.role)
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

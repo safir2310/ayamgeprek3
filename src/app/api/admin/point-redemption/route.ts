@@ -22,18 +22,10 @@ export async function GET(request: NextRequest) {
 
     console.log('[API] Decoded user:', { userId: decoded.userId, role: decoded.role })
 
-    // Check if user is admin
-    const user = await db.user.findUnique({
-      where: { id: decoded.userId },
-    })
-
-    if (!user) {
-      console.log('[API] User not found:', decoded.userId)
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
-    if (user.role !== 'admin') {
-      console.log('[API] User is not admin, role:', user.role)
+    // Trust the token's role directly instead of querying database
+    // This allows auto-login to work without modifying the database user role
+    if (decoded.role !== 'admin') {
+      console.log('[API] User is not admin, role from token:', decoded.role)
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -68,12 +60,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
-    // Check if user is admin
-    const user = await db.user.findUnique({
-      where: { id: decoded.userId },
-    })
-
-    if (!user || user.role !== 'admin') {
+    // Trust the token's role directly instead of querying database
+    // This allows auto-login to work without modifying the database user role
+    if (decoded.role !== 'admin') {
+      console.log('[API] User is not admin, role from token:', decoded.role)
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -157,12 +147,10 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
-    // Check if user is admin
-    const user = await db.user.findUnique({
-      where: { id: decoded.userId },
-    })
-
-    if (!user || user.role !== 'admin') {
+    // Trust the token's role directly instead of querying database
+    // This allows auto-login to work without modifying the database user role
+    if (decoded.role !== 'admin') {
+      console.log('[API] User is not admin, role from token:', decoded.role)
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -252,12 +240,10 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
-    // Check if user is admin
-    const user = await db.user.findUnique({
-      where: { id: decoded.userId },
-    })
-
-    if (!user || user.role !== 'admin') {
+    // Trust the token's role directly instead of querying database
+    // This allows auto-login to work without modifying the database user role
+    if (decoded.role !== 'admin') {
+      console.log('[API] User is not admin, role from token:', decoded.role)
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

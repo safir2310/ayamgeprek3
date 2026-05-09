@@ -8,14 +8,8 @@ export async function autoLoginAsAdmin(): Promise<{ success: boolean; error?: st
   try {
     console.log('[AutoLogin] Starting auto-login...')
 
-    // Clear any existing user first
-    const { logout } = useStore.getState()
-    logout()
-
-    console.log('[AutoLogin] Logged out existing user, waiting for persistence...')
-    // Wait for persistence to clear
-    await new Promise(resolve => setTimeout(resolve, 100))
-
+    // Call admin-pin endpoint directly without logging out first
+    // This ensures we always use the admin credentials
     const res = await fetch('/api/auth/admin-pin', {
       method: 'POST',
       headers: {
@@ -33,7 +27,7 @@ export async function autoLoginAsAdmin(): Promise<{ success: boolean; error?: st
       console.log('[AutoLogin] Login successful, user:', data.user)
       console.log('[AutoLogin] Token:', data.token.substring(0, 50) + '...')
 
-      // Update Zustand store
+      // Update Zustand store directly with admin credentials
       const { setUser, setToken } = useStore.getState()
       setUser(data.user)
       setToken(data.token)
