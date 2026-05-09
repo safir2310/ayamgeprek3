@@ -1,0 +1,1619 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useStore } from '@/store/useStore'
+import {
+  Search,
+  ShoppingCart,
+  Bell,
+  User,
+  Home,
+  Package,
+  Flame,
+  FileText,
+  Settings,
+  Minus,
+  Plus,
+  Trash2,
+  Star,
+  CreditCard,
+  MapPin,
+  Phone,
+  User as UserIcon,
+  Tag,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Store,
+  LogOut,
+  QrCode,
+  ArrowRight,
+  Percent,
+  MessageCircle,
+  IdCard,
+  Barcode as BarcodeIcon,
+  Copy,
+  Check,
+} from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Separator } from '@/components/ui/separator'
+import { toast } from 'sonner'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { POS } from '@/components/POS'
+import AdminDashboard from '@/components/admin/AdminDashboard'
+import { UserChatDialog } from '@/components/UserChatDialog'
+
+const mockOrders = [
+  {
+    id: 'ORD001',
+    orderNumber: 'ORD1704067200000',
+    totalAmount: 65000,
+    finalAmount: 65000,
+    paymentMethod: 'COD',
+    paymentStatus: 'paid',
+    orderStatus: 'completed',
+    createdAt: '2024-01-15T10:30:00',
+    items: [
+      { name: 'Ayam Geprek Keju', quantity: 2, price: 15000 },
+      { name: 'Es Teh Manis', quantity: 2, price: 5000 },
+      { name: 'Sambal Ijo Botol', quantity: 1, price: 25000 },
+    ],
+  },
+  {
+    id: 'ORD002',
+    orderNumber: 'ORD1704067300000',
+    totalAmount: 30000,
+    finalAmount: 30000,
+    paymentMethod: 'QRIS',
+    paymentStatus: 'paid',
+    orderStatus: 'shipped',
+    createdAt: '2024-01-14T14:45:00',
+    items: [
+      { name: 'Nasi Pecel Ayam', quantity: 1, price: 20000 },
+      { name: 'Kopi Susu Gula Aren', quantity: 1, price: 12000 },
+    ],
+  },
+]
+
+const vouchers = [
+  { code: 'DISKON10', name: 'Diskon 10%', description: 'Min. belanja Rp 50.000', value: 10 },
+  { code: 'HEMAT20K', name: 'Hemat Rp 20.000', description: 'Min. belanja Rp 100.000', value: 20000 },
+]
+
+export default function HomePage() {
+  const [mounted, setMounted] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [isCartOpen, setIsCartOpen] = useState(false)
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const [isLogin, setIsLogin] = useState(true)
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
+  const [isOrderDetailOpen, setIsOrderDetailOpen] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState<any>(null)
+  const [selectedVoucher, setSelectedVoucher] = useState('')
+  const [isChatOpen, setIsChatOpen] = useState(false)
+  const [authData, setAuthData] = useState({ email: '', password: '', name: '', phone: '', address: '' })
+  const [checkoutData, setCheckoutData] = useState({
+    customerName: '',
+    customerPhone: '',
+    customerAddress: '',
+    paymentMethod: 'COD',
+    notes: '',
+  })
+  const [showAdminDashboard, setShowAdminDashboard] = useState(false)
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false)
+  const [memberCardTab, setMemberCardTab] = useState<'info' | 'barcode'>('info')
+  const [isQRISModalOpen, setIsQRISModalOpen] = useState(false)
+  const [orderQRISData, setOrderQRISData] = useState<any>(null)
+  const [copiedQRIS, setCopiedQRIS] = useState(false)
+  const [products, setProducts] = useState<any[]>([])
+  const [categories, setCategories] = useState<any[]>([])
+
+  const {
+    user,
+    token,
+    setUser,
+    setToken,
+    logout,
+    cart,
+    addToCart,
+    updateCartQuantity,
+    removeFromCart,
+    clearCart,
+    currentTab,
+    setCurrentTab,
+  } = useStore()
+
+  const checkAuth = async () => {
+    try {
+      const res = await fetch('/api/auth/me')
+      if (res.ok) {
+        const data = await res.json()
+        setUser(data.user)
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error)
+    }
+  }
+
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch('/api/products')
+      if (res.ok) {
+        const data = await res.json()
+        setProducts(data.products)
+
+        // Validate cart items - remove items with invalid product IDs
+        const validProductIds = new Set(data.products.map((p: any) => p.id))
+        const invalidCartItems = cart.filter(item => !validProductIds.has(item.productId))
+
+        if (invalidCartItems.length > 0) {
+          console.log('Removing invalid cart items:', invalidCartItems)
+          invalidCartItems.forEach(item => {
+            removeFromCart(item.productId)
+          })
+          toast.warning('Keranjang diperbarui. Beberapa item yang tidak tersedia telah dihapus.')
+        }
+      }
+    } catch (error) {
+      console.error('Fetch products failed:', error)
+    }
+  }
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('/api/products')
+      if (res.ok) {
+        const data = await res.json()
+        // Extract unique categories
+        const uniqueCategories = [
+          { id: 'all', name: 'Semua', icon: '🛒', slug: 'all' },
+          ...Array.from(new Map(
+            data.products
+              .filter((p: any) => p.category)
+              .map((p: any) => [p.category.id, {
+                id: p.category.slug,
+                name: p.category.name,
+                icon: p.category.icon || '📦',
+                slug: p.category.slug
+              }])
+          ).values())
+        ]
+        setCategories(uniqueCategories)
+      }
+    } catch (error) {
+      console.error('Fetch categories failed:', error)
+    }
+  }
+
+  const getProductEmoji = (productName: string) => {
+    const emojiMap: Record<string, string> = {
+      'Ayam Geprek Original': '🍗',
+      'Ayam Geprek Keju': '🧀',
+      'Nasi Pecel Ayam': '🍛',
+      'Es Teh Manis': '🧊',
+      'Es Jeruk Peras': '🍊',
+      'Kopi Susu Gula Aren': '☕',
+      'Keripik Singkong': '🍠',
+      'Kerupuk Udang': '🦐',
+      'Sambal Ijo Botol': '🌶️',
+      'Sambal Merah': '🔴',
+      'Bumbu Rendang': '🥘',
+      'Minyak Goreng 2L': '🫗',
+    }
+    return emojiMap[productName] || '📦'
+  }
+
+  const handleCopyQRIS = (qrCode: string) => {
+    navigator.clipboard.writeText(qrCode)
+    setCopiedQRIS(true)
+    toast.success('Kode QRIS berhasil disalin!')
+    setTimeout(() => setCopiedQRIS(false), 2000)
+  }
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    checkAuth()
+    fetchProducts()
+    fetchCategories()
+  }, [])
+
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register'
+      const body = isLogin
+        ? { email: authData.email, password: authData.password }
+        : {
+            email: authData.email,
+            password: authData.password,
+            name: authData.name,
+            phone: authData.phone,
+            address: authData.address,
+          }
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setUser(data.user)
+        setToken(data.token)
+        setIsAuthModalOpen(false)
+        toast.success(isLogin ? 'Login berhasil!' : 'Registrasi berhasil!')
+        setAuthData({ email: '', password: '', name: '', phone: '', address: '' })
+      } else {
+        toast.error(data.error || 'Terjadi kesalahan')
+      }
+    } catch (error) {
+      toast.error('Terjadi kesalahan koneksi')
+    }
+  }
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/me', { method: 'DELETE' })
+      logout()
+      toast.success('Logout berhasil')
+    } catch (error) {
+      logout()
+    }
+  }
+
+  const handleCheckout = async () => {
+    if (!user) {
+      setIsCheckoutOpen(false)
+      setIsAuthModalOpen(true)
+      toast.error('Silakan login terlebih dahulu')
+      return
+    }
+
+    if (cart.length === 0) {
+      toast.error('Keranjang masih kosong')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          cart,
+          ...checkoutData,
+          voucherCode: selectedVoucher || undefined,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        clearCart()
+        setIsCheckoutOpen(false)
+        const orderData = data.order
+
+        // Set QRIS code for QRIS payment
+        const qrisCode = '00020101021126610014COM.GO-JEK.WWW01189360091434825225980210G4825225980303UMI51440014ID.CO.QRIS.WWW0215ID10254291625440303UMI5204581253033605802ID5925Ayam Geprek Sambal Ijo , 6005PIDIE61052416462070703A0163042A7C'
+
+        if (orderData.paymentMethod === 'QRIS') {
+          setOrderQRISData({
+            ...orderData,
+            qrCode: qrisCode,
+          })
+          setIsQRISModalOpen(true)
+        } else {
+          toast.success(`Order ${orderData.orderNumber} berhasil dibuat!`)
+        }
+
+        setCurrentTab('orders')
+      } else {
+        toast.error(data.error || 'Terjadi kesalahan saat checkout')
+      }
+    } catch (error) {
+      toast.error('Terjadi kesalahan koneksi')
+    }
+  }
+
+  const filteredProducts = products.filter((product) => {
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesCategory = selectedCategory === 'all' || 
+      (product.category && product.category.slug === selectedCategory)
+    return matchesSearch && matchesCategory
+  })
+
+  const cartTotal = cart.reduce((sum, item) => {
+    const price = item.discountPrice || item.price
+    return sum + price * item.quantity
+  }, 0)
+
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0)
+
+  // Calculate discount
+  let discountAmount = 0
+  if (selectedVoucher) {
+    const voucher = vouchers.find((v) => v.code === selectedVoucher)
+    if (voucher && cartTotal >= 50000) {
+      discountAmount = typeof voucher.value === 'number' && voucher.value > 100
+        ? voucher.value
+        : Math.floor(cartTotal * (voucher.value / 100))
+    }
+  }
+
+  const finalAmount = cartTotal - discountAmount
+
+  if (!mounted) return null
+
+  if (showAdminDashboard) {
+    return <AdminDashboard onBack={() => setShowAdminDashboard(false)} />
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-red-50 via-orange-50 to-white">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-gradient-to-r from-red-600 to-orange-500 shadow-lg">
+        <div className="container mx-auto px-4 py-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {/* New Logo */}
+              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
+                <svg viewBox="0 0 100 100" className="w-8 h-8">
+                  <defs>
+                    <linearGradient id="logoGradNew" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#DC2626" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#F97316" stopOpacity={1} />
+                    </linearGradient>
+                    <linearGradient id="chickenGradNew" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#FCD34D" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#F59E0B" stopOpacity={1} />
+                    </linearGradient>
+                    <filter id="glowNew">
+                      <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+                      <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                      </feMerge>
+                    </filter>
+                  </defs>
+                  {/* Background circle */}
+                  <circle cx="50" cy="50" r="48" fill="url(#logoGradNew)" filter="url(#glowNew)" />
+                  {/* Sambal chili pepper */}
+                  <ellipse cx="25" cy="70" rx="8" ry="14" fill="#EF4444" transform="rotate(-45 25 70)" />
+                  <ellipse cx="75" cy="70" rx="8" ry="14" fill="#DC2626" transform="rotate(45 75 70)" />
+                  {/* Chicken body */}
+                  <ellipse cx="50" cy="52" rx="18" ry="16" fill="url(#chickenGradNew)" stroke="#B45309" strokeWidth="1.5" />
+                  {/* Head */}
+                  <circle cx="50" cy="42" r="10" fill="url(#chickenGradNew)" stroke="#B45309" strokeWidth="1.5" />
+                  {/* Comb */}
+                  <path d="M50 32 Q45 27 47 29 Q50 27 53 29 Q55 27 50 32 Z" fill="#DC2626" />
+                  {/* Eyes */}
+                  <circle cx="46" cy="40" r="2.5" fill="#FFF" />
+                  <circle cx="54" cy="40" r="2.5" fill="#FFF" />
+                  <circle cx="46" cy="40" r="1.2" fill="#1F2937" />
+                  <circle cx="54" cy="40" r="1.2" fill="#1F2937" />
+                  {/* Beak */}
+                  <path d="M50 44 L47 47 L53 47 Z" fill="#F97316" />
+                  {/* Wattle */}
+                  <ellipse cx="50" cy="51" rx="2.5" ry="3.5" fill="#EF4444" />
+                  {/* Wings */}
+                  <path d="M33 47 Q28 42 31 49 Q34 47 33 47 Z" fill="url(#chickenGradNew)" />
+                  <path d="M67 47 Q72 42 69 49 Q66 47 67 47 Z" fill="url(#chickenGradNew)" />
+                  {/* Feet */}
+                  <path d="M42 66 L40 73 L44 73 L42 66 Z" fill="#F97316" />
+                  <path d="M58 66 L56 73 L60 73 L58 66 Z" fill="#F97316" />
+                  {/* Spicy accent dots */}
+                  <circle cx="30" cy="35" r="2" fill="#FCD34D" opacity="0.8" />
+                  <circle cx="70" cy="35" r="2" fill="#FCD34D" opacity="0.8" />
+                </svg>
+              </div>
+              <div className="flex flex-col items-start">
+                <h1 className="text-xs md:text-sm lg:text-base font-bold text-white tracking-wide uppercase whitespace-nowrap">AYAM GEPREK SAMBAL IJO</h1>
+                <p className="text-[10px] md:text-xs lg:text-sm text-white/80 truncate max-w-[140px] md:max-w-[220px] lg:max-w-[300px] cursor-pointer hover:text-white transition-colors text-left"
+                  onClick={() => setIsAddressModalOpen(true)}
+                >
+                  Simpang Camat, Gampong Tijue, 24151 • 085260812758
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1 ml-auto">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/20 relative h-8 w-8"
+                onClick={() => setIsCartOpen(true)}
+              >
+                <ShoppingCart className="h-5 w-5" />
+                {cartCount > 0 && (
+                  <Badge className="absolute -top-0.5 -right-0.5 h-4 w-4 flex items-center justify-center bg-yellow-400 text-red-900 text-[10px] font-bold">
+                    {cartCount}
+                  </Badge>
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/20 relative h-8 w-8"
+                onClick={() => user ? setIsChatOpen(true) : setIsAuthModalOpen(true)}
+              >
+                <MessageCircle className="h-5 w-5" />
+                {isChatOpen && (
+                  <Badge className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 bg-green-400 rounded-full animate-pulse" />
+                )}
+              </Button>
+              {user?.role === 'admin' && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:bg-white/20 h-8 w-8"
+                  onClick={() => setShowAdminDashboard(true)}
+                >
+                  <Store className="h-5 w-5" />
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/20 h-8 w-8"
+                onClick={() => (user ? handleLogout() : setIsAuthModalOpen(true))}
+              >
+                <User className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Search Bar */}
+          <div className="mt-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Cari produk..."
+                className="pl-10 bg-white/90 border-0 focus:ring-2 focus:ring-orange-300 h-9"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1 container mx-auto px-4 py-6 pb-24">
+        {currentTab === 'home' && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            {/* Member Card */}
+            {user && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6"
+              >
+                <Card className="bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 border-0 shadow-xl overflow-hidden">
+                  <CardContent className="p-3 relative">
+                    {/* Tab Icons - Bottom Right */}
+                    <div className="absolute bottom-3 right-3 flex gap-1.5">
+                      <button
+                        onClick={() => setMemberCardTab('info')}
+                        className={`p-1.5 rounded-full transition-all ${
+                          memberCardTab === 'info'
+                            ? 'bg-white/30 text-white'
+                            : 'bg-white/10 text-white/60 hover:bg-white/20'
+                        }`}
+                        title="Info Member"
+                      >
+                        <IdCard className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => setMemberCardTab('barcode')}
+                        className={`p-1.5 rounded-full transition-all ${
+                          memberCardTab === 'barcode'
+                            ? 'bg-white/30 text-white'
+                            : 'bg-white/10 text-white/60 hover:bg-white/20'
+                        }`}
+                        title="Barcode"
+                      >
+                        <BarcodeIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    {/* Tab Content */}
+                    {memberCardTab === 'info' ? (
+                      <div className="pb-10">
+                        {/* Top Section - Name and ID */}
+                        <div className="mb-3">
+                          <p className="text-white text-[10px] font-medium opacity-90 tracking-wide mb-0.5">MEMBER CARD</p>
+                          <h2 className="text-white text-base font-bold mb-0.5 leading-tight">
+                            {user.name || 'Pelanggan'}
+                          </h2>
+                          <div className="flex items-center gap-1.5">
+                            <Badge className="bg-white/20 text-white text-[9px] font-semibold px-1.5 py-0.5">
+                              {user.memberLevel}
+                            </Badge>
+                            <span className="text-white/80 text-[9px] font-mono tracking-wider">
+                              ID: {user.id?.slice(0, 8).toUpperCase()}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="border-t border-white/20 my-2"></div>
+
+                        {/* Bottom Section - Points, Stamp, Star */}
+                        <div className="grid grid-cols-3 gap-2">
+                          {/* Points */}
+                          <div className="text-center">
+                            <div className="bg-white/20 rounded-md p-2 backdrop-blur-sm">
+                              <Star className="h-4 w-4 mx-auto mb-0.5 text-yellow-200 fill-yellow-200" />
+                              <p className="text-white font-bold text-base leading-tight">{user.points}</p>
+                              <p className="text-white/80 text-[9px] uppercase tracking-wider">Poin</p>
+                            </div>
+                          </div>
+
+                          {/* Stamp */}
+                          <div className="text-center">
+                            <div className="bg-white/20 rounded-md p-2 backdrop-blur-sm">
+                              <Tag className="h-4 w-4 mx-auto mb-0.5 text-white/90" />
+                              <p className="text-white font-bold text-base leading-tight">{user.stampCount}</p>
+                              <p className="text-white/80 text-[9px] uppercase tracking-wider">Stamp</p>
+                            </div>
+                          </div>
+
+                          {/* Star */}
+                          <div className="text-center">
+                            <div className="bg-white/20 rounded-md p-2 backdrop-blur-sm">
+                              <div className="h-4 w-4 mx-auto mb-0.5 flex items-center justify-center">
+                                <Star className="h-3.5 w-3.5 text-yellow-200 fill-yellow-200" />
+                              </div>
+                              <p className="text-white font-bold text-base leading-tight">{user.starCount}</p>
+                              <p className="text-white/80 text-[9px] uppercase tracking-wider">Star</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-white text-center pb-10">
+                        <p className="text-[10px] font-medium opacity-90 tracking-wide mb-2">MEMBER CARD</p>
+                        <p className="text-xs mb-2 opacity-90">Scan untuk identifikasi member</p>
+                        <div className="bg-white rounded-md p-3 mb-2 overflow-hidden">
+                          {/* Visual Barcode - Deterministic Pattern based on phone */}
+                          <div className="flex items-end justify-center h-14">
+                            {(() => {
+                              const phone = user.phone || '08123456789'
+                              const seed = phone.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
+                              return Array.from({ length: 40 }).map((_, i) => {
+                                const isBlack = ((i + seed) % 3) !== 0
+                                const width = ((i + seed) % 4) + 1
+                                return (
+                                  <div
+                                    key={i}
+                                    className={isBlack ? 'bg-black' : 'bg-white'}
+                                    style={{ width: `${width}px`, height: '100%' }}
+                                  />
+                                )
+                              })
+                            })()}
+                          </div>
+                        </div>
+                        <p className="text-sm font-mono font-bold tracking-wider mb-0.5">
+                          {user.phone || '08123456789'}
+                        </p>
+                        <p className="text-[9px] opacity-75 uppercase tracking-wide">Gunakan nomor HP untuk scan</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* Promo Banner */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="mb-6"
+            >
+              <Card className="bg-gradient-to-r from-red-600 to-orange-500 border-0 shadow-lg overflow-hidden">
+                <CardContent className="p-6 text-white">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Badge className="mb-2 bg-yellow-400 text-red-900 font-bold">PROMO SPESIAL</Badge>
+                      <h3 className="text-2xl font-bold mb-1">Diskon Hingga 17%!</h3>
+                      <p className="text-white/90">Belanja sekarang dan hemat lebih banyak</p>
+                    </div>
+                    <div className="text-6xl">🔥</div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Categories */}
+            <div className="mb-6">
+              <ScrollArea className="w-full">
+                <div className="flex gap-3 pb-2">
+                  {categories.map((category) => (
+                    <motion.button
+                      key={category.id}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setSelectedCategory(category.id)}
+                      className={`flex flex-col items-center gap-2 p-3 rounded-xl min-w-[70px] transition-all ${
+                        selectedCategory === category.id
+                          ? 'bg-gradient-to-br from-red-500 to-orange-500 text-white shadow-lg'
+                          : 'bg-white text-gray-700 shadow hover:shadow-md'
+                      }`}
+                    >
+                      <span className="text-2xl">{category.icon}</span>
+                      <span className="text-xs font-medium">{category.name}</span>
+                    </motion.button>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+
+            {/* Products Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <AnimatePresence>
+                {filteredProducts.map((product, index) => (
+                  <motion.div
+                    key={product.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    layout
+                  >
+                    <Card className="overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer">
+                      <div className="relative">
+                        <div className="aspect-square bg-gradient-to-br from-red-100 to-orange-100 flex items-center justify-center text-6xl">
+                          {getProductEmoji(product.name)}
+                        </div>
+                        {product.discountPercent && (
+                          <Badge className="absolute top-2 right-2 bg-red-600 text-white font-bold">
+                            -{product.discountPercent}%
+                          </Badge>
+                        )}
+                      </div>
+                      <CardContent className="p-3">
+                        <h3 className="font-semibold text-sm mb-1 line-clamp-2">{product.name}</h3>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="outline" className="text-xs">
+                            {product.category?.name || 'Umum'}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <p className="font-bold text-red-600">
+                              Rp {(product.discountPrice || product.price).toLocaleString()}
+                            </p>
+                            {product.discountPrice && (
+                              <p className="text-xs text-gray-400 line-through">
+                                Rp {product.price.toLocaleString()}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <Button
+                          className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600"
+                          onClick={() => {
+                            addToCart({
+                              productId: product.id,
+                              name: product.name,
+                              price: product.price,
+                              discountPrice: product.discountPrice || undefined,
+                              quantity: 1,
+                            })
+                            toast.success(`${product.name} ditambahkan ke keranjang`)
+                          }}
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Tambah
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+
+            {filteredProducts.length === 0 && (
+              <div className="text-center py-12 text-gray-500">
+                <Package className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                <p className="text-lg">Tidak ada produk ditemukan</p>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {currentTab === 'products' && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <h2 className="text-2xl font-bold mb-4 text-gray-800">Semua Produk</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {products.map((product, index) => (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <Card className="overflow-hidden shadow-md hover:shadow-xl transition-all duration-300">
+                    <div className="relative">
+                      <div className="aspect-square bg-gradient-to-br from-red-100 to-orange-100 flex items-center justify-center text-6xl">
+                        {getProductEmoji(product.name)}
+                      </div>
+                      {product.discountPercent && (
+                        <Badge className="absolute top-2 right-2 bg-red-600 text-white font-bold">
+                          -{product.discountPercent}%
+                        </Badge>
+                      )}
+                    </div>
+                    <CardContent className="p-3">
+                      <h3 className="font-semibold text-sm mb-1">{product.name}</h3>
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <p className="font-bold text-red-600">
+                            Rp {(product.discountPrice || product.price).toLocaleString()}
+                          </p>
+                          {product.discountPrice && (
+                            <p className="text-xs text-gray-400 line-through">
+                              Rp {product.price.toLocaleString()}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <Button
+                        className="w-full bg-gradient-to-r from-red-500 to-orange-500"
+                        onClick={() => {
+                          addToCart({
+                            productId: product.id,
+                            name: product.name,
+                            price: product.price,
+                            discountPrice: product.discountPrice || undefined,
+                            quantity: 1,
+                          })
+                          toast.success(`${product.name} ditambahkan ke keranjang`)
+                        }}
+                      >
+                        <Plus className="h-4 w-4 mr-1" />
+                        Tambah
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {currentTab === 'promo' && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <h2 className="text-2xl font-bold mb-4 text-gray-800">Promo Spesial</h2>
+            <Card className="bg-gradient-to-r from-red-600 to-orange-500 border-0 shadow-lg mb-6">
+              <CardContent className="p-8 text-white text-center">
+                <div className="text-6xl mb-4">🎉</div>
+                <h3 className="text-3xl font-bold mb-2">DISKON BESAR-BESARAN</h3>
+                <p className="text-xl mb-4">Dapatkan diskon hingga 20% untuk pembelian di atas Rp 100.000</p>
+                <Button size="lg" className="bg-white text-red-600 hover:bg-gray-100">
+                  Belanja Sekarang
+                </Button>
+              </CardContent>
+            </Card>
+
+            <h3 className="text-xl font-bold mb-4 text-gray-800">Voucher Tersedia</h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              {vouchers.map((voucher) => (
+                <Card key={voucher.code} className="border-dashed border-2 border-red-300">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white">
+                        <Percent className="h-8 w-8" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-lg">{voucher.name}</h4>
+                        <p className="text-sm text-gray-600">{voucher.description}</p>
+                        <Badge className="mt-2">{voucher.code}</Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {currentTab === 'orders' && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <h2 className="text-2xl font-bold mb-4 text-gray-800">Riwayat Pesanan</h2>
+            {mockOrders.length === 0 ? (
+              <Card className="p-8 text-center">
+                <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                <p className="text-gray-500">Belum ada pesanan</p>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {mockOrders.map((order) => (
+                  <Card key={order.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-5 w-5 text-red-600" />
+                          <span className="font-semibold">{order.orderNumber}</span>
+                        </div>
+                        <Badge
+                          className={
+                            order.orderStatus === 'completed'
+                              ? 'bg-green-600'
+                              : order.orderStatus === 'shipped'
+                              ? 'bg-blue-600'
+                              : 'bg-yellow-600'
+                          }
+                        >
+                          {order.orderStatus === 'completed'
+                            ? 'Selesai'
+                            : order.orderStatus === 'shipped'
+                            ? 'Dikirim'
+                            : 'Diproses'}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          {new Date(order.createdAt).toLocaleDateString('id-ID', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                          })}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <CreditCard className="h-4 w-4" />
+                          {order.paymentMethod}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">{order.items.length} item</span>
+                        <span className="font-bold text-red-600">Rp {order.finalAmount.toLocaleString()}</span>
+                      </div>
+                      <Button
+                        variant="outline"
+                        className="w-full mt-3"
+                        onClick={() => {
+                          setSelectedOrder(order)
+                          setIsOrderDetailOpen(true)
+                        }}
+                      >
+                        Lihat Detail
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {currentTab === 'account' && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <h2 className="text-2xl font-bold mb-4 text-gray-800">Akun Saya</h2>
+            {user ? (
+              <div className="space-y-4">
+                <Card className="bg-gradient-to-r from-red-500 to-orange-500 border-0">
+                  <CardContent className="p-6 text-white">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-3xl">
+                        👤
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold">{user.name || 'Pelanggan'}</h3>
+                        <p className="text-white/80">{user.email}</p>
+                        <Badge className="mt-2 bg-yellow-400 text-red-900 font-bold">
+                          {user.memberLevel}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-4">
+                    <h4 className="font-semibold mb-4 flex items-center gap-2">
+                      <Star className="h-5 w-5 text-yellow-500" />
+                      Loyalty Points
+                    </h4>
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div>
+                        <div className="text-3xl font-bold text-red-600">{user.points}</div>
+                        <div className="text-sm text-gray-600">Poin</div>
+                      </div>
+                      <div>
+                        <div className="text-3xl font-bold text-orange-600">{user.stampCount}</div>
+                        <div className="text-sm text-gray-600">Stamp</div>
+                      </div>
+                      <div>
+                        <div className="text-3xl font-bold text-yellow-600">{user.starCount}</div>
+                        <div className="text-sm text-gray-600">Star</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-4 space-y-2">
+                    <Button variant="ghost" className="w-full justify-start" onClick={() => setIsAuthModalOpen(false)}>
+                      <UserIcon className="h-5 w-5 mr-3" />
+                      Edit Profil
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start" onClick={() => setIsAuthModalOpen(false)}>
+                      <MapPin className="h-5 w-5 mr-3" />
+                      Alamat Pengiriman
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start" onClick={() => setIsAuthModalOpen(false)}>
+                      <Settings className="h-5 w-5 mr-3" />
+                      Pengaturan
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start" onClick={() => setIsChatOpen(true)}>
+                      <MessageCircle className="h-5 w-5 mr-3" />
+                      Chat dengan Admin
+                    </Button>
+                    <Separator />
+                    <Button variant="ghost" className="w-full justify-start text-red-600" onClick={handleLogout}>
+                      <LogOut className="h-5 w-5 mr-3" />
+                      Logout
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
+              <Card className="p-8 text-center">
+                <User className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                <p className="text-gray-500 mb-4">Silakan login untuk melihat akun Anda</p>
+                <Button
+                  className="bg-gradient-to-r from-red-500 to-orange-500"
+                  onClick={() => setIsAuthModalOpen(true)}
+                >
+                  Login Sekarang
+                </Button>
+              </Card>
+            )}
+          </motion.div>
+        )}
+      </main>
+
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-40">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-around py-2">
+            {[
+              { id: 'home', icon: Home, label: 'Beranda' },
+              { id: 'products', icon: Package, label: 'Belanja' },
+              { id: 'promo', icon: Flame, label: 'Promo' },
+              { id: 'orders', icon: FileText, label: 'Pesanan' },
+              { id: 'account', icon: User, label: 'Akun' },
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setCurrentTab(item.id)}
+                className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all ${
+                  currentTab === item.id
+                    ? 'text-red-600 bg-red-50'
+                    : 'text-gray-500 hover:text-red-600'
+                }`}
+              >
+                <item.icon className="h-6 w-6" />
+                <span className="text-xs font-medium">{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </nav>
+
+      {/* Cart Sidebar */}
+      <Dialog open={isCartOpen} onOpenChange={setIsCartOpen}>
+        <DialogContent className="sm:max-w-md max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShoppingCart className="h-5 w-5 text-red-600" />
+              Keranjang Belanja
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[50vh] px-1">
+            {cart.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <ShoppingCart className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                <p>Keranjang kosong</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {cart.map((item) => (
+                  <div key={item.productId} className="flex gap-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="w-16 h-16 bg-gradient-to-br from-red-100 to-orange-100 rounded-lg flex items-center justify-center text-3xl">
+                      📦
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-sm">{item.name}</h4>
+                      <p className="text-red-600 font-bold">
+                        Rp {(item.discountPrice || item.price).toLocaleString()}
+                      </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="h-7 w-7"
+                          onClick={() => updateCartQuantity(item.productId, item.quantity - 1)}
+                        >
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        <span className="font-medium w-8 text-center">{item.quantity}</span>
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="h-7 w-7"
+                          onClick={() => updateCartQuantity(item.productId, item.quantity + 1)}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7 ml-auto text-red-600 hover:text-red-700"
+                          onClick={() => removeFromCart(item.productId)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+          {cart.length > 0 && (
+            <div className="border-t pt-4 mt-4">
+              <div className="space-y-2 mb-4">
+                {selectedVoucher && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Diskon Voucher</span>
+                    <span>-Rp {discountAmount.toLocaleString()}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-bold">
+                  <span>Total</span>
+                  <span className="text-xl text-red-600">Rp {finalAmount.toLocaleString()}</span>
+                </div>
+              </div>
+              <Button
+                className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600"
+                onClick={() => {
+                  setIsCartOpen(false)
+                  setIsCheckoutOpen(true)
+                }}
+              >
+                <ArrowRight className="h-4 w-4 mr-2" />
+                Checkout Sekarang
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Checkout Modal */}
+      <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
+        <DialogContent className="sm:max-w-md max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Checkout</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh] pr-4">
+            <div className="space-y-4">
+              {/* Order Summary */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h4 className="font-semibold mb-3">Ringkasan Pesanan</h4>
+                <div className="space-y-2">
+                  {cart.map((item) => (
+                    <div key={item.productId} className="flex justify-between text-sm">
+                      <span>{item.name} x{item.quantity}</span>
+                      <span>Rp {((item.discountPrice || item.price) * item.quantity).toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+                <Separator className="my-3" />
+                <div className="flex justify-between font-bold">
+                  <span>Subtotal</span>
+                  <span>Rp {cartTotal.toLocaleString()}</span>
+                </div>
+                {selectedVoucher && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Diskon Voucher</span>
+                    <span>-Rp {discountAmount.toLocaleString()}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-bold text-lg text-red-600">
+                  <span>Total</span>
+                  <span>Rp {finalAmount.toLocaleString()}</span>
+                </div>
+              </div>
+
+              {/* Voucher */}
+              <div>
+                <Label className="mb-2 block">Voucher (Opsional)</Label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Masukkan kode voucher"
+                    value={selectedVoucher}
+                    onChange={(e) => setSelectedVoucher(e.target.value.toUpperCase())}
+                  />
+                  {selectedVoucher && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setSelectedVoucher('')}
+                    >
+                      <XCircle className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                {selectedVoucher && cartTotal < 50000 && (
+                  <p className="text-xs text-orange-600 mt-1">
+                    Minimum belanja Rp 50.000 untuk menggunakan voucher
+                  </p>
+                )}
+              </div>
+
+              {/* Customer Info */}
+              <div className="space-y-3">
+                <div>
+                  <Label className="mb-1 block">Nama Penerima</Label>
+                  <Input
+                    value={checkoutData.customerName}
+                    onChange={(e) => setCheckoutData({ ...checkoutData, customerName: e.target.value })}
+                    placeholder="Nama lengkap"
+                  />
+                </div>
+                <div>
+                  <Label className="mb-1 block">No. HP</Label>
+                  <Input
+                    type="tel"
+                    value={checkoutData.customerPhone}
+                    onChange={(e) => setCheckoutData({ ...checkoutData, customerPhone: e.target.value })}
+                    placeholder="081234567890"
+                  />
+                </div>
+                <div>
+                  <Label className="mb-1 block">Alamat Pengiriman</Label>
+                  <Textarea
+                    value={checkoutData.customerAddress}
+                    onChange={(e) => setCheckoutData({ ...checkoutData, customerAddress: e.target.value })}
+                    placeholder="Alamat lengkap pengiriman"
+                    rows={2}
+                  />
+                </div>
+                <div>
+                  <Label className="mb-1 block">Catatan (Opsional)</Label>
+                  <Textarea
+                    value={checkoutData.notes}
+                    onChange={(e) => setCheckoutData({ ...checkoutData, notes: e.target.value })}
+                    placeholder="Catatan untuk pesanan"
+                    rows={2}
+                  />
+                </div>
+              </div>
+
+              {/* Payment Method */}
+              <div>
+                <Label className="mb-2 block">Metode Pembayaran</Label>
+                <RadioGroup
+                  value={checkoutData.paymentMethod}
+                  onValueChange={(value) => setCheckoutData({ ...checkoutData, paymentMethod: value })}
+                >
+                  <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
+                    <RadioGroupItem value="COD" id="cod" />
+                    <Label htmlFor="cod" className="flex-1 cursor-pointer">
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="h-5 w-5 text-green-600" />
+                        <span className="font-medium">COD (Bayar di Tempat)</span>
+                      </div>
+                      <p className="text-xs text-gray-500">Bayar saat barang sampai</p>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
+                    <RadioGroupItem value="QRIS" id="qris" />
+                    <Label htmlFor="qris" className="flex-1 cursor-pointer">
+                      <div className="flex items-center gap-2">
+                        <QrCode className="h-5 w-5 text-blue-600" />
+                        <span className="font-medium">QRIS</span>
+                      </div>
+                      <p className="text-xs text-gray-500">Scan QR Code untuk bayar</p>
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              <Button
+                className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600"
+                onClick={handleCheckout}
+              >
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Konfirmasi Order
+              </Button>
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Order Detail Modal */}
+      <Dialog open={isOrderDetailOpen} onOpenChange={setIsOrderDetailOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Detail Pesanan</DialogTitle>
+          </DialogHeader>
+          {selectedOrder && (
+            <ScrollArea className="max-h-[60vh] pr-4">
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">No. Order</span>
+                  <span className="font-semibold">{selectedOrder.orderNumber}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Tanggal</span>
+                  <span>
+                    {new Date(selectedOrder.createdAt).toLocaleDateString('id-ID', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Metode Pembayaran</span>
+                  <span className="font-semibold">{selectedOrder.paymentMethod}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Status</span>
+                  <Badge
+                    className={
+                      selectedOrder.orderStatus === 'completed'
+                        ? 'bg-green-600'
+                        : selectedOrder.orderStatus === 'shipped'
+                        ? 'bg-blue-600'
+                        : 'bg-yellow-600'
+                    }
+                  >
+                    {selectedOrder.orderStatus === 'completed'
+                      ? 'Selesai'
+                      : selectedOrder.orderStatus === 'shipped'
+                      ? 'Dikirim'
+                      : 'Diproses'}
+                  </Badge>
+                </div>
+
+                <Separator />
+
+                <div>
+                  <h4 className="font-semibold mb-3">Item Pesanan</h4>
+                  <div className="space-y-2">
+                    {selectedOrder.items.map((item: any, index: number) => (
+                      <div key={index} className="flex justify-between text-sm">
+                        <span>{item.name} x{item.quantity}</span>
+                        <span>Rp {(item.price * item.quantity).toLocaleString()}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="flex justify-between font-bold text-lg">
+                  <span>Total</span>
+                  <span className="text-red-600">Rp {selectedOrder.finalAmount.toLocaleString()}</span>
+                </div>
+
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Poin yang didapat</span>
+                  <span>+{Math.floor(selectedOrder.finalAmount / 1000)} Poin</span>
+                </div>
+              </div>
+            </ScrollArea>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Auth Modal */}
+      <Dialog open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-2xl font-bold bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent">
+              {isLogin ? 'Login' : 'Daftar'}
+            </DialogTitle>
+          </DialogHeader>
+          <Tabs value={isLogin ? 'login' : 'register'} onValueChange={(v) => setIsLogin(v === 'login')}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="login">Login</TabsTrigger>
+              <TabsTrigger value="register">Daftar</TabsTrigger>
+            </TabsList>
+            <TabsContent value="login">
+              <form onSubmit={handleAuth} className="space-y-4">
+                <div>
+                  <Label className="mb-1 block">Email</Label>
+                  <Input
+                    type="email"
+                    value={authData.email}
+                    onChange={(e) => setAuthData({ ...authData, email: e.target.value })}
+                    placeholder="email@example.com"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label className="mb-1 block">Password</Label>
+                  <Input
+                    type="password"
+                    value={authData.password}
+                    onChange={(e) => setAuthData({ ...authData, password: e.target.value })}
+                    placeholder="••••••••"
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full bg-gradient-to-r from-red-500 to-orange-500">
+                  Login
+                </Button>
+              </form>
+              <div className="mt-4 p-3 bg-gray-100 rounded text-sm">
+                <p className="font-semibold mb-1">Demo Account:</p>
+                <p className="text-xs">Admin: admin@ayamgeprek.com / admin123</p>
+                <p className="text-xs">User: customer@gmail.com / user123</p>
+              </div>
+            </TabsContent>
+            <TabsContent value="register">
+              <form onSubmit={handleAuth} className="space-y-4">
+                <div>
+                  <Label className="mb-1 block">Nama Lengkap</Label>
+                  <Input
+                    value={authData.name}
+                    onChange={(e) => setAuthData({ ...authData, name: e.target.value })}
+                    placeholder="John Doe"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label className="mb-1 block">Email</Label>
+                  <Input
+                    type="email"
+                    value={authData.email}
+                    onChange={(e) => setAuthData({ ...authData, email: e.target.value })}
+                    placeholder="email@example.com"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label className="mb-1 block">No. HP</Label>
+                  <Input
+                    type="tel"
+                    value={authData.phone}
+                    onChange={(e) => setAuthData({ ...authData, phone: e.target.value })}
+                    placeholder="081234567890"
+                  />
+                </div>
+                <div>
+                  <Label className="mb-1 block">Alamat</Label>
+                  <Textarea
+                    value={authData.address}
+                    onChange={(e) => setAuthData({ ...authData, address: e.target.value })}
+                    placeholder="Alamat lengkap"
+                    rows={2}
+                  />
+                </div>
+                <div>
+                  <Label className="mb-1 block">Password</Label>
+                  <Input
+                    type="password"
+                    value={authData.password}
+                    onChange={(e) => setAuthData({ ...authData, password: e.target.value })}
+                    placeholder="••••••••"
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <Button type="submit" className="w-full bg-gradient-to-r from-red-500 to-orange-500">
+                  Daftar
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
+
+      {/* Store Address Modal */}
+      <Dialog open={isAddressModalOpen} onOpenChange={setIsAddressModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Store className="h-5 w-5 text-red-600" />
+              Informasi Toko
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-lg">
+              <MapPin className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-gray-700">Alamat Lengkap</p>
+                <p className="text-sm text-gray-600 mt-1">
+                  Jl. Medan - Banda Aceh, Simpang Camat, Gampong Tijue, 24151
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-lg">
+              <Phone className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-gray-700">Nomor Telepon</p>
+                <p className="text-sm text-gray-600 mt-1">0852-6081-2758</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-lg">
+              <Clock className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-gray-700">Jam Operasional</p>
+                <p className="text-sm text-gray-600 mt-1">Senin - Jumat: 08:00 - 21:00</p>
+                <p className="text-sm text-gray-600">Sabtu - Minggu: 09:00 - 22:00</p>
+              </div>
+            </div>
+
+            <Button
+              className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600"
+              onClick={() => setIsAddressModalOpen(false)}
+            >
+              Tutup
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* QRIS Payment Modal */}
+      <Dialog open={isQRISModalOpen} onOpenChange={setIsQRISModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <QrCode className="h-5 w-5 text-red-600" />
+              Pembayaran QRIS
+            </DialogTitle>
+          </DialogHeader>
+
+          {orderQRISData && (
+            <div className="space-y-4">
+              {/* Order Info */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-gray-600">No. Order</span>
+                  <span className="font-semibold">{orderQRISData.orderNumber}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Total Pembayaran</span>
+                  <span className="font-bold text-red-600 text-lg">
+                    Rp {orderQRISData.finalAmount?.toLocaleString() || '0'}
+                  </span>
+                </div>
+              </div>
+
+              {/* QR Code */}
+              <div className="text-center">
+                <div className="bg-white p-4 rounded-lg inline-block border-2 border-gray-200">
+                  {orderQRISData.qrCode && (
+                    <div className="w-[200px] h-[200px] relative bg-white">
+                      <svg viewBox="0 0 25 25" className="w-full h-full">
+                        {(() => {
+                          // Create a deterministic QR code pattern based on QRIS code
+                          const code = orderQRISData.qrCode
+                          const seed = code.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
+                          return Array.from({ length: 25 }).flatMap((_, y) => {
+                            return Array.from({ length: 25 }).map((_, x) => {
+                              // Position finder patterns (corners)
+                              if ((x < 7 && y < 7) || (x < 7 && y > 17) || (x > 17 && y < 7)) {
+                                return null // Leave blank for finder patterns
+                              }
+                              // Outer border of finder patterns
+                              if (
+                                (x < 7 && y < 7 && (x === 0 || x === 6 || y === 0 || y === 6)) ||
+                                (x < 7 && y > 17 && (x === 0 || x === 6 || y === 18 || y === 24)) ||
+                                (x > 17 && y < 7 && (x === 18 || x === 24 || y === 0 || y === 6))
+                              ) {
+                                return <rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} fill="black" />
+                              }
+                              // Inner square of finder patterns
+                              if (
+                                (x >= 2 && x <= 4 && y >= 2 && y <= 4) ||
+                                (x >= 2 && x <= 4 && y >= 20 && y <= 22) ||
+                                (x >= 20 && x <= 22 && y >= 2 && y <= 4)
+                              ) {
+                                return <rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} fill="black" />
+                              }
+                              // Data modules
+                              const hash = ((x + y * 25) * (seed + 1)) % 7
+                              const isBlack = hash < 3
+                              return isBlack ? (
+                                <rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} fill="black" />
+                              ) : null
+                            })
+                          })
+                        })}
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <p className="text-sm text-gray-600 mt-3">
+                  Scan QR Code di atas menggunakan aplikasi e-wallet atau mobile banking Anda
+                </p>
+              </div>
+
+              {/* QRIS Code String */}
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-gray-600 font-medium">Kode QRIS</span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 text-xs"
+                    onClick={() => handleCopyQRIS(orderQRISData.qrCode)}
+                  >
+                    {copiedQRIS ? (
+                      <>
+                        <Check className="h-3.5 w-3.5 mr-1" />
+                        Disalin
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3.5 w-3.5 mr-1" />
+                        Salin
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <div className="bg-white p-2 rounded border text-xs font-mono break-all">
+                  {orderQRISData.qrCode}
+                </div>
+              </div>
+
+              {/* Instructions */}
+              <div className="bg-blue-50 rounded-lg p-3 text-sm text-blue-900">
+                <p className="font-medium mb-1">Cara Pembayaran:</p>
+                <ol className="list-decimal list-inside space-y-1 text-xs">
+                  <li>Buka aplikasi e-wallet (GoPay, OVO, Dana, dll)</li>
+                  <li>Pilih menu "Scan QR" atau "QRIS"</li>
+                  <li>Arahkan kamera ke QR Code di atas</li>
+                  <li>Konfirmasi pembayaran</li>
+                </ol>
+              </div>
+
+              <Button
+                className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600"
+                onClick={() => setIsQRISModalOpen(false)}
+              >
+                Tutup
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Chat Dialog */}
+      <UserChatDialog
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        userId={user?.id || ''}
+        userName={user?.name}
+      />
+    </div>
+  )
+}

@@ -1,0 +1,742 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Gift,
+  Search,
+  Check,
+  X,
+  Save,
+  ToggleLeft,
+  ToggleRight,
+  Table,
+  Grid as GridIcon,
+  FileSpreadsheet,
+  Download,
+} from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Badge } from '@/components/ui/badge'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { toast } from 'sonner'
+import { useStore } from '@/store/useStore'
+import { DatabaseTableView } from './DatabaseTableView'
+
+interface Product {
+  id: string
+  name: string
+  price: number
+  image?: string
+}
+
+interface PointRedemption {
+  id: string
+  name: string
+  description: string
+  pointsRequired: number
+  productId: string
+  productImage?: string
+  active: boolean
+  order: number
+  createdAt: string
+  updatedAt: string
+}
+
+export function PointRedemptionManagement() {
+  const [redemptions, setRedemptions] = useState<PointRedemption[]>([])
+  const [products, setProducts] = useState<Product[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
+  const [showDialog, setShowDialog] = useState(false)
+  const [editingRedemption, setEditingRedemption] = useState<PointRedemption | null>(null)
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('table')
+
+  const { token, _hasHydrated } = useStore()
+
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    pointsRequired: 0,
+    productId: '',
+    productImage: '',
+    active: true,
+    order: 0,
+  })
+
+  const loadRedemptions = async () => {
+    setIsLoading(true)
+    try {
+      if (!token) {
+        toast.error('Sesi telah berakhir. Silakan login ulang dengan PIN admin.')
+        setIsLoading(false)
+        return
+      }
+
+      const res = await fetch('/api/admin/point-redemption', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        setRedemptions(data.redemptions || [])
+      } else {
+        const errorData = await res.json()
+
+        if (res.status === 401 && errorData.error === 'Invalid token') {
+          toast.error('Sesi tidak valid. Silakan login ulang dengan PIN admin.')
+        } else {
+          toast.error(errorData.error || 'Gagal mengambil data penukaran poin')
+        }
+      }
+    } catch (error) {
+      console.error('Error loading redemptions:', error)
+      toast.error('Gagal mengambil data penukaran poin')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const loadProducts = async () => {
+    try {
+      const res = await fetch('/api/products')
+      if (res.ok) {
+        const data = await res.json()
+        setProducts(data.products || [])
+      }
+    } catch (error) {
+      console.error('Error loading products:', error)
+    }
+  }
+
+  useEffect(() => {
+    if (_hasHydrated) {
+      loadRedemptions()
+      loadProducts()
+    }
+  }, [_hasHydrated])
+
+  const filteredRedemptions = redemptions.filter((redemption) => {
+    return redemption.name.toLowerCase().includes(searchQuery.toLowerCase())
+  })
+
+  const handleExportToExcel = async () => {
+    setIsExporting(true)
+    try {
+      const data = filteredRedemptions.map(r => ({
+        'Nama Opsi': r.name,
+        'Deskripsi': r.description,
+        'Poin Diperlukan': r.pointsRequired,
+        'Produk ID': r.productId,
+        'Aktif': r.active ? 'Ya' : 'Tidak',
+        'Urutan': r.order,
+        'Dibuat Pada': new Date(r.createdAt).toLocaleString('id-ID')
+      }))
+      
+      const headers = Object.keys(data[0] || {}).join(',')
+      const rows = data.map(row => Object.values(row).map(v => `"${v}"`).join(','))
+      const csvContent = [headers, ...rows].join('\n')
+      
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      const url = URL.createObjectURL(blob)
+      link.setAttribute('href', url)
+      link.setAttribute('download', `tukar-poin-${new Date().toISOString().split('T')[0]}.csv`)
+      link.style.visibility = 'hidden'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      
+      toast.success('✅ Data penukaran poin berhasil diekspor!')
+    } catch (error) {
+      console.error('Error exporting redemptions:', error)
+      toast.error('Gagal mengekspor data penukaran poin')
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  const handleAdd = () => {
+    setEditingRedemption(null)
+    setFormData({
+      name: '',
+      description: '',
+      pointsRequired: 0,
+      productId: '',
+      productImage: '',
+      active: true,
+      order: redemptions.length,
+    })
+    setShowDialog(true)
+  }
+
+  const handleEdit = (redemption: PointRedemption) => {
+    setEditingRedemption(redemption)
+    setFormData({
+      name: redemption.name,
+      description: redemption.description,
+      pointsRequired: redemption.pointsRequired,
+      productId: redemption.productId,
+      productImage: redemption.productImage || '',
+      active: redemption.active,
+      order: redemption.order,
+    })
+    setShowDialog(true)
+  }
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`Yakin ingin menghapus opsi penukaran "${name}"?`)) {
+      return
+    }
+
+    if (!token) {
+      toast.error('Sesi telah berakhir. Silakan login ulang dengan PIN admin.')
+      return
+    }
+
+    try {
+      const res = await fetch(`/api/admin/point-redemption?id=${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (res.ok) {
+        toast.success('Opsi penukaran berhasil dihapus')
+        loadRedemptions()
+      } else {
+        const errorData = await res.json()
+
+        if (res.status === 401 && errorData.error === 'Invalid token') {
+          toast.error('Sesi tidak valid. Silakan login ulang dengan PIN admin.')
+        } else {
+          toast.error(errorData.error || 'Gagal menghapus opsi penukaran')
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting redemption:', error)
+      toast.error('Gagal menghapus opsi penukaran')
+    }
+  }
+
+  const handleToggleActive = async (redemption: PointRedemption) => {
+    if (!token) {
+      toast.error('Sesi telah berakhir. Silakan login ulang dengan PIN admin.')
+      return
+    }
+
+    try {
+      const res = await fetch('/api/admin/point-redemption', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          id: redemption.id,
+          active: !redemption.active,
+        }),
+      })
+
+      if (res.ok) {
+        toast.success(redemption.active ? 'Opsi penukaran dinonaktifkan' : 'Opsi penukaran diaktifkan')
+        loadRedemptions()
+      } else {
+        const errorData = await res.json()
+
+        if (res.status === 401 && errorData.error === 'Invalid token') {
+          toast.error('Sesi tidak valid. Silakan login ulang dengan PIN admin.')
+        } else {
+          toast.error(errorData.error || 'Gagal mengubah status opsi penukaran')
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling active:', error)
+      toast.error('Gagal mengubah status opsi penukaran')
+    }
+  }
+
+  const handleSave = async () => {
+    if (!token) {
+      toast.error('Sesi telah berakhir. Silakan login ulang dengan PIN admin.')
+      return
+    }
+
+    if (!formData.name.trim()) {
+      toast.error('Nama wajib diisi')
+      return
+    }
+
+    if (!formData.description.trim()) {
+      toast.error('Deskripsi wajib diisi')
+      return
+    }
+
+    if (formData.pointsRequired <= 0) {
+      toast.error('Poin harus lebih dari 0')
+      return
+    }
+
+    if (!formData.productId) {
+      toast.error('Produk wajib dipilih')
+      return
+    }
+
+    setIsSaving(true)
+    try {
+      const method = editingRedemption ? 'PUT' : 'POST'
+      const body = editingRedemption ? { ...formData, id: editingRedemption.id } : formData
+
+      const res = await fetch('/api/admin/point-redemption', {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      })
+
+      if (res.ok) {
+        toast.success(editingRedemption ? 'Opsi penukaran berhasil diupdate' : 'Opsi penukaran berhasil dibuat')
+        setShowDialog(false)
+        loadRedemptions()
+      } else {
+        const errorData = await res.json()
+
+        if (res.status === 401 && errorData.error === 'Invalid token') {
+          toast.error('Sesi tidak valid. Silakan login ulang dengan PIN admin.')
+        } else {
+          toast.error(errorData.error || 'Gagal menyimpan opsi penukaran')
+        }
+      }
+    } catch (error) {
+      console.error('Error saving redemption:', error)
+      toast.error('Gagal menyimpan opsi penukaran')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const selectedProduct = products.find(p => p.id === formData.productId)
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">Kelola Tukar Poin</h2>
+          <p className="text-gray-600">Atur produk yang dapat ditukar dengan poin pelanggan</p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant={viewMode === 'grid' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('grid')}
+            className={viewMode === 'grid' ? 'bg-gradient-to-r from-red-600 to-orange-500' : ''}
+          >
+            <GridIcon className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={viewMode === 'table' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('table')}
+            className={viewMode === 'table' ? 'bg-gradient-to-r from-red-600 to-orange-500' : ''}
+          >
+            <Table className="h-4 w-4" />
+          </Button>
+          <Button
+            onClick={handleExportToExcel}
+            disabled={isExporting || redemptions.length === 0}
+            className="bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600"
+          >
+            {isExporting ? (
+              <Download className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+            )}
+            Export ke Excel
+          </Button>
+          <Button
+            onClick={handleAdd}
+            className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Tambah Opsi
+          </Button>
+        </div>
+      </div>
+
+      {viewMode === 'grid' && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Input
+                  placeholder="Cari opsi penukaran..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Gift className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Total Opsi</p>
+                <p className="text-2xl font-bold text-gray-900">{redemptions.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <Check className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Aktif</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {redemptions.filter((r) => r.active).length}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                <X className="h-6 w-6 text-gray-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Nonaktif</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {redemptions.filter((r) => !r.active).length}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {viewMode === 'table' && (
+        <DatabaseTableView
+          title="Database Tukar Poin"
+          data={filteredRedemptions}
+          columns={[
+            {
+              key: 'name',
+              label: 'Nama Opsi',
+              width: '250px'
+            },
+            {
+              key: 'description',
+              label: 'Deskripsi',
+              width: '300px',
+              format: (value) => <span className="line-clamp-2">{value}</span>
+            },
+            {
+              key: 'pointsRequired',
+              label: 'Poin Diperlukan',
+              width: '120px',
+              format: (value) => `${Number(value).toLocaleString()} Poin`
+            },
+            {
+              key: 'active',
+              label: 'Status',
+              width: '100px',
+              format: (value) => (
+                <Badge className={value ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}>
+                  {value ? 'Aktif' : 'Nonaktif'}
+                </Badge>
+              )
+            },
+            {
+              key: 'order',
+              label: 'Urutan',
+              width: '80px'
+            },
+            {
+              key: 'createdAt',
+              label: 'Dibuat Pada',
+              width: '180px',
+              format: (value) => new Date(value).toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })
+            }
+          ]}
+          onExport={handleExportToExcel}
+          onAdd={handleAdd}
+          onEdit={handleEdit}
+          onDelete={(id) => {
+            const item = redemptions.find(r => r.id === id)
+            if (item) handleDelete(id, item.name)
+          }}
+        />
+      )}
+
+      {viewMode === 'grid' && (
+        <>
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent"></div>
+            </div>
+          ) : filteredRedemptions.length === 0 ? (
+            <Card className="p-12 text-center">
+              <Gift className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+              <p className="text-gray-500">
+                {searchQuery ? 'Tidak ada opsi penukaran ditemukan' : 'Belum ada opsi penukaran poin'}
+              </p>
+              {!searchQuery && (
+                <Button
+                  onClick={handleAdd}
+                  className="mt-4 bg-gradient-to-r from-red-600 to-orange-500"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Tambah Opsi Pertama
+                </Button>
+              )}
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredRedemptions.map((redemption, index) => {
+                const product = products.find((p) => p.id === redemption.productId)
+                return (
+                  <motion.div
+                    key={redemption.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className={`bg-white border rounded-xl overflow-hidden hover:shadow-xl transition-all ${
+                      redemption.active ? 'border-green-200' : 'border-gray-200 opacity-75'
+                    }`}
+                  >
+                    <div className="relative">
+                      <div className="aspect-video bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center text-6xl">
+                        {redemption.productImage ? (
+                          <img
+                            src={redemption.productImage}
+                            alt={redemption.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : product?.image ? (
+                          <img
+                            src={product.image}
+                            alt={redemption.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <Gift className="h-16 w-16 text-red-400" />
+                        )}
+                      </div>
+                      {redemption.active ? (
+                        <Badge className="absolute top-2 right-2 bg-green-500">Aktif</Badge>
+                      ) : (
+                        <Badge className="absolute top-2 right-2 bg-gray-400">Nonaktif</Badge>
+                      )}
+                      <div className="absolute top-2 left-2 bg-gradient-to-r from-red-600 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                        {redemption.pointsRequired} Poin
+                      </div>
+                    </div>
+
+                    <div className="p-4">
+                      <h3 className="font-bold text-lg mb-2">{redemption.name}</h3>
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                        {redemption.description}
+                      </p>
+                      {product && (
+                        <div className="text-xs text-gray-500 mb-3">
+                          <strong>Produk:</strong> {product.name}
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleToggleActive(redemption)}
+                          className="flex-1"
+                        >
+                          {redemption.active ? (
+                            <>
+                              <ToggleLeft className="h-4 w-4 mr-1" />
+                              Nonaktifkan
+                            </>
+                          ) : (
+                            <>
+                              <ToggleRight className="h-4 w-4 mr-1" />
+                              Aktifkan
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(redemption)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(redemption.id, redemption.name)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </div>
+          )}
+        </>
+      )}
+
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent className="max-w-[280px] p-2">
+          <DialogHeader className="pb-1">
+            <DialogTitle className="text-sm font-semibold">
+              {editingRedemption ? 'Edit' : 'Tambah'}
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-1.5">
+            <div>
+              <label className="block text-[10px] font-medium text-gray-700">Nama Opsi *</label>
+              <Input
+                placeholder="Nama opsi"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                required
+                className="h-7 text-[10px] px-1.5"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-medium text-gray-700">Deskripsi *</label>
+              <Textarea
+                placeholder="Deskripsi"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                rows={2}
+                required
+                className="h-10 text-[10px] px-1.5 resize-none"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-medium text-gray-700">Poin Diperlukan *</label>
+              <Input
+                type="number"
+                min="1"
+                placeholder="0"
+                value={formData.pointsRequired}
+                onChange={(e) => setFormData({ ...formData, pointsRequired: parseInt(e.target.value) || 0 })}
+                required
+                className="h-7 text-[10px] px-1.5"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-medium text-gray-700">Pilih Produk *</label>
+              <select
+                className="w-full px-1.5 py-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent text-[10px] h-7"
+                value={formData.productId}
+                onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
+                required
+              >
+                <option value="">-- Pilih Produk --</option>
+                {products.map((product) => (
+                  <option key={product.id} value={product.id}>
+                    {product.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-medium text-gray-700">URL Gambar</label>
+              <Input
+                placeholder="https://..."
+                value={formData.productImage}
+                onChange={(e) => setFormData({ ...formData, productImage: e.target.value })}
+                className="h-7 text-[10px] px-1.5"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-[10px] font-medium text-gray-700">Urutan</label>
+                <Input
+                  type="number"
+                  min="0"
+                  placeholder="0"
+                  value={formData.order}
+                  onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
+                  className="h-7 text-[10px] px-1.5"
+                />
+              </div>
+              <div className="flex items-center gap-1.5 pt-4">
+                <input
+                  type="checkbox"
+                  id="active"
+                  checked={formData.active}
+                  onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
+                  className="w-2.5 h-2.5 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                />
+                <label htmlFor="active" className="text-[10px] font-medium text-gray-700">
+                  Aktif
+                </label>
+              </div>
+            </div>
+            <div className="flex gap-2 pt-1">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1 h-6 text-[10px]"
+                onClick={() => setShowDialog(false)}
+              >
+                <X className="h-2 w-2 mr-1" />
+                Batal
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSaving}
+                className="flex-1 h-6 text-[10px] bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
+              >
+                {isSaving ? (
+                  '...'
+                ) : (
+                  <>
+                    <Save className="h-2 w-2 mr-1" />
+                    Simpan
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
