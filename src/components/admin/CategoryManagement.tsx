@@ -2,13 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Plus, Edit, Trash2, Layers, X, Save } from 'lucide-react'
+import { Search, Plus, Edit, Trash2, Layers, X, Save, AlertCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toast } from 'sonner'
+import { useStore } from '@/store/useStore'
+import { autoLoginAsAdmin } from '@/lib/admin-auto-login'
 
 interface Category {
   id: string
@@ -20,11 +22,13 @@ interface Category {
 }
 
 export function CategoryManagement() {
+  const { token, _hasHydrated, user } = useStore()
   const [categories, setCategories] = useState<Category[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isAutoLoggingIn, setIsAutoLoggingIn] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -33,16 +37,69 @@ export function CategoryManagement() {
 
   const icons = ['📦', '🍗', '🍟', '🧃', '🍕', '🍰', '🍦', '☕', '🥤', '🍿', '🧸', '📱', '👕', '🧴', '🧊']
 
+  // Auto-login on mount
+  useEffect(() => {
+    if (_hasHydrated) {
+      if (!user || user.role !== 'admin') {
+        handleAutoLogin()
+      } else {
+        loadCategories()
+      }
+    }
+  }, [_hasHydrated, user])
+
+  const handleAutoLogin = async () => {
+    if (isAutoLoggingIn) return
+
+    setIsAutoLoggingIn(true)
+    const result = await autoLoginAsAdmin()
+
+    if (result.success) {
+      setIsAutoLoggingIn(false)
+      loadCategories()
+    } else {
+      console.error('Auto-login failed:', result.error)
+      setIsAutoLoggingIn(false)
+    }
+  }
+
   const loadCategories = async () => {
+    if (!_hasHydrated) return
+
     setIsLoading(true)
     try {
-      const res = await fetch('/api/admin/categories')
+      const { token: currentToken } = useStore.getState()
+      const res = await fetch('/api/admin/categories', {
+        headers: currentToken ? {
+          Authorization: `Bearer ${currentToken}`,
+        } : {},
+      })
+
       if (res.ok) {
         const data = await res.json()
         if (data.success) {
           setCategories(data.categories || [])
         } else {
           toast.error(data.error || 'Gagal memuat kategori')
+        }
+      } else if (res.status === 401) {
+        // Try auto-login silently
+        const loginResult = await autoLoginAsAdmin()
+        if (loginResult.success) {
+          const { token: newToken } = useStore.getState()
+          const retryRes = await fetch('/api/admin/categories', {
+            headers: {
+              Authorization: `Bearer ${newToken}`,
+            },
+          })
+          if (retryRes.ok) {
+            const retryData = await retryRes.json()
+            if (retryData.success) {
+              setCategories(retryData.categories || [])
+            } else {
+              toast.error(retryData.error || 'Gagal memuat kategori')
+            }
+          }
         }
       } else {
         toast.error('Gagal memuat kategori')
@@ -54,10 +111,6 @@ export function CategoryManagement() {
       setIsLoading(false)
     }
   }
-
-  useEffect(() => {
-    loadCategories()
-  }, [])
 
   const filteredCategories = categories.filter(category =>
     category.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -86,9 +139,18 @@ export function CategoryManagement() {
   const handleDelete = async (id: string) => {
     if (!confirm('Apakah Anda yakin ingin menghapus kategori ini?')) return
 
+    // Check if logged in as admin
+    if (!token || !user || user.role !== 'admin') {
+      toast.error('Anda belum login sebagai admin. Mohon tunggu sebentar...')
+      return
+    }
+
     try {
       const res = await fetch(`/api/admin/categories?id=${id}`, {
         method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       })
 
       if (res.ok) {
@@ -98,6 +160,33 @@ export function CategoryManagement() {
           toast.success('✅ Kategori berhasil dihapus!')
         } else {
           toast.error(data.error || 'Gagal menghapus kategori')
+        }
+      } else if (res.status === 401) {
+        // Try auto-login and retry
+        const loginResult = await autoLoginAsAdmin()
+        if (loginResult.success) {
+          toast.success('Login berhasil. Menghapus ulang...')
+          const { token: newToken } = useStore.getState()
+          const retryRes = await fetch(`/api/admin/categories?id=${id}`, {
+            method: 'DELETE',
+            headers: {
+              Authorization: `Bearer ${newToken}`,
+            },
+          })
+
+          if (retryRes.ok) {
+            const retryData = await retryRes.json()
+            if (retryData.success) {
+              setCategories(prev => prev.filter(c => c.id !== id))
+              toast.success('✅ Kategori berhasil dihapus!')
+            } else {
+              toast.error(retryData.error || 'Gagal menghapus kategori')
+            }
+          } else {
+            toast.error('Gagal menghapus kategori')
+          }
+        } else {
+          toast.error('Gagal login sebagai admin')
         }
       } else {
         toast.error('Gagal menghapus kategori')
@@ -116,11 +205,23 @@ export function CategoryManagement() {
       return
     }
 
+    // Check if logged in as admin
+    if (!token || !user || user.role !== 'admin') {
+      toast.error('Anda belum login sebagai admin. Mohon tunggu sebentar...')
+      return
+    }
+
     try {
       const res = await fetch('/api/admin/categories', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...formData,
+          ...(editingCategory ? { id: editingCategory.id } : {}),
+        }),
       })
 
       if (res.ok) {
@@ -138,6 +239,45 @@ export function CategoryManagement() {
         } else {
           toast.error(data.error || 'Gagal menyimpan kategori')
         }
+      } else if (res.status === 401) {
+        // Try to auto-login and retry
+        const loginResult = await autoLoginAsAdmin()
+        if (loginResult.success) {
+          toast.success('Login berhasil. Menyimpan ulang data...')
+          const { token: newToken } = useStore.getState()
+          const retryRes = await fetch('/api/admin/categories', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${newToken}`,
+            },
+            body: JSON.stringify({
+              ...formData,
+              ...(editingCategory ? { id: editingCategory.id } : {}),
+            }),
+          })
+
+          if (retryRes.ok) {
+            const retryData = await retryRes.json()
+            if (retryData.success) {
+              if (editingCategory) {
+                setCategories(prev =>
+                  prev.map(c =>
+                    c.id === editingCategory.id ? retryData.category : c
+                  ))
+              } else {
+                setCategories(prev => [...prev, retryData.category])
+              }
+              toast.success(retryData.message || '✅ Kategori berhasil disimpan!')
+            } else {
+              toast.error(retryData.error || 'Gagal menyimpan kategori')
+            }
+          } else {
+            toast.error('Gagal menyimpan kategori')
+          }
+        } else {
+          toast.error('Gagal login sebagai admin')
+        }
       } else {
         toast.error('Gagal menyimpan kategori')
       }
@@ -146,6 +286,49 @@ export function CategoryManagement() {
       console.error('Error saving category:', error)
       toast.error('Gagal menyimpan kategori')
     }
+  }
+
+  // Check if user is authenticated as admin
+  if (!_hasHydrated) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Memuat...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (isAutoLoggingIn) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Login sebagai admin...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user || user.role !== 'admin') {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="max-w-md w-full p-8 text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="h-8 w-8 text-red-600" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">Akses Ditolak</h3>
+          <p className="text-gray-600 mb-6">Anda belum login sebagai admin.</p>
+          <Button
+            onClick={() => window.location.reload()}
+            className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
+          >
+            Refresh Halaman
+          </Button>
+        </Card>
+      </div>
+    )
   }
 
   return (

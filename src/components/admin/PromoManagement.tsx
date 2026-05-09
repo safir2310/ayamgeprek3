@@ -2,13 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Plus, Edit, Trash2, Gift, X, Save, Calendar, Percent, Sparkles, DollarSign } from 'lucide-react'
+import { Search, Plus, Edit, Trash2, Gift, X, Save, Calendar, Percent, Sparkles, DollarSign, AlertCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toast } from 'sonner'
+import { useStore } from '@/store/useStore'
+import { autoLoginAsAdmin } from '@/lib/admin-auto-login'
 
 interface PromoProduct {
   id: string
@@ -25,11 +27,14 @@ interface PromoProduct {
 }
 
 export function PromoManagement() {
+  const { token, _hasHydrated, user } = useStore()
   const [promoProducts, setPromoProducts] = useState<PromoProduct[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingPromo, setEditingPromo] = useState<PromoProduct | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isAutoLoggingIn, setIsAutoLoggingIn] = useState(false)
   const [formData, setFormData] = useState({
     productName: '',
     originalPrice: '',
@@ -40,6 +45,45 @@ export function PromoManagement() {
   })
 
   const [products, setProducts] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isAutoLoggingIn, setIsAutoLoggingIn] = useState(false)
+  const [formData, setFormData] = useState({
+    productName: '',
+    originalPrice: '',
+    promoPrice: '',
+    startDate: '',
+    endDate: '',
+    isActive: true
+  })
+
+  // Auto-login on mount
+  useEffect(() => {
+    if (_hasHydrated) {
+      if (!user || user.role !== 'admin') {
+        handleAutoLogin()
+      } else {
+        loadProducts()
+        loadPromoProducts()
+      }
+    }
+  }, [_hasHydrated, user])
+
+  const handleAutoLogin = async () => {
+    if (isAutoLoggingIn) return
+
+    setIsAutoLoggingIn(true)
+    const result = await autoLoginAsAdmin()
+
+    if (result.success) {
+      setIsAutoLoggingIn(false)
+      loadProducts()
+      loadPromoProducts()
+    } else {
+      console.error('Auto-login failed:', result.error)
+      setIsAutoLoggingIn(false)
+    }
+  }
+
   const loadProducts = async () => {
     try {
       const res = await fetch('/api/products')
@@ -52,17 +96,43 @@ export function PromoManagement() {
     }
   }
 
-  const [isLoading, setIsLoading] = useState(true)
   const loadPromoProducts = async () => {
+    if (!_hasHydrated) return
+
     setIsLoading(true)
     try {
-      const res = await fetch('/api/admin/promos')
+      const { token: currentToken } = useStore.getState()
+      const res = await fetch('/api/admin/promos', {
+        headers: currentToken ? {
+          Authorization: `Bearer ${currentToken}`,
+        } : {},
+      })
+
       if (res.ok) {
         const data = await res.json()
         if (data.success) {
           setPromoProducts(data.promos || [])
         } else {
           toast.error(data.error || 'Gagal memuat promo')
+        }
+      } else if (res.status === 401) {
+        // Try auto-login silently
+        const loginResult = await autoLoginAsAdmin()
+        if (loginResult.success) {
+          const { token: newToken } = useStore.getState()
+          const retryRes = await fetch('/api/admin/promos', {
+            headers: {
+              Authorization: `Bearer ${newToken}`,
+            },
+          })
+          if (retryRes.ok) {
+            const retryData = await retryRes.json()
+            if (retryData.success) {
+              setPromoProducts(retryData.promos || [])
+            } else {
+              toast.error(retryData.error || 'Gagal memuat promo')
+            }
+          }
         }
       } else {
         toast.error('Gagal memuat promo')
@@ -74,11 +144,6 @@ export function PromoManagement() {
       setIsLoading(false)
     }
   }
-
-  useEffect(() => {
-    loadPromoProducts()
-    loadProducts()
-  }, [])
 
   const filteredPromoProducts = promoProducts.filter(promo => {
     const matchesSearch = promo.productName.toLowerCase().includes(searchQuery.toLowerCase())
@@ -126,9 +191,18 @@ export function PromoManagement() {
   const handleDelete = async (id: string) => {
     if (!confirm('Apakah Anda yakin ingin menghapus promo ini?')) return
 
+    // Check if logged in as admin
+    if (!token || !user || user.role !== 'admin') {
+      toast.error('Anda belum login sebagai admin. Mohon tunggu sebentar...')
+      return
+    }
+
     try {
       const res = await fetch(`/api/admin/promos?id=${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       })
 
       if (res.ok) {
@@ -138,6 +212,33 @@ export function PromoManagement() {
           loadPromoProducts()
         } else {
           toast.error(data.error || 'Gagal menghapus promo')
+        }
+      } else if (res.status === 401) {
+        // Try auto-login and retry
+        const loginResult = await autoLoginAsAdmin()
+        if (loginResult.success) {
+          toast.success('Login berhasil. Menghapus ulang...')
+          const { token: newToken } = useStore.getState()
+          const retryRes = await fetch(`/api/admin/promos?id=${id}`, {
+            method: 'DELETE',
+            headers: {
+              Authorization: `Bearer ${newToken}`,
+            },
+          })
+
+          if (retryRes.ok) {
+            const retryData = await retryRes.json()
+            if (retryData.success) {
+              toast.success('✅ Promo berhasil dihapus!')
+              loadPromoProducts()
+            } else {
+              toast.error(retryData.error || 'Gagal menghapus promo')
+            }
+          } else {
+            toast.error('Gagal menghapus promo')
+          }
+        } else {
+          toast.error('Gagal login sebagai admin')
         }
       } else {
         toast.error('Gagal menghapus promo')
@@ -168,6 +269,12 @@ export function PromoManagement() {
       return
     }
 
+    // Check if logged in as admin
+    if (!token || !user || user.role !== 'admin') {
+      toast.error('Anda belum login sebagai admin. Mohon tunggu sebentar...')
+      return
+    }
+
     try {
       const product = products.find(p => p.name === formData.productName)
       const discountPercent = calculateDiscountPercent(originalPrice, promoPrice)
@@ -181,44 +288,54 @@ export function PromoManagement() {
         isActive: formData.isActive
       }
 
-      if (editingPromo) {
-        // Update existing promo
-        const res = await fetch('/api/admin/promos', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(promoData)
-        })
+      const res = await fetch('/api/admin/promos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(promoData)
+      })
 
-        if (res.ok) {
-          const data = await res.json()
-          if (data.success) {
-            toast.success('✅ Promo berhasil diperbarui!')
-            loadPromoProducts()
+      if (res.ok) {
+        const data = await res.json()
+        if (data.success) {
+          toast.success(editingPromo ? '✅ Promo berhasil diperbarui!' : '✅ Promo berhasil ditambahkan!')
+          loadPromoProducts()
+        } else {
+          toast.error(data.error || 'Gagal menyimpan promo')
+        }
+      } else if (res.status === 401) {
+        // Try to auto-login and retry
+        const loginResult = await autoLoginAsAdmin()
+        if (loginResult.success) {
+          toast.success('Login berhasil. Menyimpan ulang data...')
+          const { token: newToken } = useStore.getState()
+          const retryRes = await fetch('/api/admin/promos', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${newToken}`,
+            },
+            body: JSON.stringify(promoData)
+          })
+
+          if (retryRes.ok) {
+            const retryData = await retryRes.json()
+            if (retryData.success) {
+              toast.success(editingPromo ? '✅ Promo berhasil diperbarui!' : '✅ Promo berhasil ditambahkan!')
+              loadPromoProducts()
+            } else {
+              toast.error(retryData.error || 'Gagal menyimpan promo')
+            }
           } else {
-            toast.error(data.error || 'Gagal memperbarui promo')
+            toast.error('Gagal menyimpan promo')
           }
         } else {
-          toast.error('Gagal memperbarui promo')
+          toast.error('Gagal login sebagai admin')
         }
       } else {
-        // Add new promo
-        const res = await fetch('/api/admin/promos', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(promoData)
-        })
-
-        if (res.ok) {
-          const data = await res.json()
-          if (data.success) {
-            toast.success('✅ Promo berhasil ditambahkan!')
-            loadPromoProducts()
-          } else {
-            toast.error(data.error || 'Gagal menambahkan promo')
-          }
-        } else {
-          toast.error('Gagal menambahkan promo')
-        }
+        toast.error('Gagal menyimpan promo')
       }
 
       setIsModalOpen(false)
@@ -237,6 +354,49 @@ export function PromoManagement() {
     } else {
       return <Badge className="bg-green-100 text-green-700">Aktif</Badge>
     }
+  }
+
+  // Check if user is authenticated as admin
+  if (!_hasHydrated) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Memuat...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (isAutoLoggingIn) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Login sebagai admin...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user || user.role !== 'admin') {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="max-w-md w-full p-8 text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="h-8 w-8 text-red-600" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">Akses Ditolak</h3>
+          <p className="text-gray-600 mb-6">Anda belum login sebagai admin.</p>
+          <Button
+            onClick={() => window.location.reload()}
+            className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600"
+          >
+            Refresh Halaman
+          </Button>
+        </Card>
+      </div>
+    )
   }
 
   return (
