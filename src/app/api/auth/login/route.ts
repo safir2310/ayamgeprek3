@@ -4,51 +4,81 @@ import * as bcrypt from 'bcryptjs'
 import { signToken } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
-  console.log('🔐 Login attempt started...')
-  
+  const startTime = Date.now()
+  const debugMode = request.headers.get('x-debug') === 'true'
+
+  const debugInfo: any = {
+    timestamp: new Date().toISOString(),
+    duration: 0,
+    env: {},
+    steps: [],
+    error: null
+  }
+
   try {
+    if (debugMode) {
+      debugInfo.env.NODE_ENV = process.env.NODE_ENV
+      debugInfo.env.DATABASE_URL = process.env.DATABASE_URL ? 'Found' : 'NOT FOUND'
+      debugInfo.env.JWT_SECRET = process.env.JWT_SECRET ? 'Found' : 'NOT FOUND'
+      debugInfo.steps.push('Step 1: Started login process')
+    }
+
     const body = await request.json()
     const { email, password } = body
 
-    console.log('📧 Login email:', email)
+    if (debugMode) {
+      debugInfo.steps.push(`Step 2: Email received: ${email}`)
+      debugInfo.steps.push(`Step 3: Password provided: ${!!password}`)
+    }
 
     if (!email || !password) {
-      console.log('❌ Missing email or password')
       return NextResponse.json(
-        { error: 'Email dan password wajib diisi' },
+        { error: 'Email dan password wajib diisi', debug: debugMode ? debugInfo : undefined },
         { status: 400 }
       )
     }
 
-    console.log('🔍 Looking up user in database...')
-    
+    if (debugMode) {
+      debugInfo.steps.push('Step 4: Looking up user in database...')
+    }
+
     const user = await db.user.findUnique({
       where: { email },
     })
 
     if (!user) {
-      console.log('❌ User not found:', email)
+      if (debugMode) {
+        debugInfo.steps.push('Step 5: User NOT found')
+        debugInfo.error = 'User not found in database'
+      }
       return NextResponse.json(
-        { error: 'Email atau password salah' },
+        { error: 'Email atau password salah', debug: debugMode ? debugInfo : undefined },
         { status: 401 }
       )
     }
 
-    console.log('✅ User found:', user.name, '-', user.role)
-    console.log('🔑 Verifying password...')
+    if (debugMode) {
+      debugInfo.steps.push(`Step 5: User found - ${user.name} (${user.role})`)
+      debugInfo.steps.push('Step 6: Verifying password...')
+    }
 
     const isPasswordValid = await bcrypt.compare(password, user.password)
 
     if (!isPasswordValid) {
-      console.log('❌ Invalid password')
+      if (debugMode) {
+        debugInfo.steps.push('Step 7: Password invalid')
+        debugInfo.error = 'Password does not match'
+      }
       return NextResponse.json(
-        { error: 'Email atau password salah' },
+        { error: 'Email atau password salah', debug: debugMode ? debugInfo : undefined },
         { status: 401 }
       )
     }
 
-    console.log('✅ Password valid')
-    console.log('🔐 Generating token...')
+    if (debugMode) {
+      debugInfo.steps.push('Step 7: Password valid')
+      debugInfo.steps.push('Step 8: Generating token...')
+    }
 
     const token = await signToken({
       userId: user.id,
@@ -56,7 +86,10 @@ export async function POST(request: NextRequest) {
       role: user.role,
     })
 
-    console.log('✅ Token generated successfully, length:', token.length)
+    if (debugMode) {
+      debugInfo.steps.push(`Step 9: Token generated (length: ${token.length})`)
+      debugInfo.steps.push('Step 10: Setting cookie...')
+    }
 
     const response = NextResponse.json({
       success: true,
@@ -72,19 +105,13 @@ export async function POST(request: NextRequest) {
         starCount: user.starCount,
       },
       token,
+      debug: debugMode ? debugInfo : undefined,
     })
 
-    console.log('🍪 Setting cookie...')
-    console.log('   Secure:', process.env.NODE_ENV === 'production')
-    console.log('   SameSite: lax')
-    console.log('   MaxAge: 7 days')
-    
-    // Get the domain for production
     const isProduction = process.env.NODE_ENV === 'production'
-    const domain = isProduction ? '.vercel.app' : undefined
 
     response.cookies.set('auth-token', token, {
-      httpOnly: false, // Set to false for development debugging
+      httpOnly: false,
       secure: isProduction,
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
@@ -92,23 +119,25 @@ export async function POST(request: NextRequest) {
       domain: isProduction ? '.vercel.app' : undefined,
     })
 
-    console.log('✅ Cookie set successfully')
-    console.log('🎉 Login successful!')
-    console.log('================================')
+    if (debugMode) {
+      debugInfo.duration = Date.now() - startTime
+      debugInfo.steps.push(`Step 11: Login successful! (Duration: ${debugInfo.duration}ms)`)
+    }
 
     return response
   } catch (error: any) {
-    console.error('❌ Login error:', error)
-    console.error('Error details:', {
+    debugInfo.error = {
       message: error.message,
       name: error.name,
-      stack: error.stack,
       code: error.code,
-    })
-    
-    // Provide more specific error messages
+      stack: error.stack?.substring(0, 500)
+    }
+    debugInfo.duration = Date.now() - startTime
+
+    console.error('❌ Login error:', error.message)
+
     let errorMessage = 'Terjadi kesalahan saat login'
-    
+
     if (error.message?.includes('connect') || error.code === 'ECONNREFUSED') {
       errorMessage = 'Gagal menghubungi database. Silakan coba lagi.'
     } else if (error.message?.includes('timeout')) {
@@ -118,11 +147,9 @@ export async function POST(request: NextRequest) {
     } else if (error.message?.includes('EPIPE')) {
       errorMessage = 'Koneksi database terputus. Silakan coba lagi.'
     }
-    
-    console.log('Returning error to client:', errorMessage)
-    
+
     return NextResponse.json(
-      { error: errorMessage },
+      { error: errorMessage, debug: debugMode ? debugInfo : undefined },
       { status: 500 }
     )
   }
