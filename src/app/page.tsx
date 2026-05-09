@@ -913,6 +913,10 @@ export default function HomePage() {
   }, [isQRISModalOpen, qrisData])
 
   const handleCheckout = async () => {
+    console.log('[Frontend Checkout] Starting checkout...')
+    console.log('[Frontend Checkout] User:', !!user)
+    console.log('[Frontend Checkout] Cart length:', cart.length)
+
     if (!user) {
       setIsCheckoutOpen(false)
       setIsAuthModalOpen(true)
@@ -929,6 +933,7 @@ export default function HomePage() {
       // If point voucher exists, add free product to cart
       let checkoutCart = [...cart]
       if (pointVoucher) {
+        console.log('[Frontend Checkout] Adding free product from point voucher')
         const freeProduct = {
           productId: pointVoucher.productId,
           name: pointVoucher.productName,
@@ -942,23 +947,35 @@ export default function HomePage() {
         checkoutCart = [...checkoutCart, freeProduct]
       }
 
+      console.log('[Frontend Checkout] Checkout data:', checkoutData)
+      console.log('[Frontend Checkout] Checkout cart:', checkoutCart)
+
+      const requestBody = {
+        cart: checkoutCart,
+        ...checkoutData,
+        voucherCode: selectedVoucher || pointVoucher?.code || undefined,
+        pointVoucherCode: pointVoucher?.code,
+      }
+
+      console.log('[Frontend Checkout] Request body:', JSON.stringify(requestBody, null, 2))
+
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          cart: checkoutCart,
-          ...checkoutData,
-          voucherCode: selectedVoucher || pointVoucher?.code || undefined,
-          pointVoucherCode: pointVoucher?.code,
-        }),
+        body: JSON.stringify(requestBody),
       })
 
+      console.log('[Frontend Checkout] Response status:', response.status)
+      console.log('[Frontend Checkout] Response ok:', response.ok)
+
       const data = await response.json()
+      console.log('[Frontend Checkout] Response data:', data)
 
       if (response.ok) {
+        console.log('[Frontend Checkout] Checkout successful! Clearing cart...')
         await clearCart(token)
         setIsCheckoutOpen(false)
         setPointVoucher(null)
@@ -993,10 +1010,11 @@ export default function HomePage() {
           }
         }, 500)
       } else {
+        console.error('[Frontend Checkout] Checkout failed:', data.error)
         toast.error(data.error || 'Terjadi kesalahan saat checkout')
       }
     } catch (error) {
-      console.error('Checkout error:', error)
+      console.error('[Frontend Checkout] Error:', error)
       toast.error('Terjadi kesalahan koneksi')
     }
   }

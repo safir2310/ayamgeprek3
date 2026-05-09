@@ -3,26 +3,49 @@ import { db } from '@/lib/db'
 import { getTokenFromRequest, verifyToken } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
+  console.log('[Checkout] Starting checkout process...')
+
   try {
     const token = getTokenFromRequest(request)
+    console.log('[Checkout] Token:', token ? 'Present' : 'Missing')
+
     if (!token) {
+      console.error('[Checkout] No token provided')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const payload = await verifyToken(token)
+    console.log('[Checkout] Token payload:', payload)
+
     if (!payload) {
+      console.error('[Checkout] Invalid token')
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
+    if (!payload.userId) {
+      console.error('[Checkout] Token missing userId')
+      return NextResponse.json({ error: 'Invalid token: missing userId' }, { status: 401 })
+    }
+
+    console.log('[Checkout] Parsing request body...')
     const body = await request.json()
+    console.log('[Checkout] Request body keys:', Object.keys(body))
     const { cart, customerName, customerPhone, customerAddress, paymentMethod, voucherCode, pointVoucherCode, notes } = body
 
+    console.log('[Checkout] Cart items count:', cart?.length)
+    console.log('[Checkout] Payment method:', paymentMethod)
+    console.log('[Checkout] User ID:', payload.userId)
+
     // Get user info
+    console.log('[Checkout] Fetching user from database...')
     const user = await db.user.findUnique({
       where: { id: payload.userId },
     })
 
+    console.log('[Checkout] User found:', !!user)
+
     if (!user) {
+      console.error('[Checkout] User not found:', payload.userId)
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
@@ -139,11 +162,20 @@ export async function POST(request: NextRequest) {
     const pointsEarned = Math.floor(totalAmount / 1000) // 1 point per Rp 1,000
     const finalAmount = totalAmount - discountAmount
 
+    console.log('[Checkout] Total amount:', totalAmount)
+    console.log('[Checkout] Discount amount:', discountAmount)
+    console.log('[Checkout] Final amount:', finalAmount)
+    console.log('[Checkout] Points earned:', pointsEarned)
+
     // Generate order number
     const orderNumber = `ORD${Date.now()}`
     const qrCode = paymentMethod === 'QRIS' ? `QR${Date.now()}` : null
 
+    console.log('[Checkout] Order number:', orderNumber)
+    console.log('[Checkout] QR Code:', qrCode)
+
     // Create order
+    console.log('[Checkout] Creating order...')
     const order = await db.order.create({
       data: {
         orderNumber,
@@ -165,11 +197,17 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    console.log('[Checkout] Order created:', order.id, order.orderNumber)
+
     // Create order items and update products
     const validItems: any[] = []
+    console.log('[Checkout] Creating order items...')
+
     for (const item of cart) {
       const price = item.discountPrice || item.price
       const discount = item.discountPrice ? item.price - item.discountPrice : 0
+
+      console.log('[Checkout] Processing item:', item.productId, item.name)
 
       // Check if product exists
       const product = await db.product.findUnique({
@@ -177,9 +215,11 @@ export async function POST(request: NextRequest) {
       })
 
       if (!product) {
-        console.warn(`Product ${item.productId} not found, skipping`)
+        console.warn(`[Checkout] Product ${item.productId} not found, skipping`)
         continue
       }
+
+      console.log('[Checkout] Creating order item for:', item.productId)
 
       await db.orderItem.create({
         data: {
@@ -192,6 +232,8 @@ export async function POST(request: NextRequest) {
         },
       })
 
+      console.log('[Checkout] Updating product stock:', item.productId)
+
       // Update product sold count
       await db.product.update({
         where: { id: item.productId },
@@ -203,6 +245,8 @@ export async function POST(request: NextRequest) {
 
       validItems.push(item)
     }
+
+    console.log('[Checkout] Valid items created:', validItems.length)
 
     // Check if there are any valid items
     if (validItems.length === 0) {
@@ -255,6 +299,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create payment record
+    console.log('[Checkout] Creating payment record...')
     await db.payment.create({
       data: {
         orderId: order.id,
@@ -266,6 +311,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    console.log('[Checkout] Checkout completed successfully! Returning response...')
     return NextResponse.json({
       success: true,
       order: {
