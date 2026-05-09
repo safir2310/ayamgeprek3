@@ -89,17 +89,27 @@ export function PointRedemptionManagement() {
       return
     }
 
-    // Check if user is admin
+    // Check if user is admin, if not, try to auto-login
     if (!user || user.role !== 'admin') {
-      setIsLoading(false)
-      return
+      console.log('User not admin, attempting auto-login...')
+      const loginResult = await autoLoginAsAdmin()
+      if (!loginResult.success) {
+        console.error('Auto-login failed:', loginResult.error)
+        setIsLoading(false)
+        return
+      }
+      // Wait for state update
+      await new Promise(resolve => setTimeout(resolve, 100))
     }
 
     setIsLoading(true)
     try {
+      // Get fresh token and user after potential login
+      const { token: currentToken, user: currentUser } = useStore.getState()
+
       const res = await fetch('/api/admin/point-redemption', {
-        headers: token ? {
-          Authorization: `Bearer ${token}`,
+        headers: currentToken ? {
+          Authorization: `Bearer ${currentToken}`,
         } : {},
       })
 
@@ -111,12 +121,13 @@ export function PointRedemptionManagement() {
       } else {
         const errorText = await res.text()
         console.error('Error loading redemptions:', errorText)
+        let errorData: any
         try {
-          const errorData = JSON.parse(errorText)
-          toast.error(errorData.error || 'Gagal mengambil data penukaran poin')
+          errorData = JSON.parse(errorText)
         } catch {
-          toast.error('Gagal mengambil data penukaran poin')
+          errorData = { error: errorText || 'Gagal mengambil data penukaran poin' }
         }
+        toast.error(errorData.error || 'Gagal mengambil data penukaran poin')
       }
     } catch (error) {
       console.error('Error loading redemptions:', error)
@@ -175,6 +186,12 @@ export function PointRedemptionManagement() {
       return
     }
 
+    // Check if logged in as admin
+    if (!token || !user || user.role !== 'admin') {
+      toast.error('Anda belum login sebagai admin. Mohon tunggu sebentar...')
+      return
+    }
+
     try {
       const res = await fetch(`/api/admin/point-redemption?id=${id}`, {
         method: 'DELETE',
@@ -187,16 +204,45 @@ export function PointRedemptionManagement() {
         toast.success('✅ Opsi penukaran berhasil dihapus!')
         loadRedemptions()
       } else if (res.status === 401) {
-        // Silently handle 401, don't show notification
+        // Try auto-login
+        const loginResult = await autoLoginAsAdmin()
+        if (loginResult.success) {
+          toast.success('Login berhasil. Menghapus ulang...')
+          const { token: newToken } = useStore.getState()
+          const retryRes = await fetch(`/api/admin/point-redemption?id=${id}`, {
+            method: 'DELETE',
+            headers: {
+              Authorization: `Bearer ${newToken}`,
+            },
+          })
+
+          if (retryRes.ok) {
+            toast.success('✅ Opsi penukaran berhasil dihapus!')
+            loadRedemptions()
+          } else {
+            const errorText = await retryRes.text()
+            console.error('Retry error:', errorText)
+            let errorData: any
+            try {
+              errorData = JSON.parse(errorText)
+            } catch {
+              errorData = { error: errorText || 'Gagal menghapus' }
+            }
+            toast.error(errorData.error || 'Gagal menghapus opsi penukaran')
+          }
+        } else {
+          toast.error('Gagal login sebagai admin')
+        }
       } else {
         const errorText = await res.text()
         console.error('Error deleting redemption:', errorText)
+        let errorData: any
         try {
-          const errorData = JSON.parse(errorText)
-          toast.error(errorData.error || 'Gagal menghapus opsi penukaran')
+          errorData = JSON.parse(errorText)
         } catch {
-          toast.error('Gagal menghapus opsi penukaran')
+          errorData = { error: errorText || 'Gagal menghapus opsi penukaran' }
         }
+        toast.error(errorData.error || 'Gagal menghapus opsi penukaran')
       }
     } catch (error) {
       console.error('Error deleting redemption:', error)
@@ -205,6 +251,12 @@ export function PointRedemptionManagement() {
   }
 
   const handleToggleActive = async (redemption: PointRedemption) => {
+    // Check if logged in as admin
+    if (!token || !user || user.role !== 'admin') {
+      toast.error('Anda belum login sebagai admin. Mohon tunggu sebentar...')
+      return
+    }
+
     try {
       const res = await fetch('/api/admin/point-redemption', {
         method: 'PUT',
@@ -222,16 +274,50 @@ export function PointRedemptionManagement() {
         toast.success(redemption.active ? 'Opsi penukaran dinonaktifkan' : 'Opsi penukaran diaktifkan')
         loadRedemptions()
       } else if (res.status === 401) {
-        // Silently handle 401, don't show notification
+        // Try auto-login
+        const loginResult = await autoLoginAsAdmin()
+        if (loginResult.success) {
+          toast.success('Login berhasil. Mengubah ulang status...')
+          const { token: newToken } = useStore.getState()
+          const retryRes = await fetch('/api/admin/point-redemption', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${newToken}`,
+            },
+            body: JSON.stringify({
+              id: redemption.id,
+              active: !redemption.active,
+            }),
+          })
+
+          if (retryRes.ok) {
+            toast.success(redemption.active ? 'Opsi penukaran dinonaktifkan' : 'Opsi penukaran diaktifkan')
+            loadRedemptions()
+          } else {
+            const errorText = await retryRes.text()
+            console.error('Retry error:', errorText)
+            let errorData: any
+            try {
+              errorData = JSON.parse(errorText)
+            } catch {
+              errorData = { error: errorText || 'Gagal mengubah status' }
+            }
+            toast.error(errorData.error || 'Gagal mengubah status opsi penukaran')
+          }
+        } else {
+          toast.error('Gagal login sebagai admin')
+        }
       } else {
         const errorText = await res.text()
         console.error('Error toggling active:', errorText)
+        let errorData: any
         try {
-          const errorData = JSON.parse(errorText)
-          toast.error(errorData.error || 'Gagal mengubah status opsi penukaran')
+          errorData = JSON.parse(errorText)
         } catch {
-          toast.error('Gagal mengubah status opsi penukaran')
+          errorData = { error: errorText || 'Gagal mengubah status opsi penukaran' }
         }
+        toast.error(errorData.error || 'Gagal mengubah status opsi penukaran')
       }
     } catch (error) {
       console.error('Error toggling active:', error)
