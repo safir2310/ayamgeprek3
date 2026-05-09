@@ -63,6 +63,17 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
   // Theme state
   const [isDarkMode, setIsDarkMode] = useState(false)
 
+  // Notification tone state
+  const [selectedTone, setSelectedTone] = useState('chime')
+
+  // Privacy settings state
+  const [profilePrivate, setProfilePrivate] = useState(false)
+  const [emailNotifications, setEmailNotifications] = useState(true)
+  const [smsNotifications, setSmsNotifications] = useState(false)
+
+  // Language state
+  const [selectedLanguage, setSelectedLanguage] = useState('id')
+
   // Apply theme to document
   useEffect(() => {
     const root = document.documentElement
@@ -79,17 +90,6 @@ export default function ProfilePage({ user, vouchers = [], onLogout }: ProfilePa
   useEffect(() => {
     document.documentElement.lang = selectedLanguage
   }, [selectedLanguage])
-
-  // Notification tone state
-  const [selectedTone, setSelectedTone] = useState('chime')
-
-  // Privacy settings state
-  const [profilePrivate, setProfilePrivate] = useState(false)
-  const [emailNotifications, setEmailNotifications] = useState(true)
-  const [smsNotifications, setSmsNotifications] = useState(false)
-
-  // Language state
-  const [selectedLanguage, setSelectedLanguage] = useState('id')
 
   // Load user settings from database
   useEffect(() => {
