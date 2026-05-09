@@ -6,6 +6,7 @@ import { BarChart3, TrendingUp, TrendingDown, DollarSign, Calendar, Download, Fi
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { toast } from '@/hooks/use-toast'
 
 interface DailySale {
   date: string
@@ -43,14 +44,23 @@ export function SalesReports() {
           setTopProducts(data.topProducts || [])
           setCategorySales(data.categorySales || [])
         } else {
-          toast.error(data.error || 'Gagal mengambil data laporan')
+          toast({
+            title: data.error || 'Gagal mengambil data laporan',
+            variant: 'destructive',
+          })
         }
       } else {
-        toast.error('Gagal mengambil data laporan')
+        toast({
+          title: 'Gagal mengambil data laporan',
+          variant: 'destructive',
+        })
       }
     } catch (error) {
       console.error('Error loading sales reports:', error)
-      toast.error('Gagal mengambil data laporan')
+      toast({
+        title: 'Gagal mengambil data laporan',
+        variant: 'destructive',
+      })
     } finally {
       setIsLoading(false)
     }
@@ -307,7 +317,6 @@ export function SalesReports() {
                       transition={{ delay: index * 0.1 + 0.2 }}
                       className="bg-gradient-to-r from-red-600 to-orange-500 h-full rounded-full"
                     />
-                  </motion.div>
                   </div>
                 </motion.div>
               ))}
@@ -364,7 +373,6 @@ export function SalesReports() {
                           : 'bg-gradient-to-r from-green-600 to-teal-500'
                       }`}
                     />
-                  </motion.div>
                   </div>
                 </motion.div>
               ))}
