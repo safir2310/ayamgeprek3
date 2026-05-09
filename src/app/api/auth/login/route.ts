@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('🔍 Looking up user in database...')
+    
     const user = await db.user.findUnique({
       where: { email },
     })
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('✅ Password valid')
-    console.log('🔑 Generating token...')
+    console.log('🔐 Generating token...')
 
     const token = await signToken({
       userId: user.id,
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
       role: user.role,
     })
 
-    console.log('✅ Token generated successfully')
+    console.log('✅ Token generated successfully, length:', token.length)
 
     const response = NextResponse.json({
       success: true,
@@ -74,16 +75,25 @@ export async function POST(request: NextRequest) {
     })
 
     console.log('🍪 Setting cookie...')
+    console.log('   Secure:', process.env.NODE_ENV === 'production')
+    console.log('   SameSite: lax')
+    console.log('   MaxAge: 7 days')
     
+    // Get the domain for production
+    const isProduction = process.env.NODE_ENV === 'production'
+    const domain = isProduction ? '.vercel.app' : undefined
+
     response.cookies.set('auth-token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      httpOnly: false, // Set to false for development debugging
+      secure: isProduction,
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
+      domain: isProduction ? '.vercel.app' : undefined,
     })
 
-    console.log('✅ Login successful!')
+    console.log('✅ Cookie set successfully')
+    console.log('🎉 Login successful!')
     console.log('================================')
 
     return response
@@ -93,18 +103,23 @@ export async function POST(request: NextRequest) {
       message: error.message,
       name: error.name,
       stack: error.stack,
+      code: error.code,
     })
     
     // Provide more specific error messages
     let errorMessage = 'Terjadi kesalahan saat login'
     
-    if (error.message?.includes('connect')) {
+    if (error.message?.includes('connect') || error.code === 'ECONNREFUSED') {
       errorMessage = 'Gagal menghubungi database. Silakan coba lagi.'
     } else if (error.message?.includes('timeout')) {
       errorMessage = 'Koneksi database timeout. Silakan coba lagi.'
-    } else if (error.message?.includes('ECONNREFUSED')) {
-      errorMessage = 'Database tidak dapat diakses. Hubungi admin.'
+    } else if (error.message?.includes('P1001') || error.message?.includes('P2002')) {
+      errorMessage = 'Database sedang sibuk. Silakan coba lagi.'
+    } else if (error.message?.includes('EPIPE')) {
+      errorMessage = 'Koneksi database terputus. Silakan coba lagi.'
     }
+    
+    console.log('Returning error to client:', errorMessage)
     
     return NextResponse.json(
       { error: errorMessage },
