@@ -1,8 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { getTokenFromRequest, verifyToken } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
+    // Validate token
+    const token = getTokenFromRequest(request)
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const payload = await verifyToken(token)
+    if (!payload) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid token' },
+        { status: 401 }
+      )
+    }
+
     const { code, userId, cartTotal } = await request.json()
 
     if (!code) {
@@ -12,11 +30,19 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Verify userId matches token
+    if (userId !== payload.userId) {
+      return NextResponse.json(
+        { success: false, error: 'User ID tidak valid' },
+        { status: 403 }
+      )
+    }
+
     // Check if it's a point voucher
-    const pointVoucher = await db.pointVoucher.findUnique({
+    const pointVoucher = await db.pointVoucher.findFirst({
       where: {
         code,
-        userId,
+        userId: payload.userId,
         isUsed: false
       },
       include: {
@@ -27,7 +53,7 @@ export async function POST(request: NextRequest) {
     if (pointVoucher) {
       // Check if user has enough points
       const user = await db.user.findUnique({
-        where: { id: userId }
+        where: { id: payload.userId }
       })
 
       if (!user) {

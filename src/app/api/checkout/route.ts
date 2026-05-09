@@ -66,16 +66,8 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Mark as used
-      await db.pointVoucher.update({
-        where: { id: pointVoucher.id },
-        data: {
-          isUsed: true,
-          usedAt: new Date(),
-        }
-      })
-
       // Point voucher gives a free product (no discount on total)
+      // Voucher will be marked as used by the frontend after successful checkout
       freeProductId = pointVoucher.productId
     }
 
@@ -85,20 +77,50 @@ export async function POST(request: NextRequest) {
         where: { code: voucherCode },
       })
 
-      if (voucher && voucher.status === 'active') {
-        const now = new Date()
-        if (now >= voucher.startDate && now <= voucher.endDate) {
-          if (totalAmount >= voucher.minPurchase) {
-            if (voucher.discountType === 'percentage') {
-              discountAmount = Math.floor(totalAmount * (voucher.discountValue / 100))
-              if (voucher.maxDiscount && discountAmount > voucher.maxDiscount) {
-                discountAmount = voucher.maxDiscount
-              }
-            } else {
-              discountAmount = voucher.discountValue
-            }
-          }
+      if (!voucher) {
+        return NextResponse.json(
+          { error: 'Kode voucher tidak ditemukan' },
+          { status: 404 }
+        )
+      }
+
+      if (voucher.status !== 'active') {
+        return NextResponse.json(
+          { error: 'Voucher tidak aktif' },
+          { status: 400 }
+        )
+      }
+
+      const now = new Date()
+      if (now < voucher.startDate || now > voucher.endDate) {
+        return NextResponse.json(
+          { error: 'Voucher sudah kadaluarsa atau belum aktif' },
+          { status: 400 }
+        )
+      }
+
+      if (totalAmount < voucher.minPurchase) {
+        return NextResponse.json(
+          { error: `Minimum belanja Rp ${voucher.minPurchase.toLocaleString()} untuk menggunakan voucher ini` },
+          { status: 400 }
+        )
+      }
+
+      if (voucher.usageLimit && voucher.usageCount >= voucher.usageLimit) {
+        return NextResponse.json(
+          { error: 'Voucher sudah mencapai batas penggunaan' },
+          { status: 400 }
+        )
+      }
+
+      // Calculate discount
+      if (voucher.discountType === 'percentage') {
+        discountAmount = Math.floor(totalAmount * (voucher.discountValue / 100))
+        if (voucher.maxDiscount && discountAmount > voucher.maxDiscount) {
+          discountAmount = voucher.maxDiscount
         }
+      } else {
+        discountAmount = voucher.discountValue
       }
     }
 
@@ -248,6 +270,28 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Checkout error:', error)
+    
+    // Provide more detailed error messages
+    if (error instanceof Error) {
+      // Check for specific Prisma errors
+      if (error.message.includes('Unique constraint')) {
+        return NextResponse.json(
+          { error: 'Gagal membuat order. Silakan coba lagi.' },
+          { status: 400 }
+        )
+      }
+      if (error.message.includes('Foreign key constraint')) {
+        return NextResponse.json(
+          { error: 'Data produk tidak valid. Silakan refresh halaman.' },
+          { status: 400 }
+        )
+      }
+      return NextResponse.json(
+        { error: error.message || 'Terjadi kesalahan saat checkout' },
+        { status: 500 }
+      )
+    }
+    
     return NextResponse.json(
       { error: 'Terjadi kesalahan saat checkout' },
       { status: 500 }
