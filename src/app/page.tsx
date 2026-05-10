@@ -2153,36 +2153,106 @@ export default function HomePage() {
         />
       )}
 
-      {/* Logout Confirmation Dialog */}
+      {/* Logout Confirmation Dialog - Modern Design */}
       <Dialog open={isLogoutConfirmOpen} onOpenChange={setIsLogoutConfirmOpen}>
-        <DialogContent className="max-w-sm p-6">
-          <DialogHeader className="pb-3">
-            <DialogTitle className="text-lg font-bold text-gray-800">👋 Konfirmasi Logout</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-sm text-gray-700 leading-relaxed">
-                Apakah Anda yakin ingin logout? Anda tidak akan lagi dapat mengakses akun dan melakukan transaksi.
-              </p>
+        <DialogContent className="max-w-md p-0 overflow-hidden border-0 shadow-2xl">
+          {/* Header with Gradient */}
+          <div className="bg-gradient-to-r from-red-600 via-orange-500 to-amber-500 px-6 py-8 text-center relative overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute top-0 left-0 w-32 h-32 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+              <div className="absolute bottom-0 right-0 w-24 h-24 bg-white rounded-full translate-x-1/2 translate-y-1/2"></div>
             </div>
-            <div className="flex gap-3 pt-2">
+
+            {/* Icon with Animation */}
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ duration: 0.5, type: "spring" }}
+              className="relative z-10"
+            >
+              <div className="w-20 h-20 mx-auto bg-white/20 backdrop-blur-sm rounded-3xl flex items-center justify-center border-2 border-white/30 shadow-2xl">
+                <LogOut className="h-10 w-10 text-white" />
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.4 }}
+              className="relative z-10 mt-4"
+            >
+              <h3 className="text-2xl font-bold text-white mb-1">Yakin Ingin Logout?</h3>
+              <p className="text-white/80 text-sm">Anda akan keluar dari akun Anda</p>
+            </motion.div>
+          </div>
+
+          {/* Content */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.4 }}
+            className="px-6 py-6"
+          >
+            {/* User Info Card */}
+            {user && (
+              <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-2xl p-4 mb-6">
+                <div className="flex items-center gap-4">
+                  <Avatar className="w-14 h-14 border-2 border-white shadow-lg">
+                    <AvatarImage src={(user as any).profilePhoto || undefined} />
+                    <AvatarFallback className="bg-gradient-to-br from-red-500 to-orange-500 text-white font-bold text-lg">
+                      {user.name?.charAt(0).toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-500 mb-1">Masuk sebagai</p>
+                    <p className="font-bold text-gray-900 text-lg">{user.name || 'User'}</p>
+                    <p className="text-sm text-gray-600">{user.email}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Warning Message */}
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-500 rounded-r-xl p-4 mb-6">
+              <div className="flex gap-3">
+                <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <AlertCircle className="h-5 w-5 text-amber-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-700 leading-relaxed">
+                    Setelah logout, Anda perlu login kembali untuk mengakses akun, pesanan, dan voucher Anda.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
               <Button
                 variant="outline"
-                className="flex-1"
+                className="flex-1 h-12 text-base font-semibold border-2 hover:bg-gray-50"
                 onClick={() => setIsLogoutConfirmOpen(false)}
               >
+                <X className="h-4 w-4 mr-2" />
                 Batal
               </Button>
-              <Button
-                variant="destructive"
-                className="flex-1 bg-red-600 hover:bg-red-700"
-                onClick={confirmLogout}
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex-1"
               >
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
+                <Button
+                  variant="destructive"
+                  className="w-full h-12 text-base font-semibold bg-gradient-to-r from-red-600 via-orange-500 to-red-600 hover:from-red-700 hover:via-orange-600 hover:to-red-700 border-0 shadow-lg shadow-red-500/25"
+                  onClick={confirmLogout}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Ya, Logout
+                </Button>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
         </DialogContent>
       </Dialog>
 
