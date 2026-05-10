@@ -150,6 +150,9 @@ export default function HomePage() {
   })
   const [vouchers, setVouchers] = useState<any[]>([])
   const [pointVouchers, setPointVouchers] = useState<any[]>([])
+  const [checkoutAvailableVouchers, setCheckoutAvailableVouchers] = useState<any[]>([])
+  const [isLoadingCheckoutVouchers, setIsLoadingCheckoutVouchers] = useState(false)
+  const [showVoucherList, setShowVoucherList] = useState(false)
 
   // Glassmorphism card style
   const glassCardStyle = "bg-white/70 backdrop-blur-xl border border-white/50 shadow-2xl shadow-black/5"
@@ -508,6 +511,38 @@ export default function HomePage() {
       fetchUserVouchers()
     }
   }, [currentTab, user])
+
+  // Fetch available vouchers for checkout
+  const fetchAvailableVouchers = async () => {
+    setIsLoadingCheckoutVouchers(true)
+    try {
+      const res = await fetch(`/api/voucher/available?cartTotal=${cartTotal}`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.success) {
+          setCheckoutAvailableVouchers(data.vouchers || [])
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching available vouchers:', error)
+    } finally {
+      setIsLoadingCheckoutVouchers(false)
+    }
+  }
+
+  // Handle selecting voucher from list
+  const handleSelectVoucher = (voucher: any) => {
+    setSelectedVoucher(voucher.code)
+    setShowVoucherList(false)
+    toast.success(`Voucher ${voucher.code} dipilih!`)
+  }
+
+  // Fetch vouchers when checkout modal opens
+  useEffect(() => {
+    if (isCheckoutOpen) {
+      fetchAvailableVouchers()
+    }
+  }, [isCheckoutOpen, cartTotal])
 
   // Handle forgot password verification
   const handleForgotPassword = async (e: React.FormEvent) => {
@@ -2609,9 +2644,21 @@ export default function HomePage() {
 
               {/* Voucher Section */}
               <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-4 rounded-2xl border border-amber-200 dark:border-amber-800">
-                <Label className="mb-3 block text-sm font-semibold text-amber-800 dark:text-amber-200">
-                  🎁 Kode Voucher
-                </Label>
+                <div className="flex items-center justify-between mb-3">
+                  <Label className="text-sm font-semibold text-amber-800 dark:text-amber-200">
+                    🎁 Kode Voucher
+                  </Label>
+                  {!showVoucherList && !pointVoucher && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowVoucherList(true)}
+                      className="text-xs text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300"
+                    >
+                      Lihat Voucher Tersedia
+                    </Button>
+                  )}
+                </div>
                 <div className="flex gap-2">
                   <Input
                     placeholder="Masukkan kode voucher"
@@ -2688,6 +2735,95 @@ export default function HomePage() {
                     Memvalidasi voucher...
                   </div>
                 )}
+
+                {/* Available Vouchers List */}
+                {showVoucherList && !pointVoucher && (
+                  <div className="mt-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-semibold text-amber-800 dark:text-amber-200">
+                        Voucher Tersedia ({checkoutAvailableVouchers.length})
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowVoucherList(false)}
+                        className="text-xs text-amber-600 dark:text-amber-400"
+                      >
+                        <X className="h-3 w-3 mr-1" />
+                        Tutup
+                      </Button>
+                    </div>
+
+                    {isLoadingCheckoutVouchers ? (
+                      <div className="flex items-center justify-center py-4">
+                        <RefreshCw className="h-5 w-5 animate-spin text-amber-600" />
+                      </div>
+                    ) : checkoutAvailableVouchers.length === 0 ? (
+                      <div className="text-center py-4 text-xs text-gray-500">
+                        <Tag className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                        <p>Tidak ada voucher yang tersedia</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {checkoutAvailableVouchers.map((voucher) => (
+                          <div
+                            key={voucher.id}
+                            className={`bg-white dark:bg-slate-800 border-2 rounded-xl p-3 cursor-pointer transition-all ${
+                              selectedVoucher === voucher.code
+                                ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/30'
+                                : 'border-amber-200 dark:border-amber-800 hover:border-amber-300 dark:hover:border-amber-700'
+                            }`}
+                            onClick={() => handleSelectVoucher(voucher)}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <Badge className={`text-[10px] ${
+                                    selectedVoucher === voucher.code
+                                      ? 'bg-amber-500 text-white'
+                                      : 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200'
+                                  }`}>
+                                    {voucher.discountType === 'percentage'
+                                      ? `${voucher.discountValue}%`
+                                      : `Rp ${voucher.discountValue.toLocaleString()}`
+                                    }
+                                  </Badge>
+                                  {selectedVoucher === voucher.code && (
+                                    <CheckCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                                  )}
+                                </div>
+                                <p className="font-semibold text-sm text-gray-800 dark:text-gray-200">
+                                  {voucher.name}
+                                </p>
+                                {voucher.description && (
+                                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                    {voucher.description}
+                                  </p>
+                                )}
+                                <div className="flex flex-wrap gap-2 mt-2 text-xs text-gray-500 dark:text-gray-500">
+                                  {voucher.minPurchase > 0 && (
+                                    <span>Min. Rp {voucher.minPurchase.toLocaleString()}</span>
+                                  )}
+                                  {voucher.maxDiscount && voucher.discountType === 'percentage' && (
+                                    <span>Max. Rp {voucher.maxDiscount.toLocaleString()}</span>
+                                  )}
+                                  <span>
+                                    s/d {new Date(voucher.endDate).toLocaleDateString('id-ID', {
+                                      day: 'numeric',
+                                      month: 'short',
+                                      year: 'numeric'
+                                    })}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {pointVoucher && (
                   <div className="mt-3 p-3 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl border border-emerald-200 dark:border-emerald-800">
                     <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium flex items-center gap-2">
